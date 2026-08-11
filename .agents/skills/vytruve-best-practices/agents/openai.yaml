@@ -1,0 +1,4 @@
+interface:
+  display_name: "Vytruve Best Practices"
+  short_description: "Route repository work through accepted guidance"
+  default_prompt: "Use $vytruve-best-practices to apply the repository authorities and focused policies for this task."

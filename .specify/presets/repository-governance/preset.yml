@@ -1,0 +1,103 @@
+schema_version: "1.0"
+
+preset:
+  id: "repository-governance"
+  name: "Repository Governance"
+  version: "1.1.0"
+  description: "Composes Spec Kit with repository-local routing, source, task, and validation authority."
+  author: "Repository maintainers"
+  license: "UNLICENSED"
+
+requires:
+  speckit_version: "==0.15.0"
+
+provides:
+  templates:
+    - type: "template"
+      name: "constitution-template"
+      file: "templates/constitution-template.md"
+      description: "Concise repository-authority adapter"
+      replaces: "constitution-template"
+
+    - type: "template"
+      name: "spec-template"
+      file: "templates/spec-addendum.md"
+      description: "Repository specification-authority constraints"
+      strategy: "append"
+
+    - type: "template"
+      name: "plan-template"
+      file: "templates/plan-addendum.md"
+      description: "Repository architecture and validation gates"
+      strategy: "append"
+
+    - type: "template"
+      name: "tasks-template"
+      file: "templates/tasks-addendum.md"
+      description: "Repository scope and task-authority constraints"
+      strategy: "append"
+
+    - type: "command"
+      name: "speckit.constitution"
+      file: "commands/repository-governed-command.md"
+      description: "Run constitution work through repository governance"
+      strategy: "wrap"
+
+    - type: "command"
+      name: "speckit.specify"
+      file: "commands/repository-governed-command.md"
+      description: "Run specification work through repository governance"
+      strategy: "wrap"
+
+    - type: "command"
+      name: "speckit.clarify"
+      file: "commands/repository-governed-command.md"
+      description: "Run clarification through repository governance"
+      strategy: "wrap"
+
+    - type: "command"
+      name: "speckit.plan"
+      file: "commands/repository-governed-command.md"
+      description: "Run technical planning through repository governance"
+      strategy: "wrap"
+
+    - type: "command"
+      name: "speckit.checklist"
+      file: "commands/repository-governed-command.md"
+      description: "Run checklist generation through repository governance"
+      strategy: "wrap"
+
+    - type: "command"
+      name: "speckit.tasks"
+      file: "commands/repository-governed-command.md"
+      description: "Run task derivation through repository governance"
+      strategy: "wrap"
+
+    - type: "command"
+      name: "speckit.analyze"
+      file: "commands/repository-governed-command.md"
+      description: "Run consistency analysis through repository governance"
+      strategy: "wrap"
+
+    - type: "command"
+      name: "speckit.implement"
+      file: "commands/repository-governed-command.md"
+      description: "Run implementation through repository governance"
+      strategy: "wrap"
+
+    - type: "command"
+      name: "speckit.converge"
+      file: "commands/repository-governed-command.md"
+      description: "Run convergence through repository governance"
+      strategy: "wrap"
+
+    - type: "command"
+      name: "speckit.taskstoissues"
+      file: "commands/taskstoissues-disabled.md"
+      description: "Disable the competing tasks-to-issues control plane"
+      replaces: "speckit.taskstoissues"
+
+tags:
+  - "portable"
+  - "governance"
+  - "repository"
