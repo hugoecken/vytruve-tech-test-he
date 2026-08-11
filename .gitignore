@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Build, cache, and test artifacts
+.nx/
+dist/
+coverage/
+generated/
+playwright-report/
+test-results/
+
+# Local runtime data
+data/
+uploads/
+*.log
+
+# Local Spec Kit state
+.specify/feature.json
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
