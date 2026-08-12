@@ -64,6 +64,14 @@
           "buildTarget": "api:build:production"
         }
       }
+    },
+    "openapi": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "outputs": ["{workspaceRoot}/generated/openapi.json"],
+      "options": {
+        "command": "node dist/apps/api/main.js --openapi"
+      }
     }
   }
 }

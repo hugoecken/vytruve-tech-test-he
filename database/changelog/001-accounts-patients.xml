@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
+>
+  <changeSet id="001-create-account" author="vytruve">
+    <createTable tableName="account">
+      <column name="id" type="uuid" defaultValueComputed="gen_random_uuid()">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_account" />
+      </column>
+      <column name="email" type="varchar(320)">
+        <constraints
+          nullable="false"
+          unique="true"
+          uniqueConstraintName="uq_account_email"
+        />
+      </column>
+      <column name="password_hash" type="varchar(255)">
+        <constraints nullable="false" />
+      </column>
+      <column
+        name="created_at"
+        type="timestamp(3) with time zone"
+        defaultValueComputed="CURRENT_TIMESTAMP"
+      >
+        <constraints nullable="false" />
+      </column>
+    </createTable>
+    <rollback>
+      <dropTable tableName="account" />
+    </rollback>
+  </changeSet>
+
+  <changeSet id="002-create-patient" author="vytruve">
+    <createTable tableName="patient">
+      <column name="id" type="uuid" defaultValueComputed="gen_random_uuid()">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_patient" />
+      </column>
+      <column name="account_id" type="uuid">
+        <constraints nullable="false" />
+      </column>
+      <column name="first_name" type="varchar(100)">
+        <constraints nullable="false" />
+      </column>
+      <column name="last_name" type="varchar(100)">
+        <constraints nullable="false" />
+      </column>
+      <column name="age" type="smallint">
+        <constraints nullable="false" />
+      </column>
+      <column
+        name="created_at"
+        type="timestamp(3) with time zone"
+        defaultValueComputed="CURRENT_TIMESTAMP"
+      >
+        <constraints nullable="false" />
+      </column>
+    </createTable>
+    <!-- Liquibase OSS 4.33 has no portable XML change type for a named check constraint. -->
+    <sql dbms="postgresql">
+      ALTER TABLE patient ADD CONSTRAINT ck_patient_age CHECK (age BETWEEN 0 AND 150)
+    </sql>
+    <addForeignKeyConstraint
+      baseColumnNames="account_id"
+      baseTableName="patient"
+      constraintName="fk_patient_account"
+      onDelete="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="account"
+    />
+    <createIndex tableName="patient" indexName="ix_patient_account_created">
+      <column name="account_id" />
+      <column name="created_at" descending="true" />
+      <column name="id" descending="true" />
+    </createIndex>
+    <rollback>
+      <dropTable tableName="patient" />
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
