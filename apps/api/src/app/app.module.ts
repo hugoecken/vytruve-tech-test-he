@@ -8,8 +8,9 @@ import {
 } from '../config/environment';
 import { AccountsModule } from './accounts/accounts.module';
 import { AuthModule } from './auth/auth.module';
+import { PatientsModule } from './patients/patients.module';
 
-/** Composes configuration, persistence, and authenticated account sessions. */
+/** Composes configuration, persistence, authentication, and patient features. */
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -39,6 +40,7 @@ import { AuthModule } from './auth/auth.module';
     ]),
     AccountsModule,
     AuthModule,
+    PatientsModule,
   ],
 })
 export class AppModule {}
