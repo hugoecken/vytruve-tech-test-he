@@ -9,6 +9,13 @@ export interface ApiEnvironment {
   JWT_AUDIENCE: string;
   JWT_ISSUER: string;
   JWT_SECRET: string;
+  MAX_SCAN_SIZE_BYTES: number;
+  MINIO_ACCESS_KEY: string;
+  MINIO_BUCKET: string;
+  MINIO_ENDPOINT: string;
+  MINIO_PORT: number;
+  MINIO_SECRET_KEY: string;
+  MINIO_USE_SSL: boolean;
   NODE_ENV: string;
   POSTGRES_DB: string;
   POSTGRES_PASSWORD: string;
@@ -60,6 +67,16 @@ export function validateEnvironment(
     JWT_AUDIENCE: requireString(environment, 'JWT_AUDIENCE'),
     JWT_ISSUER: requireString(environment, 'JWT_ISSUER'),
     JWT_SECRET: requireSecret(environment, 'JWT_SECRET'),
+    MAX_SCAN_SIZE_BYTES: parsePositiveInteger(
+      environment,
+      'MAX_SCAN_SIZE_BYTES',
+    ),
+    MINIO_ACCESS_KEY: requireString(environment, 'MINIO_ACCESS_KEY'),
+    MINIO_BUCKET: requireString(environment, 'MINIO_BUCKET'),
+    MINIO_ENDPOINT: requireString(environment, 'MINIO_ENDPOINT'),
+    MINIO_PORT: parsePort(environment, 'MINIO_PORT'),
+    MINIO_SECRET_KEY: requireString(environment, 'MINIO_SECRET_KEY'),
+    MINIO_USE_SSL: parseBoolean(environment, 'MINIO_USE_SSL'),
     NODE_ENV: nodeEnvironment,
     POSTGRES_DB: requireString(environment, 'POSTGRES_DB'),
     POSTGRES_PASSWORD: requireString(environment, 'POSTGRES_PASSWORD'),
@@ -120,4 +137,42 @@ function parsePort(environment: Record<string, unknown>, name: string): number {
     throw new Error(`${name} must be an integer between 1 and 65535`);
   }
   return port;
+}
+
+/**
+ * Parses one required explicit boolean value.
+ *
+ * @param environment Raw environment values loaded by Nest.
+ * @param name Boolean variable name.
+ * @returns The configured boolean value.
+ * @throws When the value is neither `true` nor `false`.
+ */
+function parseBoolean(
+  environment: Record<string, unknown>,
+  name: string,
+): boolean {
+  const value = environment[name];
+  if (value !== 'true' && value !== 'false') {
+    throw new Error(`${name} must be either true or false`);
+  }
+  return value === 'true';
+}
+
+/**
+ * Parses one required positive integer configuration value.
+ *
+ * @param environment Raw environment values loaded by Nest.
+ * @param name Integer variable name.
+ * @returns The configured positive integer within PostgreSQL integer range.
+ * @throws When the value cannot be stored with the scan metadata.
+ */
+function parsePositiveInteger(
+  environment: Record<string, unknown>,
+  name: string,
+): number {
+  const value = Number(environment[name]);
+  if (!Number.isInteger(value) || value < 1 || value > 2_147_483_647) {
+    throw new Error(`${name} must be an integer between 1 and 2147483647`);
+  }
+  return value;
 }

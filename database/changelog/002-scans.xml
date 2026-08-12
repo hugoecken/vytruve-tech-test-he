@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
+>
+  <changeSet id="003-create-scan" author="vytruve">
+    <createTable tableName="scan">
+      <column name="id" type="uuid" defaultValueComputed="gen_random_uuid()">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_scan" />
+      </column>
+      <column name="patient_id" type="uuid">
+        <constraints nullable="false" />
+      </column>
+      <column name="storage_key" type="varchar(128)">
+        <constraints
+          nullable="false"
+          unique="true"
+          uniqueConstraintName="uq_scan_storage_key"
+        />
+      </column>
+      <column name="format" type="varchar(16)" defaultValue="ply">
+        <constraints nullable="false" />
+      </column>
+      <column name="encoding" type="varchar(32)">
+        <constraints nullable="false" />
+      </column>
+      <column name="size_bytes" type="integer">
+        <constraints nullable="false" />
+      </column>
+      <column
+        name="created_at"
+        type="timestamp(3) with time zone"
+        defaultValueComputed="CURRENT_TIMESTAMP"
+      >
+        <constraints nullable="false" />
+      </column>
+    </createTable>
+    <addForeignKeyConstraint
+      baseColumnNames="patient_id"
+      baseTableName="scan"
+      constraintName="fk_scan_patient"
+      onDelete="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="patient"
+    />
+    <!-- Liquibase OSS 4.33 has no portable XML change type for named check constraints. -->
+    <sql dbms="postgresql">
+      ALTER TABLE scan ADD CONSTRAINT ck_scan_format CHECK (format = 'ply')
+    </sql>
+    <sql dbms="postgresql">
+      ALTER TABLE scan ADD CONSTRAINT ck_scan_encoding CHECK (
+        encoding IN ('ascii', 'binary_little_endian', 'binary_big_endian')
+      )
+    </sql>
+    <sql dbms="postgresql">
+      ALTER TABLE scan ADD CONSTRAINT ck_scan_size CHECK (size_bytes &gt; 0)
+    </sql>
+    <createIndex tableName="scan" indexName="ix_scan_patient_created">
+      <column name="patient_id" />
+      <column name="created_at" descending="true" />
+      <column name="id" descending="true" />
+    </createIndex>
+    <rollback>
+      <dropTable tableName="scan" />
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

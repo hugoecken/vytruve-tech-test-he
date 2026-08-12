@@ -71,6 +71,10 @@ async function emitOpenApi(): Promise<void> {
       'Account registration and browser-managed session lifecycle.',
     )
     .addTag('Patients', 'Owner-scoped patient record creation and retrieval.')
+    .addTag(
+      'Scans',
+      'Validated patient PLY scans and authorized private content streaming.',
+    )
     .addCookieAuth(
       SESSION_COOKIE_NAME,
       {

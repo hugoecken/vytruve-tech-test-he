@@ -9,6 +9,7 @@ import {
 import { AccountsModule } from './accounts/accounts.module';
 import { AuthModule } from './auth/auth.module';
 import { PatientsModule } from './patients/patients.module';
+import { ScansModule } from './scans/scans.module';
 
 /** Composes configuration, persistence, authentication, and patient features. */
 @Module({
@@ -41,6 +42,7 @@ import { PatientsModule } from './patients/patients.module';
     AccountsModule,
     AuthModule,
     PatientsModule,
+    ScansModule,
   ],
 })
 export class AppModule {}
