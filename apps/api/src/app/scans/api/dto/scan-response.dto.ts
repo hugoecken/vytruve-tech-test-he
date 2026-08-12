@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PageInfoResponse } from '../../../../pagination/page-info-response.dto';
+import { PageInfoResponse } from '@api/pagination/page-info-response.dto';
 import {
   ScanEncoding,
   type ScanEncoding as ScanEncodingValue,

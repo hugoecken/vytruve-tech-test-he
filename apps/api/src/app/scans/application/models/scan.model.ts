@@ -1,5 +1,5 @@
 import type { Readable } from 'node:stream';
-import type { Page } from '../../../../pagination/page';
+import type { Page } from '@api/pagination/page';
 
 /** PLY encodings accepted by the public scan contract. */
 export const ScanEncoding = {
@@ -17,6 +17,7 @@ export interface ScanModel {
   encoding: ScanEncoding;
   id: string;
   patientId: string;
+  printingAvailable: boolean;
   sizeBytes: number;
 }
 
@@ -34,4 +35,10 @@ export type ScanPageModel = Page<ScanModel>;
 export interface ScanDownloadModel {
   sizeBytes: number;
   stream: Readable;
+}
+
+/** Owner-authorized bounded bytes used only by internal scan consumers. */
+export interface ScanContentModel {
+  content: Buffer;
+  id: string;
 }

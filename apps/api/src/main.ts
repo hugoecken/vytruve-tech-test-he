@@ -7,11 +7,11 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
-import { AppModule } from './app/app.module';
-import { SESSION_COOKIE_NAME } from './app/auth/infrastructure/security/session.constants';
-import type { ApiEnvironment } from './config/environment';
-import { ProblemDetailsFilter } from './http/problem-details.filter';
-import { createValidationException } from './validation/create-validation-exception';
+import { AppModule } from '@api/app/app.module';
+import { SESSION_COOKIE_NAME } from '@api/app/auth/infrastructure/security/session.constants';
+import type { ApiEnvironment } from '@api/config/environment';
+import { ProblemDetailsFilter } from '@api/http/problem-details.filter';
+import { createValidationException } from '@api/validation/create-validation-exception';
 
 const OPENAPI_OUTPUT = resolve('generated/openapi.json');
 
@@ -63,7 +63,7 @@ async function emitOpenApi(): Promise<void> {
   const configuration = new DocumentBuilder()
     .setTitle('Vytruve API')
     .setDescription(
-      'Authenticated account and patient-record workflows for orthoprosthetists.',
+      'Authenticated patient, scan, and socket-printing workflows for orthoprosthetists.',
     )
     .setVersion('1.0.0')
     .addTag(
@@ -74,6 +74,10 @@ async function emitOpenApi(): Promise<void> {
     .addTag(
       'Scans',
       'Validated patient PLY scans and authorized private content streaming.',
+    )
+    .addTag(
+      'Printing',
+      'Provider-neutral scan submission and socket-production tracking.',
     )
     .addCookieAuth(
       SESSION_COOKIE_NAME,

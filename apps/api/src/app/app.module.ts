@@ -5,13 +5,14 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import {
   type ApiEnvironment,
   validateEnvironment,
-} from '../config/environment';
-import { AccountsModule } from './accounts/accounts.module';
-import { AuthModule } from './auth/auth.module';
-import { PatientsModule } from './patients/patients.module';
-import { ScansModule } from './scans/scans.module';
+} from '@api/config/environment';
+import { AccountsModule } from '@api/app/accounts/accounts.module';
+import { AuthModule } from '@api/app/auth/auth.module';
+import { PatientsModule } from '@api/app/patients/patients.module';
+import { PrintingModule } from '@api/app/printing/printing.module';
+import { ScansModule } from '@api/app/scans/scans.module';
 
-/** Composes configuration, persistence, authentication, and patient features. */
+/** Composes configuration, persistence, and the current backend product features. */
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -43,6 +44,7 @@ import { ScansModule } from './scans/scans.module';
     AuthModule,
     PatientsModule,
     ScansModule,
+    PrintingModule,
   ],
 })
 export class AppModule {}
