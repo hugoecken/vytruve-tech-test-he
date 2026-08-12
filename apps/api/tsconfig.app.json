@@ -8,6 +8,7 @@
     "emitDecoratorMetadata": true,
     "target": "es2021",
     "moduleResolution": "bundler",
+    "lib": ["es2022", "es2022.intl"],
     "strictNullChecks": true,
     "noImplicitAny": true,
     "strictBindCallApply": true,
