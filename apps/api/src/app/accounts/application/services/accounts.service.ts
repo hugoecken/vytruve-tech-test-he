@@ -1,8 +1,9 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryFailedError, Repository } from 'typeorm';
-import { ProblemCode } from '../../../../http/problem-code';
-import { ProblemDetailsException } from '../../../../http/problem-details.exception';
+import { Repository } from 'typeorm';
+import { ProblemCode } from '@api/http/problem-code';
+import { ProblemDetailsException } from '@api/http/problem-details.exception';
+import { isUniqueViolation } from '@api/persistence/postgres-error';
 import type { AccountModel, CreateAccountModel } from '../models/account.model';
 import { AccountEntity } from '../../infrastructure/persistence/account.entity';
 import { AccountPersistenceMapper } from '../../infrastructure/persistence/mappers/account-persistence.mapper';
@@ -79,26 +80,4 @@ export class AccountsService {
 /** Normalizes email identity exactly once before every persistence lookup. */
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
-}
-
-/**
- * Recognizes one named PostgreSQL unique constraint without matching messages.
- *
- * @param error Unknown persistence failure.
- * @param constraint Expected database constraint name.
- * @returns Whether PostgreSQL reported the expected uniqueness violation.
- */
-function isUniqueViolation(error: unknown, constraint: string): boolean {
-  if (!(error instanceof QueryFailedError)) {
-    return false;
-  }
-  const driverError: unknown = error.driverError;
-  return (
-    typeof driverError === 'object' &&
-    driverError !== null &&
-    'code' in driverError &&
-    driverError.code === '23505' &&
-    'constraint' in driverError &&
-    driverError.constraint === constraint
-  );
 }

@@ -6,9 +6,11 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { PatientEntity } from '../../../patients/infrastructure/persistence/patient.entity';
+import { PatientEntity } from '@api/app/patients/infrastructure/persistence/patient.entity';
+import { PrintRequestEntity } from '@api/app/printing/infrastructure/persistence/print-request.entity';
 import type { ScanEncoding } from '../../application/models/scan.model';
 
 /** TypeORM runtime mapping for the Liquibase-owned singular scan table. */
@@ -30,6 +32,9 @@ export class ScanEntity {
   @ManyToOne(() => PatientEntity, { nullable: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'patient_id' })
   patient!: PatientEntity;
+
+  @OneToMany(() => PrintRequestEntity, (printRequest) => printRequest.scan)
+  printRequests!: PrintRequestEntity[];
 
   @Column({ length: 128, name: 'storage_key', type: 'varchar', unique: true })
   storageKey!: string;
