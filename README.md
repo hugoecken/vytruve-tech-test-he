@@ -5,7 +5,7 @@ Specification-driven React and NestJS implementation of the Vytruve technical as
 ## Current stage
 
 The repository contains the accepted product specification, design handoff, technical plan, executable foundation,
-and the first backend product slice.
+and the complete backend product workflow.
 
 The current implementation provides:
 
@@ -16,9 +16,10 @@ The current implementation provides:
 - cookie-based account registration and authentication; and
 - owner-scoped patient creation, retrieval, and server-side pagination;
 - content-validated PLY uploads stored in a private MinIO bucket; and
-- owner-authorized scan listing and byte-for-byte content streaming.
+- owner-authorized scan listing and byte-for-byte content streaming; and
+- duplicate-safe print submission, reconciliation, lifecycle tracking, and estimated progress.
 
-It does not yet implement printing integration, automated tests, or product UI.
+It does not yet implement automated tests or the product UI.
 
 ## Prerequisites
 
@@ -99,12 +100,26 @@ npm exec nx -- serve api
 npm exec nx -- serve web
 ```
 
-The API validates every required runtime setting before listening under `/api`. It currently exposes account session
-and owner-scoped patient and scan endpoints. `MAX_SCAN_SIZE_BYTES` configures the upload boundary and defaults to the
-accepted 25 MiB product limit in `.env.example`. Scan uploads accept one structurally valid PLY 1.0 mesh within that
-limit, ignore client filenames and MIME claims, and expose neither object keys nor MinIO details. The private bucket is
-created through the official MinIO client when the API starts. The Web application mounts React without rendering a
-product screen.
+The API validates every required runtime setting before listening under `/api`. It exposes account session and
+owner-scoped patient, scan, and print-request endpoints. `MAX_SCAN_SIZE_BYTES` configures the upload boundary and
+defaults to the accepted 25 MiB product limit in `.env.example`. Scan uploads accept one structurally valid PLY 1.0
+mesh within that limit, ignore client filenames and MIME claims, and expose neither object keys nor MinIO details. The
+private bucket is created through the official MinIO client when the API starts.
+
+Printing uses the following required settings:
+
+| Variable                  | Purpose                                                    |
+| ------------------------- | ---------------------------------------------------------- |
+| `PRINTING_API_BASE_URL`   | Absolute HTTP(S) base URL of the printing-center API       |
+| `PRINTING_API_KEY`        | API credential supplied only at the provider HTTP boundary |
+| `PRINTING_API_TIMEOUT_MS` | Positive request timeout in milliseconds                   |
+
+The committed example uses a reserved `.invalid` URL and a local placeholder key. Replace them only in the ignored
+`.env` file. The integration persists a unique reference before submission, sends the scan with a single POST, and
+never retries that non-idempotent request automatically. If the result is ambiguous, the reservation remains in
+`confirmation_pending` and later reads reconcile it by stable reference before consulting the provider identifier.
+Terminal observations release the scan for a later print request. The Web application mounts React without rendering
+a product screen.
 
 Generate the code-first OpenAPI contract without serving a public Swagger interface:
 
@@ -144,7 +159,6 @@ technical translation, and derived tasks without creating a competing roadmap.
 
 ## Deferred work
 
-- Printing integration
 - Backend unit and HTTP integration tests
 - Tailwind CSS, shadcn/ui, the Premium registry, routing, forms, and product screens
 - Frontend component and browser tests
