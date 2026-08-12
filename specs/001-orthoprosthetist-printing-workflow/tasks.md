@@ -13,7 +13,7 @@
 - `[P]` means the task may run in parallel with other `[P]` tasks in the same phase because it owns different files.
 - `[USx]` identifies the independently testable user story supported by the task.
 - No test implementation belongs to this checklist. Backend tests are owned by issue #9, frontend tests by issue #12,
-  browser tests by issue #13, and CI quality gates by issue #14.
+  and CI quality gates by issue #14.
 - Generated OpenAPI, Orval, Zod, and TanStack Router outputs remain ignored and must never be edited manually.
 
 ## Phase 1: Workspace Setup
@@ -186,9 +186,8 @@ edits sharing `001-accounts-patients.xml` remain sequential even when their doma
 
 ## Deliberately Deferred Evidence
 
-- Issue #9 adds Jest unit tests, HTTP Supertest coverage, PostgreSQL/MinIO Testcontainers, and the fake provider.
+- Issue #9 adds Jest unit tests and controlled printing-provider adapter contract tests.
 - Issue #12 adds Vitest, Testing Library, Router, Query, Table, React Hook Form/Zod, i18n, and accessibility tests.
-- Issue #13 adds responsive Playwright journeys on the controlled stack.
-- Issue #14 adds format, lint, typecheck, build, tiered test, OpenAPI, and Orval CI gates.
+- Issue #14 adds format, lint, typecheck, build, focused test, OpenAPI, and Orval CI gates.
 
 No task in this file may pre-empt those owners by adding test code or CI configuration.

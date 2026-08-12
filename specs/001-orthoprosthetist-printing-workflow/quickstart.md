@@ -127,7 +127,7 @@ The API must fail before listening when required configuration is absent or inva
 
 ## Manual Story Validation
 
-These are reviewer scenarios, not substitutes for the tests owned by issues #9, #12, and #13.
+These reviewer scenarios complement the focused tests owned by issues #9 and #12.
 
 ### 1. Account and session
 
@@ -176,9 +176,7 @@ npm exec nx -- run web:lint
 npm exec nx -- run web:typecheck
 npm exec nx -- build web
 npm exec nx -- run api:test
-npm exec nx -- run api:test-http
 npm exec nx -- run web:test
-npm exec nx -- run web-e2e:e2e
 ```
 
 The exact target names are finalized by issue #14 after the relevant test projects exist. Issue #4 runs no runtime test because it changes documentation and guidance only.

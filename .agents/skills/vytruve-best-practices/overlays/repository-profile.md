@@ -48,8 +48,11 @@ The accepted issue #4 plan selects:
 - `hasNext` derived from a one-item lookahead, without a total-count query;
 - paginated TanStack Query queries with `keepPreviousData` and controlled TanStack Table state with
   `manualPagination: true`;
-- dedicated testing ownership in issues #9, #12, and #13, with no implementation tests added by issues #5–#8,
-  #10, or #11.
+- focused testing ownership in issues #9 and #12, with no implementation tests added by issues #5–#8, #10, or #11;
+- Backend evidence limited to Jest unit tests and controlled adapter contract tests;
+- frontend evidence limited to Vitest and Testing Library component or feature tests;
+- Backend tests remain colocated with the API and frontend tests remain inside the Web application; neither test scope
+  creates another Nx application.
 
 These values become executable authority only through the merged plan binding recorded in the owning implementation
 issue.

@@ -13,7 +13,7 @@
 
 - Issue #1 branch: `chore/sdd-governance`.
 - Use short role-prefixed branches such as `docs/product-specification`, `design/product-experience`,
-  `chore/foundation`, `feat/backend-auth-patients`, and `test/backend`.
+  `chore/foundation`, `feat/backend-auth-patients`, and `test/backend-verification`.
 - Use focused conventional commits in English.
 - A commit boundary represents a coherent, valid state; do not manufacture history through empty, corrective-noise,
   or retrospective placeholder commits.
