@@ -18,7 +18,7 @@ architecture decisions.
 2. The supplied technical-test brief owns non-negotiable source requirements.
 3. The explicitly accepted `specs/001-orthoprosthetist-printing-workflow/spec.md` snapshot owns observable MVP intent.
 4. Accepted Figma evidence in `600 - Ready for Development` owns visual composition only within that specification.
-5. The approved feature `plan.md` will own technical translation after issue #4.
+5. The approved feature `plan.md` owns technical translation after issue #4.
 6. GitHub issues and pull requests own execution scope, dependencies, review, and delivery state.
 7. Current source, generated contracts, migrations, and tests own delivered executable behavior.
 
@@ -31,9 +31,23 @@ screenshots, local feature selection, and derived tasks are never parallel autho
 - Issue #2 accepted the product specification at commit `2dd91218cf0d9114fd440efbfbd9843987c9036c`.
 - Issue #3 produced explicitly approved responsive product evidence in `600 - Ready for Development` of the
   canonical Figma file.
-- No technical plan or executable application architecture is approved yet.
-- React and NestJS are mandated by the supplied brief; every other technology named in later issues remains a target
-  hypothesis until issue #4 accepts or replaces it.
+- Issue #4 has an explicitly accepted technical plan that selects the executable application architecture. Runtime
+  work still requires the merged immutable plan binding in its owning implementation issue.
+- React and NestJS remain mandated by the supplied brief; the accepted plan owns every additional architecture choice.
+
+## Accepted issue #4 decisions
+
+The accepted issue #4 plan selects:
+
+- native Fetch with Orval-generated TanStack Query hooks in a `tags-split` output;
+- a second Orval output deriving Zod Mini v4 request schemas from the same OpenAPI document;
+- React Hook Form with generated schemas for JSON mutation forms and focused local refinements only;
+- TanStack Table as the headless table engine and shadcn/ui as the complete visual authority;
+- dedicated testing ownership in issues #9, #12, and #13, with no implementation tests added by issues #5–#8,
+  #10, or #11.
+
+These values become executable authority only through the merged plan binding recorded in the owning implementation
+issue.
 
 ## Repository paths
 

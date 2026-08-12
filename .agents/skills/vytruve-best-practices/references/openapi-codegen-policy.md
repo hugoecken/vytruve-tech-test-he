@@ -4,8 +4,10 @@
 
 1. Nest controller routes, concrete DTO classes, validation decorators, and Swagger metadata define the executable HTTP contract.
 2. `@nestjs/swagger` emits the OpenAPI document.
-3. Orval consumes that document and generates the React HTTP client and TanStack Query hooks.
-4. Application code consumes generated exports through stable feature boundaries.
+3. Orval consumes that document and generates the repository-selected React HTTP client and TanStack Query hooks.
+4. When the repository selects generated frontend validation, a separate Orval output derives validation schemas from
+   the same OpenAPI document.
+5. Application code consumes generated exports through stable feature boundaries.
 
 Do not maintain a competing handwritten OpenAPI file or handwritten duplicate client.
 
@@ -67,6 +69,9 @@ Do not maintain a competing handwritten OpenAPI file or handwritten duplicate cl
 - Never edit generated code manually.
 - Avoid broad formatter or lint rewrites over generated directories.
 - Configure Orval for the repository's selected HTTP client and TanStack Query behavior in one authoritative configuration.
+- When generated validation schemas are selected, configure them as a distinct output from the same OpenAPI input;
+  keep client and schema filenames unambiguous and never maintain a handwritten competing request schema.
+- Treat generated frontend schemas as interaction validation only. Server-side runtime validation remains authoritative.
 - Wrap a generated call only to add application semantics, not to rename every function mechanically.
 - Do not put authentication tokens in generated client state. Browser requests use the HTTP-only cookie with credentials configured centrally.
 
