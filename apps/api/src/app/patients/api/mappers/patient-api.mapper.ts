@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import type {
   CreatePatientCommand,
-  ListPatientsQuery,
   PatientModel,
   PatientPageModel,
 } from '../../application/models/patient.model';
 import type { CreatePatientRequest } from '../dto/create-patient-request.dto';
-import type { ListPatientsQuery as ListPatientsQueryTransport } from '../dto/list-patients-query.dto';
 import {
   PatientPageResponse,
   PatientResponse,
@@ -25,14 +23,6 @@ export class PatientApiMapper {
       age: request.age,
       firstName: request.firstName,
       lastName: request.lastName,
-    };
-  }
-
-  /** Maps the validated query DTO to a framework-free application query. */
-  toListQuery(query: ListPatientsQueryTransport): ListPatientsQuery {
-    return {
-      page: query.page,
-      pageSize: query.pageSize,
     };
   }
 

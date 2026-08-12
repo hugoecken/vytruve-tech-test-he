@@ -3,9 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProblemCode } from '../../../../http/problem-code';
 import { ProblemDetailsException } from '../../../../http/problem-details.exception';
+import {
+  createPage,
+  createPageWindow,
+  type PageParameters,
+} from '../../../../pagination/page';
 import type {
   CreatePatientCommand,
-  ListPatientsQuery,
   PatientModel,
   PatientPageModel,
 } from '../models/patient.model';
@@ -47,8 +51,9 @@ export class PatientsService {
    */
   async list(
     accountId: string,
-    query: ListPatientsQuery,
+    query: PageParameters,
   ): Promise<PatientPageModel> {
+    const window = createPageWindow(query);
     const entities = await this.patients.find({
       order: { createdAt: 'DESC', id: 'DESC' },
       select: {
@@ -58,17 +63,13 @@ export class PatientsService {
         id: true,
         lastName: true,
       },
-      skip: query.page * query.pageSize,
-      take: query.pageSize + 1,
+      ...window,
       where: { accountId },
     });
-    const hasNext = entities.length > query.pageSize;
-    const pageEntities = entities.slice(0, query.pageSize);
+    const page = createPage(entities, query);
     return {
-      hasNext,
-      items: pageEntities.map((entity) => this.mapper.toModel(entity)),
-      page: query.page,
-      pageSize: query.pageSize,
+      ...page,
+      items: page.items.map((entity) => this.mapper.toModel(entity)),
     };
   }
 
