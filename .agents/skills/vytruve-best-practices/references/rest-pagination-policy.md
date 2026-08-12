@@ -46,8 +46,9 @@ Record the selected strategy, request parameters, ordering, cursor behavior, and
 - Use indexes aligned with the filter and deterministic ordering columns.
 - Keep query bounds enforced on the server even when clients validate them.
 - Generated clients must consume the published contract rather than recreate pagination types manually.
-- A client requesting the next page must pass the navigation value returned by the preceding response.
-- Reset accumulated pages whenever filters, ownership context, or sort order changes.
+- A page-number client advances the effective page only when `pageInfo.hasNext` is true and decrements it only when the page is greater than zero.
+- A cursor client requesting the next page passes the continuation value returned by the preceding response without interpreting it.
+- Reset the page index or cursor history whenever filters, ownership context, or sort order changes.
 
 ## Completion check
 

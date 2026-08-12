@@ -65,6 +65,8 @@ src/
 - Centralize credentials and base-URL behavior in generated-client configuration.
 - Never put authentication tokens in React state, URL state, `localStorage`, or `sessionStorage`; derive authentication from the session endpoint.
 - Use query keys and invalidation deliberately after mutations. OpenAPI tags organize generated code but do not invalidate caches automatically.
+- Select TanStack Query primitives from the accepted pagination contract and repository overlay; do not reinterpret one strategy as another in the client.
+- Use paginated `useQuery` primitives with the page state in the query key and `keepPreviousData` for page-number collections.
 - Use TanStack infinite-query primitives for cursor-paginated collections. Treat cursors as opaque and use the server-provided continuation value.
 - Do not mirror query results into local state. Use local component state only for ephemeral interaction.
 - Preserve existing content during background refresh; do not replace it with a full-screen spinner.

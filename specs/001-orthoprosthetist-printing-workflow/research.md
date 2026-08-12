@@ -183,16 +183,16 @@ Issuer, audience, signature, and expiry validation prevent accepting tokens outs
 - Component-level redirect effects: rejected because they can render protected composition before routing resolves and duplicate route policy.
 - Arbitrary return URLs: rejected because external or malformed redirects create an open-redirect risk.
 
-### TanStack Query cursor history
+### TanStack Query server-page state
 
-**Decision**: Use generated infinite-query options with `getNextPageParam` from the opaque server cursor. Retain already fetched pages and the current page index so Previous is local history, not a reverse server cursor.
+**Decision**: Use generated paginated-query options keyed by the zero-based server page and fixed page size. Preserve the preceding result with `placeholderData: keepPreviousData` while the adjacent page loads.
 
-**Rationale**: TanStack infinite queries retain `pages` and `pageParams`; this supports one-directional server cursors while the UI navigates among previously fetched pages. Retry is configured as a function: once for network/5xx reads, never for `401` or other `4xx`, and never for mutations. [TanStack infinite queries](https://tanstack.com/query/latest/docs/framework/react/guides/infinite-queries), [TanStack query retries](https://tanstack.com/query/latest/docs/framework/react/guides/query-retries)
+**Rationale**: The product needs simple Previous/Next navigation without filtering, infinite loading, or direct access to arbitrary pages. TanStack Query documents page state in the query key and `keepPreviousData` for this exact server-paginated interaction. Retry is configured as a function: once for network/5xx reads, never for `401` or other `4xx`, and never for mutations. [TanStack paginated queries](https://tanstack.com/query/latest/docs/framework/react/guides/paginated-queries), [TanStack query retries](https://tanstack.com/query/latest/docs/framework/react/guides/query-retries)
 
 **Alternatives considered**:
 
-- Server totals and numbered pages: rejected because the product needs neither and the contract cannot invent a total.
-- Reverse cursor API: rejected because local page history satisfies Previous for the bounded workflow.
+- Cursor pagination: rejected because the collections have no filters or infinite-loading behavior and the additional token codec is disproportionate to this MVP.
+- Server totals: rejected because Previous/Next needs only the current page and authoritative `hasNext` state.
 - Mirroring query data into React state: rejected because it creates a competing cache.
 
 ### shadcn/ui rendering with TanStack Table headless behavior

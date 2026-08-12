@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 /** Public owner-visible patient record. */
 export class PatientResponse {
@@ -18,16 +18,19 @@ export class PatientResponse {
   createdAt!: string;
 }
 
-/** Forward-only collection navigation metadata. */
+/** Server-side collection navigation metadata. */
 export class PageInfoResponse {
   @ApiProperty()
   hasNext!: boolean;
 
-  @ApiPropertyOptional({ nullable: true, type: String })
-  nextCursor!: string | null;
+  @ApiProperty({ format: 'int32', minimum: 0, type: 'integer' })
+  page!: number;
+
+  @ApiProperty({ format: 'int32', maximum: 50, minimum: 1, type: 'integer' })
+  pageSize!: number;
 }
 
-/** Public patient collection page without a total or reverse cursor. */
+/** Public server-paginated patient collection page without a total. */
 export class PatientPageResponse {
   @ApiProperty({ type: [PatientResponse] })
   items!: PatientResponse[];

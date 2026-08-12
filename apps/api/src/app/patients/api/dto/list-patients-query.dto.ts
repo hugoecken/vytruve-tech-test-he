@@ -1,23 +1,20 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  IsInt,
-  IsOptional,
-  IsString,
-  Max,
-  MaxLength,
-  Min,
-} from 'class-validator';
+import { IsInt, IsOptional, Max, Min } from 'class-validator';
 
-/** Validated forward-pagination query for the current owner's patients. */
+/** Validated server-pagination query for the current owner's patients. */
 export class ListPatientsQuery {
   @ApiPropertyOptional({
-    description: 'Opaque continuation cursor returned by the preceding page.',
+    default: 0,
+    format: 'int32',
+    minimum: 0,
+    type: 'integer',
   })
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
   @IsOptional()
-  @IsString()
-  @MaxLength(2_048)
-  cursor?: string;
+  page = 0;
 
   @ApiPropertyOptional({
     default: 20,

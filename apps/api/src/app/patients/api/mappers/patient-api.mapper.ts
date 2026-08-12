@@ -31,7 +31,7 @@ export class PatientApiMapper {
   /** Maps the validated query DTO to a framework-free application query. */
   toListQuery(query: ListPatientsQueryTransport): ListPatientsQuery {
     return {
-      ...(query.cursor === undefined ? {} : { cursor: query.cursor }),
+      page: query.page,
       pageSize: query.pageSize,
     };
   }
@@ -47,13 +47,14 @@ export class PatientApiMapper {
     };
   }
 
-  /** Maps a forward application page to the accepted public collection shape. */
+  /** Maps a server page to the accepted public collection shape. */
   toPageResponse(model: PatientPageModel): PatientPageResponse {
     return {
       items: model.items.map((patient) => this.toResponse(patient)),
       pageInfo: {
         hasNext: model.hasNext,
-        nextCursor: model.nextCursor,
+        page: model.page,
+        pageSize: model.pageSize,
       },
     };
   }

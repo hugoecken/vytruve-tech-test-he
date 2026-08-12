@@ -55,16 +55,17 @@ The server verifies signature, issuer, audience, and expiry. Logout clears the c
 | Field | Type | Rules |
 | --- | --- | --- |
 | `hasNext` | boolean | Authoritative next-page availability |
-| `nextCursor` | string or `null` | Opaque continuation token; `null` when `hasNext` is false |
+| `page` | integer | Current zero-based server page |
+| `pageSize` | integer | Effective bounded page size |
 
-### CursorPageQuery
+### ServerPageQuery
 
 | Query parameter | Type | Required | Rules |
 | --- | --- | --- | --- |
-| `cursor` | string | No | Opaque versioned token; strictly validated |
+| `page` | integer | No | Default `0`; minimum `0` |
 | `pageSize` | integer | No | Default `20`; minimum `1`; maximum `50` |
 
-Every page is ordered by `createdAt DESC, id DESC`. The server fetches one look-ahead row, returns at most `pageSize` items, and creates the next cursor from the final returned item. Invalid or context-incompatible cursors return `INVALID_CURSOR`.
+Every page is ordered by `createdAt DESC, id DESC`. The server uses `skip = page * pageSize`, fetches one look-ahead row, returns at most `pageSize` items, and reports whether another page exists without executing a total-count query.
 
 ### ProblemDetailsResponse
 
@@ -184,10 +185,10 @@ pageInfo: PageInfoResponse
 
 - `operationId`: `listPatients`
 - Summary: List patients owned by the current account.
-- Query: `CursorPageQuery`
+- Query: `ServerPageQuery`
 - Success: `200 OK`, `PatientPageResponse`
 
-Errors: `400 INVALID_CURSOR`, `401 AUTHENTICATION_REQUIRED`, `500 INTERNAL_ERROR`.
+Errors: `400 VALIDATION_FAILED`, `401 AUTHENTICATION_REQUIRED`, `500 INTERNAL_ERROR`.
 
 ### POST `/api/patients`
 
@@ -249,10 +250,10 @@ pageInfo: PageInfoResponse
 
 - `operationId`: `listPatientScans`
 - Summary: List validated scans for an owned patient.
-- Query: `CursorPageQuery`
+- Query: `ServerPageQuery`
 - Success: `200 OK`, `ScanPageResponse`
 
-Errors: `400 VALIDATION_FAILED`, `400 INVALID_CURSOR`, `401 AUTHENTICATION_REQUIRED`, `404 PATIENT_NOT_FOUND`, `500 INTERNAL_ERROR`.
+Errors: `400 VALIDATION_FAILED`, `401 AUTHENTICATION_REQUIRED`, `404 PATIENT_NOT_FOUND`, `500 INTERNAL_ERROR`.
 
 ### POST `/api/patients/{patientId}/scans`
 
@@ -346,10 +347,10 @@ Errors:
 - `operationId`: `listPatientPrintRequests`
 - Summary: List and reconcile a patient's print requests.
 - Description: Reconciles active requests only through their persisted reference and known provider identifier, then returns the last validated lifecycle projection.
-- Query: `CursorPageQuery`
+- Query: `ServerPageQuery`
 - Success: `200 OK`, `PrintRequestPageResponse`
 
-Errors: `400 VALIDATION_FAILED`, `400 INVALID_CURSOR`, `401 AUTHENTICATION_REQUIRED`, `404 PATIENT_NOT_FOUND`, `503 PRINTING_UNAVAILABLE` only when no safe last-known response can be produced, `500 INTERNAL_ERROR`.
+Errors: `400 VALIDATION_FAILED`, `401 AUTHENTICATION_REQUIRED`, `404 PATIENT_NOT_FOUND`, `503 PRINTING_UNAVAILABLE` only when no safe last-known response can be produced, `500 INTERNAL_ERROR`.
 
 A transient reconciliation failure should normally return the last-known rows with unchanged `lastObservedAt`; the frontend identifies staleness through query failure only when the HTTP read itself cannot complete.
 
@@ -358,7 +359,6 @@ A transient reconciliation failure should normally return the last-known rows wi
 | Code | Default status | Frontend category |
 | --- | --- | --- |
 | `VALIDATION_FAILED` | `400` | Field or request correction |
-| `INVALID_CURSOR` | `400` | Reset collection to first page |
 | `AUTHENTICATION_REQUIRED` | `401` | Reauthenticate and preserve only safe destination |
 | `AUTHENTICATION_FAILED` | `401` | Generic credential correction |
 | `AUTH_RATE_LIMITED` | `429` | Retry later |

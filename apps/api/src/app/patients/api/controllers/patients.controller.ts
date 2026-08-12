@@ -49,9 +49,9 @@ export class PatientsController {
    * Lists one deterministic page belonging to the authenticated account.
    *
    * @param session Verified session from the global guard.
-   * @param query Validated page size and optional opaque cursor.
-   * @returns A forward page without a total or reverse cursor.
-   * @throws AUTHENTICATION_REQUIRED, VALIDATION_FAILED, or INVALID_CURSOR.
+   * @param query Validated server page index and size.
+   * @returns A server page without a fabricated total.
+   * @throws AUTHENTICATION_REQUIRED or VALIDATION_FAILED.
    */
   @Get()
   @ApiOperation({
@@ -65,7 +65,7 @@ export class PatientsController {
     status: HttpStatus.OK,
     type: PatientPageResponse,
   })
-  @ApiProblemResponse(400, 'Pagination input or cursor is invalid.')
+  @ApiProblemResponse(400, 'Pagination input is invalid.')
   @ApiProblemResponse(401, 'A valid session cookie is required.')
   @ApiProblemResponse(500, 'The patient page could not be loaded safely.')
   async listPatients(

@@ -41,16 +41,16 @@
 - [ ] T008 Configure the PostgreSQL `DataSource`, naming, repository injection, and transaction boundary in `apps/api/src/database/` without a generic repository abstraction
 - [ ] T009 Configure the Nest bootstrap in `apps/api/src/main.ts` and `apps/api/src/app.module.ts` with `/api`, strict global validation, bounded CORS with credentials, JSON logging, configuration validation, and OpenAPI metadata without an environment-specific server
 - [ ] T010 Implement centralized RFC 9457 Problem Details mapping, stable field violations, request-instance handling, and safe internal-error translation in `apps/api/src/common/errors/`
-- [ ] T011 Implement the versioned opaque cursor codec, strict page query DTO, `PageInfoResponse`, and keyset pagination helpers in `apps/api/src/common/pagination/` for `createdAt DESC, id DESC`
+- [ ] T011 Implement the strict `page`/`pageSize` query DTO and `PageInfoResponse` convention for deterministic server pagination ordered by `createdAt DESC, id DESC`
 - [ ] T012 Define deterministic OpenAPI emission and two Orval outputs in `apps/api/src/openapi/`, `orval.config.ts`, and `.gitignore`: native Fetch plus TanStack Query with `tags-split`, and separate Zod Mini `*.zod.ts` schemas
 - [ ] T013 Implement the typed native Fetch transport in `apps/web/src/shared/api/http/` with `credentials: include`, correct `FormData` handling, typed Problem Details, no payload logging, and the accepted retry classification
 - [ ] T014 [P] Configure TanStack Query defaults, mutation retry behavior, i18next browser-language initialization, and the root providers in `apps/web/src/shared/query/`, `apps/web/src/shared/i18n/`, and `apps/web/src/main.tsx`
 - [ ] T015 [P] Configure TanStack Router file generation, authenticated/public layouts, safe internal redirect validation, and route context in `apps/web/vite.config.ts`, `apps/web/src/router.tsx`, and `apps/web/src/routes/`
 - [ ] T016 [P] Install the required shadcn/ui source primitives and exact accepted CSS tokens in `apps/web/src/shared/ui/`, `apps/web/src/shared/lib/cn.ts`, and `apps/web/src/styles/globals.css` without a competing visual component library
-- [ ] T017 Compose a lightweight cursor-table shell from shadcn Table/Pagination and headless TanStack Table behavior in `apps/web/src/shared/ui/data-table/`, without sorting, search, selection, totals, or a universal domain table
+- [ ] T017 Compose a lightweight server-pagination table shell from shadcn Table/Pagination and headless TanStack Table behavior in `apps/web/src/shared/ui/data-table/`, without sorting, search, selection, totals, or a universal domain table
 - [ ] T018 Create the compact authenticated header, profile menu, language control, sign-out action slot, dialog/drawer responsive overlay boundary, and shared feedback primitives in `apps/web/src/shared/layout/` and `apps/web/src/shared/ui/`
 
-**Checkpoint**: The workspace has one executable contract chain, one error model, one cursor convention, one visual authority, and no duplicated transport schemas.
+**Checkpoint**: The workspace has one executable contract chain, one error model, one server-pagination convention, one visual authority, and no duplicated transport schemas.
 
 ---
 
@@ -80,12 +80,12 @@
 
 **Independent acceptance**: From an authenticated empty directory, a reviewer creates one patient at boundary-valid input, lands in that patient workspace, returns to the paginated directory, and cannot infer another account's resources.
 
-- [ ] T028 [P] [US2] Extend `database/changelog/001-accounts-patients.xml` with the patient table, ownership foreign key, field constraints, and owner/createdAt/id keyset index (FR-015–FR-018, FR-054; SC-003, SC-011)
+- [ ] T028 [P] [US2] Extend `database/changelog/001-accounts-patients.xml` with the patient table, ownership foreign key, field constraints, and owner/createdAt/id pagination index (FR-015–FR-018, FR-054; SC-003, SC-011)
 - [ ] T029 [P] [US2] Implement `PatientEntity` plus dedicated persistence and API mappers in `apps/api/src/patients/persistence/` and `apps/api/src/patients/mappers/` (FR-015–FR-019)
 - [ ] T030 [P] [US2] Define patient request, response, page, and query DTOs with OpenAPI metadata in `apps/api/src/patients/dto/` (FR-017–FR-019, FR-045, FR-048)
-- [ ] T031 [US2] Implement owned patient list/create/read use cases, indistinguishable not-found behavior, keyset pagination, and operational logging in `apps/api/src/patients/application/` (FR-012–FR-021, FR-045, FR-049, FR-051, FR-054; SC-003, SC-011)
+- [ ] T031 [US2] Implement owned patient list/create/read use cases, indistinguishable not-found behavior, server pagination, and operational logging in `apps/api/src/patients/application/` (FR-012–FR-021, FR-045, FR-049, FR-051, FR-054; SC-003, SC-011)
 - [ ] T032 [US2] Expose the three patient operations in `apps/api/src/patients/patients.controller.ts` and wire `PatientsModule` in `apps/api/src/patients/patients.module.ts` (FR-012–FR-020, FR-045, FR-047–FR-049)
-- [ ] T033 [P] [US2] Implement the patients TanStack Table definition, cursor page stack, loading/empty/stale states, and open action in `apps/web/src/modules/patients/ui/patient-table/` (FR-012, FR-019, FR-045–FR-047, FR-050, FR-052–FR-053; SC-001, SC-010)
+- [ ] T033 [P] [US2] Implement the patients TanStack Table definition, controlled server-page state, loading/empty/stale states, and open action in `apps/web/src/modules/patients/ui/patient-table/` (FR-012, FR-019, FR-045–FR-047, FR-050, FR-052–FR-053; SC-001, SC-010)
 - [ ] T034 [P] [US2] Implement the generated-schema React Hook Form patient creation flow in shadcn Dialog/Drawer in `apps/web/src/modules/patients/forms/` and `apps/web/src/modules/patients/ui/create-patient/` (FR-017–FR-020, FR-047–FR-048, FR-051–FR-053; SC-003, SC-008)
 - [ ] T035 [US2] Implement `/patients` and `/patients/$patientId` composition, post-create navigation, persistent identity card, and `NAV-PATIENT-SECTIONS` with scans selected by default in `apps/web/src/routes/` and `apps/web/src/modules/patients/ui/` (FR-011–FR-014, FR-020–FR-021, FR-046, FR-052–FR-053; SC-001, SC-003–SC-004)
 - [ ] T036 [US2] Add professional English and French patient-directory, creation, pagination, empty, stale, and ownership-safe copy in `apps/web/src/shared/i18n/locales/en/patients.json` and `apps/web/src/shared/i18n/locales/fr/patients.json` (FR-047–FR-048, FR-052, FR-054; SC-008, SC-012)
@@ -107,7 +107,7 @@
 - [ ] T041 [US3] Implement scan list/upload/download orchestration with object-first persistence compensation and ownership checks in `apps/api/src/scans/application/` (FR-022–FR-030, FR-043, FR-047–FR-051; SC-004, SC-008–SC-011)
 - [ ] T042 [P] [US3] Define scan page/response/query DTOs and multipart upload contract in `apps/api/src/scans/dto/`, exposing print eligibility but never storage keys (FR-022–FR-030, FR-045, FR-048–FR-049)
 - [ ] T043 [US3] Expose scan list/upload/content operations with `ParseFilePipe`, the exact 26,214,400-byte limit, and `StreamableFile` in `apps/api/src/scans/scans.controller.ts` and `apps/api/src/scans/scans.module.ts` (FR-022–FR-030, FR-045, FR-047–FR-049; SC-004, SC-009)
-- [ ] T044 [P] [US3] Implement the scans TanStack Table definition, cursor page stack, download behavior, and print-eligibility action state in `apps/web/src/modules/scans/ui/scan-table/` (FR-022, FR-028, FR-030–FR-031, FR-045–FR-047, FR-050, FR-052–FR-053; SC-004, SC-010)
+- [ ] T044 [P] [US3] Implement the scans TanStack Table definition, controlled server-page state, download behavior, and print-eligibility action state in `apps/web/src/modules/scans/ui/scan-table/` (FR-022, FR-028, FR-030–FR-031, FR-045–FR-047, FR-050, FR-052–FR-053; SC-004, SC-010)
 - [ ] T045 [US3] Implement the single-file upload Dialog/Drawer, keyboard-operable drop zone, Attachment states, removal/retry actions, dedicated file validation, and duplicate-submit guard in `apps/web/src/modules/scans/ui/scan-upload/` (FR-023–FR-027, FR-029, FR-047–FR-048, FR-051–FR-053; SC-004, SC-008–SC-009)
 - [ ] T046 [US3] Add professional English and French scan, validation, storage, download, and stale-data translations in `apps/web/src/shared/i18n/locales/en/scans.json` and `apps/web/src/shared/i18n/locales/fr/scans.json` (FR-023, FR-047–FR-050, FR-052; SC-008, SC-010)
 
@@ -121,14 +121,14 @@
 
 **Independent acceptance**: From an eligible scan, a reviewer confirms printing, sees the prints tab open immediately, follows one stable reference through the canonical lifecycle, and can reprint only after a terminal state.
 
-- [ ] T047 [P] [US4] Create the print-request schema, canonical status check, nullable `active_slot`, unique `(scan_id, active_slot)` constraint, reference uniqueness, and parent keyset index in `database/changelog/003-printing.xml` (FR-031–FR-044, FR-049, FR-054; SC-005–SC-007, SC-011)
+- [ ] T047 [P] [US4] Create the print-request schema, canonical status check, nullable `active_slot`, unique `(scan_id, active_slot)` constraint, reference uniqueness, and parent pagination index in `database/changelog/003-printing.xml` (FR-031–FR-044, FR-049, FR-054; SC-005–SC-007, SC-011)
 - [ ] T048 [P] [US4] Implement `PrintRequestEntity` plus separate persistence, API, and provider mappers in `apps/api/src/printing/persistence/` and `apps/api/src/printing/mappers/` (FR-032–FR-043)
 - [ ] T049 [P] [US4] Define and validate printing-provider request/response models, bounded timeouts, safe error categories, and sanitized logging in `apps/api/src/printing/provider/` (FR-034–FR-040, FR-048–FR-049; SC-005, SC-008, SC-011)
 - [ ] T050 [US4] Implement stable 12-character reference generation, pre-submission reservation, one-shot provider POST, capacity cleanup, ambiguous confirmation persistence, reference-first reconciliation, and no blind retry in `apps/api/src/printing/application/` (FR-031–FR-044, FR-049, FR-051; SC-005–SC-007, SC-011)
 - [ ] T051 [US4] Implement read-time estimated progress, canonical public state mapping, terminal `active_slot` release, reprint eligibility, and owned patient listing in `apps/api/src/printing/application/` (FR-035–FR-044; SC-005–SC-007)
 - [ ] T052 [P] [US4] Define print request/page/query DTOs and stable public enums with OpenAPI `enumName` values in `apps/api/src/printing/dto/` (FR-031–FR-045, FR-048)
 - [ ] T053 [US4] Expose print creation and patient print-list operations in `apps/api/src/printing/printing.controller.ts` and wire `PrintingModule` in `apps/api/src/printing/printing.module.ts` (FR-031–FR-045, FR-047–FR-049; SC-005–SC-008)
-- [ ] T054 [P] [US4] Implement the print-request TanStack Table definition, canonical status badges, estimated-progress display, cursor page stack, and stale-data behavior in `apps/web/src/modules/printing/ui/print-table/` (FR-035–FR-046, FR-050, FR-052–FR-053; SC-006–SC-007, SC-010)
+- [ ] T054 [P] [US4] Implement the print-request TanStack Table definition, canonical status badges, estimated-progress display, controlled server-page state, and stale-data behavior in `apps/web/src/modules/printing/ui/print-table/` (FR-035–FR-046, FR-050, FR-052–FR-053; SC-006–SC-007, SC-010)
 - [ ] T055 [US4] Implement the print confirmation Dialog/Drawer, mutation duplicate guard, accepted-request cache insertion, and automatic switch to the prints tab in `apps/web/src/modules/printing/ui/create-print-request/` (FR-031–FR-044, FR-047–FR-051, FR-052–FR-053; SC-005, SC-007–SC-008)
 - [ ] T056 [US4] Implement visible-tab polling every five seconds for at most five minutes, active-request filtering, manual refresh fallback, and preservation of cached rows in `apps/web/src/modules/printing/hooks/` (FR-035–FR-050; SC-006–SC-008, SC-010)
 - [ ] T057 [US4] Add professional English and French printing lifecycle, progress, capacity, confirmation-pending, failure, and stale-refresh translations in `apps/web/src/shared/i18n/locales/en/printing.json` and `apps/web/src/shared/i18n/locales/fr/printing.json` (FR-035–FR-050, FR-052; SC-006–SC-008, SC-010)

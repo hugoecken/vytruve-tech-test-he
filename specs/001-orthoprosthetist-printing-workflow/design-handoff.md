@@ -112,8 +112,8 @@ The local registry source is owned application code after generation. Preserve i
 | `AppHeader` | Brand mark and profile trigger | Inline language or sign-out actions |
 | `ProfileMenu` | Language selection and sign-out | Account management |
 | `NotFound` | Neutral fallback and one safe return | Resource-existence detail |
-| `CursorTableShell` | Surface, horizontal overflow, body slot, Previous/Page/Next | Columns, sorting, filtering, selection, totals |
-| `CursorPagination` | Local page index and cursor-history controls | Server totals or reverse cursor invention |
+| `ServerPaginatedTableShell` | Surface, horizontal overflow, body slot, Previous/Page/Next | Columns, sorting, filtering, selection, totals |
+| `ServerPagination` | Controlled page index and page-size state | Server totals or arbitrary page-count invention |
 
 ### Feature compositions
 
@@ -141,7 +141,7 @@ TanStack Table is headless and shadcn Table is visual.
 - Row separators extend across the full rendered table width.
 - Action icons use accessible names and 44px compact hit targets even when the glyph is smaller.
 - The shell renders `Previous · Page n · Next`, with no total, row count, selection count, page-size selector, sorting, search, or column controls.
-- Previous navigates only among already fetched TanStack Query pages; Next uses `pageInfo.nextCursor` when needed.
+- Previous decrements the controlled page index; Next increments it only when `pageInfo.hasNext` is true.
 
 ## Patient Workspace Tabs
 

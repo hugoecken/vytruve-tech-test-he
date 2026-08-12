@@ -210,8 +210,7 @@ apps/
 │       ├── config/
 │       ├── common/
 │       │   ├── errors/
-│       │   ├── logging/
-│       │   └── pagination/
+│       │   └── logging/
 │       └── modules/
 │           ├── accounts/
 │           ├── auth/
@@ -272,7 +271,7 @@ Exact generated project names and target syntax must be verified after scaffoldi
 | FR-017–FR-021; SC-003 | Patient DTOs/entity/service, patient form and table | #9 patient boundary evidence; #12 form/table evidence; #13 US2 journey |
 | FR-022–FR-030; SC-004, SC-009 | Bounded PLY validator, MinIO adapter, scan metadata, stream response, upload drawer/dialog | #9 file/storage evidence; #12 upload-state evidence; #13 US3 journey |
 | FR-031–FR-044; SC-005–SC-007 | Print reservation, active-slot constraint, provider adapter/reconciliation, polling and print table | #9 provider/state evidence; #12 Query/lifecycle evidence; #13 US4 journey |
-| FR-045–FR-046; SC-012 | Cursor contract, TanStack infinite queries, headless tables and shadcn rendering | #9 cursor HTTP evidence; #12 responsive table/pagination evidence; #13 desktop/compact journeys |
+| FR-045–FR-046; SC-012 | Server-page contract, TanStack paginated queries, headless tables and shadcn rendering | #9 pagination HTTP evidence; #12 responsive table/pagination evidence; #13 desktop/compact journeys |
 | FR-047–FR-051; SC-008, SC-010 | Problem Details, typed Fetch error, localized feedback, mutation guards, stale-query preservation | #9 error evidence; #12 state/retry evidence; #13 degraded journeys |
 | FR-052–FR-053 | shadcn semantics, keyboard/focus/announcement behavior, 44 px compact targets | #12 accessibility evidence; #13 responsive interaction evidence |
 | FR-054; SC-011 | Minimal schemas, private storage, logging denylist, synthetic evidence | #9 security review; #14 repository scans |
