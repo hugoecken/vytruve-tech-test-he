@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { AppModule } from './app/app.module';
+import { SESSION_COOKIE_NAME } from './app/auth/infrastructure/security/session.constants';
 import type { ApiEnvironment } from './config/environment';
 import { ProblemDetailsFilter } from './http/problem-details.filter';
 import { createValidationException } from './validation/create-validation-exception';
@@ -70,6 +71,14 @@ async function emitOpenApi(): Promise<void> {
       'Account registration and browser-managed session lifecycle.',
     )
     .addTag('Patients', 'Owner-scoped patient record creation and retrieval.')
+    .addCookieAuth(
+      SESSION_COOKIE_NAME,
+      {
+        in: 'cookie',
+        type: 'apiKey',
+      },
+      SESSION_COOKIE_NAME,
+    )
     .build();
   const document = SwaggerModule.createDocument(app, configuration);
 

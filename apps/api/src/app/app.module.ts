@@ -1,13 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule } from '@nestjs/throttler';
 import {
   type ApiEnvironment,
   validateEnvironment,
 } from '../config/environment';
 import { AccountsModule } from './accounts/accounts.module';
+import { AuthModule } from './auth/auth.module';
 
-/** Composes validated configuration and persistence-backed account identities. */
+/** Composes configuration, persistence, and authenticated account sessions. */
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -29,7 +31,14 @@ import { AccountsModule } from './accounts/accounts.module';
         username: config.getOrThrow<string>('POSTGRES_USER'),
       }),
     }),
+    ThrottlerModule.forRoot([
+      {
+        limit: 5,
+        ttl: 60_000,
+      },
+    ]),
     AccountsModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
