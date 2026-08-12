@@ -9,6 +9,7 @@ import { PatientPersistenceMapper } from './infrastructure/persistence/mappers/p
 /** Encapsulates owner-scoped patient records and their server pagination. */
 @Module({
   controllers: [PatientsController],
+  exports: [PatientsService],
   imports: [TypeOrmModule.forFeature([PatientEntity])],
   providers: [PatientApiMapper, PatientPersistenceMapper, PatientsService],
 })

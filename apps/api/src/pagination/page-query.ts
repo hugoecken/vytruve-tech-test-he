@@ -2,8 +2,8 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, Max, Min } from 'class-validator';
 
-/** Validated server-pagination query for the current owner's patients. */
-export class ListPatientsQuery {
+/** Validated query shared by zero-based server-paginated collections. */
+export class PageQuery {
   @ApiPropertyOptional({
     default: 0,
     format: 'int32',

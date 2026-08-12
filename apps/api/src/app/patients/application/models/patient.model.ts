@@ -1,3 +1,5 @@
+import type { Page } from '../../../../pagination/page';
+
 /** Owner-scoped patient record used inside the patient application boundary. */
 export interface PatientModel {
   age: number;
@@ -15,16 +17,5 @@ export interface CreatePatientCommand {
   lastName: string;
 }
 
-/** Application input for one server-paginated patient collection read. */
-export interface ListPatientsQuery {
-  page: number;
-  pageSize: number;
-}
-
 /** Server-paginated patient collection page without a fabricated total. */
-export interface PatientPageModel {
-  hasNext: boolean;
-  items: PatientModel[];
-  page: number;
-  pageSize: number;
-}
+export type PatientPageModel = Page<PatientModel>;

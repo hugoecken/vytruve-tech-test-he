@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { PageInfoResponse } from '../../../../pagination/page-info-response.dto';
 
 /** Public owner-visible patient record. */
 export class PatientResponse {
@@ -16,18 +17,6 @@ export class PatientResponse {
 
   @ApiProperty({ format: 'date-time' })
   createdAt!: string;
-}
-
-/** Server-side collection navigation metadata. */
-export class PageInfoResponse {
-  @ApiProperty()
-  hasNext!: boolean;
-
-  @ApiProperty({ format: 'int32', minimum: 0, type: 'integer' })
-  page!: number;
-
-  @ApiProperty({ format: 'int32', maximum: 50, minimum: 1, type: 'integer' })
-  pageSize!: number;
 }
 
 /** Public server-paginated patient collection page without a total. */

@@ -16,12 +16,12 @@ import {
 } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { ApiProblemResponse } from '../../../../http/api-problem-response.decorator';
+import { PageQuery } from '../../../../pagination/page-query';
 import { SESSION_COOKIE_NAME } from '../../../auth/infrastructure/security/session.constants';
 import type { AuthenticatedSessionModel } from '../../../auth/application/models/auth-session.model';
 import { CurrentSession } from '../../../auth/api/decorators/current-session.decorator';
 import { PatientsService } from '../../application/services/patients.service';
 import { CreatePatientRequest } from '../dto/create-patient-request.dto';
-import { ListPatientsQuery } from '../dto/list-patients-query.dto';
 import { PatientPathParameters } from '../dto/patient-path-parameters.dto';
 import {
   PatientPageResponse,
@@ -70,13 +70,10 @@ export class PatientsController {
   @ApiProblemResponse(500, 'The patient page could not be loaded safely.')
   async listPatients(
     @CurrentSession() session: AuthenticatedSessionModel,
-    @Query() query: ListPatientsQuery,
+    @Query() query: PageQuery,
   ): Promise<PatientPageResponse> {
     return this.mapper.toPageResponse(
-      await this.patients.list(
-        session.accountId,
-        this.mapper.toListQuery(query),
-      ),
+      await this.patients.list(session.accountId, query),
     );
   }
 
