@@ -6,13 +6,17 @@ export interface FieldViolation {
   field: string;
 }
 
-/** RFC 9457 payload used at every public API error boundary. */
-export interface ProblemDetails {
+/** Safe problem metadata produced before request-specific HTTP context exists. */
+export interface ProblemDetailsDefinition {
   code: ProblemCode;
   detail: string;
-  instance?: string;
   status: number;
   title: string;
   type: string;
   violations?: FieldViolation[];
+}
+
+/** Complete RFC 9457 payload returned by the public HTTP boundary. */
+export interface ProblemDetails extends ProblemDetailsDefinition {
+  instance: string;
 }

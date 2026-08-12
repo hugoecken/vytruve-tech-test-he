@@ -1,6 +1,9 @@
 import { HttpException } from '@nestjs/common';
 import type { ProblemCode } from './problem-code';
-import type { FieldViolation, ProblemDetails } from './problem-details.model';
+import type {
+  FieldViolation,
+  ProblemDetailsDefinition,
+} from './problem-details.model';
 
 /** Parameters required to create one supported public problem response. */
 export interface ProblemDetailsParameters {
@@ -13,7 +16,7 @@ export interface ProblemDetailsParameters {
 
 /** Carries a safe, stable RFC 9457 problem from application code to HTTP. */
 export class ProblemDetailsException extends HttpException {
-  private readonly problem: Omit<ProblemDetails, 'instance'>;
+  private readonly problem: ProblemDetailsDefinition;
 
   /**
    * Creates a public problem without request-specific or sensitive values.
@@ -21,7 +24,7 @@ export class ProblemDetailsException extends HttpException {
    * @param parameters Stable error metadata owned by the failing boundary.
    */
   constructor(parameters: ProblemDetailsParameters) {
-    const problem: Omit<ProblemDetails, 'instance'> = {
+    const problem: ProblemDetailsDefinition = {
       code: parameters.code,
       detail: parameters.detail,
       status: parameters.status,
@@ -36,7 +39,7 @@ export class ProblemDetailsException extends HttpException {
   }
 
   /** @returns The safe problem payload before its request instance is attached. */
-  toProblemDetails(): Omit<ProblemDetails, 'instance'> {
+  getProblemDetails(): ProblemDetailsDefinition {
     return this.problem;
   }
 }

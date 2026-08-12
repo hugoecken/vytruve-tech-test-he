@@ -92,9 +92,13 @@ function isUniqueViolation(error: unknown, constraint: string): boolean {
   if (!(error instanceof QueryFailedError)) {
     return false;
   }
-  const driverError = error.driverError as {
-    code?: unknown;
-    constraint?: unknown;
-  };
-  return driverError.code === '23505' && driverError.constraint === constraint;
+  const driverError: unknown = error.driverError;
+  return (
+    typeof driverError === 'object' &&
+    driverError !== null &&
+    'code' in driverError &&
+    driverError.code === '23505' &&
+    'constraint' in driverError &&
+    driverError.constraint === constraint
+  );
 }

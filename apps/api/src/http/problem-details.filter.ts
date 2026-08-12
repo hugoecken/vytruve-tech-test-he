@@ -5,11 +5,15 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  PayloadTooLargeException,
 } from '@nestjs/common';
 import { ThrottlerException } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { ProblemCode } from './problem-code';
-import type { ProblemDetails } from './problem-details.model';
+import type {
+  ProblemDetails,
+  ProblemDetailsDefinition,
+} from './problem-details.model';
 import { ProblemDetailsException } from './problem-details.exception';
 
 /** Translates every uncaught API failure into the stable RFC 9457 contract. */
@@ -28,11 +32,15 @@ export class ProblemDetailsFilter implements ExceptionFilter {
     const request = http.getRequest<Request>();
     const response = http.getResponse<Response>();
     const problem = this.resolveProblem(exception);
+    const responseProblem: ProblemDetails = {
+      ...problem,
+      instance: request.path,
+    };
 
     response
       .status(problem.status)
       .type('application/problem+json')
-      .json({ ...problem, instance: request.path });
+      .json(responseProblem);
   }
 
   /**
@@ -41,9 +49,9 @@ export class ProblemDetailsFilter implements ExceptionFilter {
    * @param exception Failure escaping a controller or guard.
    * @returns Safe problem metadata without its request-specific instance.
    */
-  private resolveProblem(exception: unknown): Omit<ProblemDetails, 'instance'> {
+  private resolveProblem(exception: unknown): ProblemDetailsDefinition {
     if (exception instanceof ProblemDetailsException) {
-      return exception.toProblemDetails();
+      return exception.getProblemDetails();
     }
     if (exception instanceof ThrottlerException) {
       return createProblem(
@@ -51,6 +59,14 @@ export class ProblemDetailsFilter implements ExceptionFilter {
         ProblemCode.AUTH_RATE_LIMITED,
         'Too many authentication attempts',
         'Too many authentication attempts were made. Try again later.',
+      );
+    }
+    if (exception instanceof PayloadTooLargeException) {
+      return createProblem(
+        HttpStatus.PAYLOAD_TOO_LARGE,
+        ProblemCode.SCAN_TOO_LARGE,
+        'Scan too large',
+        'The uploaded scan exceeds the configured size limit.',
       );
     }
     if (
@@ -97,10 +113,10 @@ export class ProblemDetailsFilter implements ExceptionFilter {
  */
 function createProblem(
   status: number,
-  code: ProblemDetails['code'],
+  code: ProblemDetailsDefinition['code'],
   title: string,
   detail: string,
-): Omit<ProblemDetails, 'instance'> {
+): ProblemDetailsDefinition {
   return {
     code,
     detail,
