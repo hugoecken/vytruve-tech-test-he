@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import type { ApiEnvironment } from '../../../../config/environment';
+import type { ApiEnvironment } from '@api/config/environment';
 import type { AuthenticatedSessionModel } from '../../application/models/auth-session.model';
 import { SESSION_LIFETIME_SECONDS } from './session.constants';
 

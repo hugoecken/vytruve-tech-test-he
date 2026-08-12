@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { isUUID } from 'class-validator';
 import { Client, S3Error } from 'minio';
 import type { Readable } from 'node:stream';
-import type { ApiEnvironment } from '../../../../config/environment';
+import type { ApiEnvironment } from '@api/config/environment';
 import {
   ScanStorageError,
   type ScanStoragePort,

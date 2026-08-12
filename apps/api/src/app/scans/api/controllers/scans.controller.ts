@@ -21,11 +21,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { ApiProblemResponse } from '../../../../http/api-problem-response.decorator';
-import { PageQuery } from '../../../../pagination/page-query';
-import type { AuthenticatedSessionModel } from '../../../auth/application/models/auth-session.model';
-import { CurrentSession } from '../../../auth/api/decorators/current-session.decorator';
-import { SESSION_COOKIE_NAME } from '../../../auth/infrastructure/security/session.constants';
+import { CurrentSession } from '@api/app/auth/api/decorators/current-session.decorator';
+import type { AuthenticatedSessionModel } from '@api/app/auth/application/models/auth-session.model';
+import { SESSION_COOKIE_NAME } from '@api/app/auth/infrastructure/security/session.constants';
+import { ApiProblemResponse } from '@api/http/api-problem-response.decorator';
+import { PageQuery } from '@api/pagination/page-query';
 import { ScansService } from '../../application/services/scans.service';
 import {
   PatientScansPathParameters,

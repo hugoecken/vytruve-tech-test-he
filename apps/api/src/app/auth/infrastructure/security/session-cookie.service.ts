@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { CookieOptions, Response } from 'express';
-import type { ApiEnvironment } from '../../../../config/environment';
+import type { ApiEnvironment } from '@api/config/environment';
 import {
   SESSION_COOKIE_NAME,
   SESSION_LIFETIME_SECONDS,

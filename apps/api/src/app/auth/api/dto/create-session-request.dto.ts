@@ -1,7 +1,7 @@
 import { Transform } from 'class-transformer';
 import { IsEmail, IsString, MaxLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { GraphemeLength } from '../../../../validation/grapheme-length.validator';
+import { GraphemeLength } from '@api/validation/grapheme-length.validator';
 
 /** Validated credentials used to create one browser session. */
 export class CreateSessionRequest {
