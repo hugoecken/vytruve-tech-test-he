@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsInt, IsString, Max, Min } from 'class-validator';
-import { GraphemeLength } from '../../../../validation/grapheme-length.validator';
+import { GraphemeLength } from '@api/validation/grapheme-length.validator';
 
 /** Validated patient fields supplied without any ownership identifier. */
 export class CreatePatientRequest {

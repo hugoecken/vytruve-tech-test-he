@@ -4,8 +4,8 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { ProblemCode } from '../../../../http/problem-code';
-import { ProblemDetailsException } from '../../../../http/problem-details.exception';
+import { ProblemCode } from '@api/http/problem-code';
+import { ProblemDetailsException } from '@api/http/problem-details.exception';
 import type { AuthenticatedSessionModel } from '../../application/models/auth-session.model';
 
 /** Express request after successful execution of the global session guard. */

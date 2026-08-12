@@ -6,8 +6,8 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ProblemCode } from '../../../../http/problem-code';
-import { ProblemDetailsException } from '../../../../http/problem-details.exception';
+import { ProblemCode } from '@api/http/problem-code';
+import { ProblemDetailsException } from '@api/http/problem-details.exception';
 import type { AuthenticatedRequest } from '../decorators/current-session.decorator';
 import { PUBLIC_ROUTE_METADATA } from '../decorators/public.decorator';
 import { JwtSessionService } from '../../infrastructure/security/jwt-session.service';

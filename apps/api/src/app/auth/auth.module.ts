@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
-import { AccountsModule } from '../accounts/accounts.module';
+import { AccountsModule } from '@api/app/accounts/accounts.module';
 import { AuthController } from './api/controllers/auth.controller';
 import { AuthenticationGuard } from './api/guards/authentication.guard';
 import { AuthApiMapper } from './api/mappers/auth-api.mapper';

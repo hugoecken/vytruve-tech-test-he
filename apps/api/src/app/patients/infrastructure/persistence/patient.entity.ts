@@ -8,7 +8,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { AccountEntity } from '../../../accounts/infrastructure/persistence/account.entity';
+import { AccountEntity } from '@api/app/accounts/infrastructure/persistence/account.entity';
 
 /** TypeORM mapping for the Liquibase-owned singular patient table. */
 @Entity({ name: 'patient' })

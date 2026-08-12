@@ -1,13 +1,13 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ProblemCode } from '../../../../http/problem-code';
-import { ProblemDetailsException } from '../../../../http/problem-details.exception';
+import { ProblemCode } from '@api/http/problem-code';
+import { ProblemDetailsException } from '@api/http/problem-details.exception';
 import {
   createPage,
   createPageWindow,
   type PageParameters,
-} from '../../../../pagination/page';
+} from '@api/pagination/page';
 import type {
   CreatePatientCommand,
   PatientModel,

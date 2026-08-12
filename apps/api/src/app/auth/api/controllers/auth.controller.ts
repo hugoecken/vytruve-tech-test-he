@@ -18,7 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import type { Response } from 'express';
-import { ApiProblemResponse } from '../../../../http/api-problem-response.decorator';
+import { ApiProblemResponse } from '@api/http/api-problem-response.decorator';
 import type { AuthenticatedSessionModel } from '../../application/models/auth-session.model';
 import { AuthService } from '../../application/services/auth.service';
 import { SessionCookieService } from '../../infrastructure/security/session-cookie.service';

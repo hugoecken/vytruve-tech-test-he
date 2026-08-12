@@ -5,9 +5,9 @@ import {
   ParseFilePipe,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ProblemCode } from '../../../../http/problem-code';
-import { ProblemDetailsException } from '../../../../http/problem-details.exception';
-import type { ApiEnvironment } from '../../../../config/environment';
+import type { ApiEnvironment } from '@api/config/environment';
+import { ProblemCode } from '@api/http/problem-code';
+import { ProblemDetailsException } from '@api/http/problem-details.exception';
 
 /** Enforces the presence of exactly one uploaded scan. */
 @Injectable()

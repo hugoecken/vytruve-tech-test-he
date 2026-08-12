@@ -1,4 +1,4 @@
-import type { Page } from '../../../../pagination/page';
+import type { Page } from '@api/pagination/page';
 
 /** Owner-scoped patient record used inside the patient application boundary. */
 export interface PatientModel {

@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { AccountsService } from '../../../accounts/application/services/accounts.service';
-import { ProblemCode } from '../../../../http/problem-code';
-import { ProblemDetailsException } from '../../../../http/problem-details.exception';
+import { AccountsService } from '@api/app/accounts/application/services/accounts.service';
+import { ProblemCode } from '@api/http/problem-code';
+import { ProblemDetailsException } from '@api/http/problem-details.exception';
 import type {
   AccountSessionModel,
   AuthenticatedSessionModel,
