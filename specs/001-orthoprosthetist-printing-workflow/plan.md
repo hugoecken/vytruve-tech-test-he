@@ -24,7 +24,7 @@ The architecture deliberately excludes CQRS, queues, workers, microservices, gen
 
 **Schema management**: Liquibase XML through `database/db.changelog-master.xml`; TypeORM synchronization and migrations disabled
 
-**Testing**: Deliberately deferred to issues #9, #12, and #13; issue #14 owns the final CI gates
+**Testing**: Focused Backend tests are deferred to issue #9 and frontend tests to issue #12; issue #14 owns the final CI gates and manual conformance review
 
 **Target Platform**: Modern evergreen browsers and a Node.js Linux-compatible API runtime; local PostgreSQL and MinIO run with Docker Compose
 
@@ -166,12 +166,11 @@ The web client polls active print requests every five seconds only when `documen
 
 ## Validation And Test Ownership
 
-This planning issue adds no runtime tests. Test responsibilities are intentionally exclusive:
+This planning issue adds no runtime tests. Automated test responsibilities are intentionally focused:
 
-- #9: Jest units, Nest HTTP/Supertest, PostgreSQL and MinIO Testcontainers, and a controlled fake provider.
+- #9: Jest unit tests and controlled printing-provider adapter contract tests.
 - #12: Vitest, Testing Library, React Hook Form/Zod, Router, Query, tables, i18n, and accessibility.
-- #13: responsive Playwright journeys against a controlled full stack.
-- #14: formatting, lint, type-check, builds, test levels, and OpenAPI/Orval reproducibility in CI.
+- #14: formatting, lint, type-check, builds, focused tests, and OpenAPI/Orval reproducibility in CI.
 
 Implementation tasks in issues #5–#8, #10, and #11 must create production behavior only and must not absorb those test scopes.
 
@@ -266,17 +265,17 @@ Exact generated project names and target syntax must be verified after scaffoldi
 
 | Accepted identifiers | Technical component | Planned proof owner |
 | --- | --- | --- |
-| FR-001–FR-010; SC-002 | `AccountsModule`, `AuthModule`, auth routes/forms, cookie guard, i18next profile menu | #9 backend auth evidence; #12 frontend auth/i18n evidence; #13 US1 journey |
-| FR-011–FR-016; SC-001, SC-011, SC-015 | Router layout/fallback, owner-scoped patient queries, concealed 404 mapping | #9 ownership HTTP evidence; #12 Router evidence; #13 navigation/fallback journey |
-| FR-017–FR-021; SC-003 | Patient DTOs/entity/service, patient form and table | #9 patient boundary evidence; #12 form/table evidence; #13 US2 journey |
-| FR-022–FR-030; SC-004, SC-009 | Bounded PLY validator, MinIO adapter, scan metadata, stream response, upload drawer/dialog | #9 file/storage evidence; #12 upload-state evidence; #13 US3 journey |
-| FR-031–FR-044; SC-005–SC-007 | Print reservation, active-slot constraint, provider adapter/reconciliation, polling and print table | #9 provider/state evidence; #12 Query/lifecycle evidence; #13 US4 journey |
-| FR-045–FR-046; SC-012 | Server-page contract, TanStack paginated queries, headless tables and shadcn rendering | #9 pagination HTTP evidence; #12 responsive table/pagination evidence; #13 desktop/compact journeys |
-| FR-047–FR-051; SC-008, SC-010 | Problem Details, typed Fetch error, localized feedback, mutation guards, stale-query preservation | #9 error evidence; #12 state/retry evidence; #13 degraded journeys |
-| FR-052–FR-053 | shadcn semantics, keyboard/focus/announcement behavior, 44 px compact targets | #12 accessibility evidence; #13 responsive interaction evidence |
+| FR-001–FR-010; SC-002 | `AccountsModule`, `AuthModule`, auth routes/forms, cookie guard, i18next profile menu | #9 backend auth evidence; #12 frontend auth/i18n evidence; #14 manual story review |
+| FR-011–FR-016; SC-001, SC-011, SC-015 | Router layout/fallback, owner-scoped patient queries, concealed 404 mapping | #9 ownership logic evidence; #12 Router evidence; #14 manual navigation review |
+| FR-017–FR-021; SC-003 | Patient DTOs/entity/service, patient form and table | #9 patient logic evidence; #12 form/table evidence; #14 manual story review |
+| FR-022–FR-030; SC-004, SC-009 | Bounded PLY validator, MinIO adapter, scan metadata, stream response, upload drawer/dialog | #9 PLY/storage logic evidence; #12 upload-state evidence; #14 manual story review |
+| FR-031–FR-044; SC-005–SC-007 | Print reservation, active-slot constraint, provider adapter/reconciliation, polling and print table | #9 provider/state evidence; #12 Query/lifecycle evidence; #14 manual story review |
+| FR-045–FR-046; SC-012 | Server-page contract, TanStack paginated queries, headless tables and shadcn rendering | #9 pagination logic evidence; #12 responsive table/pagination evidence; #14 manual responsive review |
+| FR-047–FR-051; SC-008, SC-010 | Problem Details, typed Fetch error, localized feedback, mutation guards, stale-query preservation | #9 error logic evidence; #12 state/retry evidence; #14 manual degraded-state review |
+| FR-052–FR-053 | shadcn semantics, keyboard/focus/announcement behavior, 44 px compact targets | #12 accessibility evidence; #14 manual interaction review |
 | FR-054; SC-011 | Minimal schemas, private storage, logging denylist, synthetic evidence | #9 security review; #14 repository scans |
-| FR-055; SC-015 | Auth-aware TanStack Router not-found fallback | #12 fallback evidence; #13 authenticated/public fallback journeys |
-| SC-001 | Four story slices remain independently executable | #9, #12, and #13 combined story evidence |
+| FR-055; SC-015 | Auth-aware TanStack Router not-found fallback | #12 fallback evidence; #14 authenticated/public fallback review |
+| SC-001 | Four story slices remain independently executable | #9 and #12 focused evidence plus #14 manual story review |
 | SC-013 | React/Vite and NestJS/Nx structure | #14 type-check/build and architecture review |
 | SC-014 | README, quickstart, decisions, AI disclosure, reviewable Git history | #14 delivery review |
 

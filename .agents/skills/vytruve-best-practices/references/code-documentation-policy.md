@@ -49,7 +49,7 @@ The final README should let a reviewer understand and run the project without re
 - safe environment-variable setup;
 - database migrations and test data;
 - OpenAPI and Orval generation;
-- lint, type-check, test, build, and end-to-end commands;
+- lint, type-check, focused test, and build commands;
 - known trade-offs and deliberately deferred work.
 
 Keep commands verified and examples synthetic. Never include real credentials, personal data, uploaded filenames, or external-provider responses.

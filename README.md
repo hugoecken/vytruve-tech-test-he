@@ -19,7 +19,7 @@ The current implementation provides:
 - owner-authorized scan listing and byte-for-byte content streaming; and
 - duplicate-safe print submission, reconciliation, lifecycle tracking, and estimated progress.
 
-It does not yet implement automated tests or the product UI.
+It does not yet implement the product UI.
 
 ## Prerequisites
 
@@ -138,6 +138,15 @@ npm exec nx -- format:check
 npm exec nx -- run-many -t lint,typecheck,build --projects=api,web --nxBail
 ```
 
+Run the focused Backend verification suites with:
+
+```bash
+npm exec nx -- test api --runInBand
+```
+
+This command runs colocated unit and printing-provider contract tests with synthetic values. The provider contract
+tests use a controlled local HTTP server and never contact the real printing provider.
+
 Use Nx to inspect the resolved workspace rather than relying only on partial project files:
 
 ```bash
@@ -159,7 +168,6 @@ technical translation, and derived tasks without creating a competing roadmap.
 
 ## Deferred work
 
-- Backend unit and HTTP integration tests
 - Tailwind CSS, shadcn/ui, the Premium registry, routing, forms, and product screens
-- Frontend component and browser tests
+- Frontend component and feature tests
 - GitHub Actions and deployment

@@ -20,7 +20,7 @@
 
 - Issue a short-lived JWT in an HTTP-only cookie after successful authentication.
 - Set `HttpOnly`, an explicit `SameSite` policy, a narrow `Path`, and `Secure` in production.
-- Keep the cookie name and lifetime centralized and covered by HTTP tests.
+- Keep the cookie name and lifetime centralized and verify their owned configuration with focused tests.
 - Clear the cookie with matching attributes during logout.
 - Never put the token in `localStorage`, `sessionStorage`, URLs, frontend logs, JavaScript-readable cookies, or response bodies.
 - Derive the authenticated subject server-side from the verified token. Do not trust a user identifier supplied by the client.

@@ -11,7 +11,7 @@ Choose validation based on the boundary changed, not the file count.
 | Nest provider or controller     | affected Jest tests, lint, type-check                                  | Global pipes, guards, filters, public contract |
 | HTTP contract                   | backend tests, OpenAPI emission, Orval generation, frontend type-check | Breaking shape or shared error behavior        |
 | Entity or migration             | full migration chain on PostgreSQL, persistence tests                  | Constraints, relations, destructive changes    |
-| Authentication or authorization | unit plus HTTP/e2e security paths                                      | Cookie, guard, CORS, ownership, secrets        |
+| Authentication or authorization | focused unit tests for owned decisions                                | Cookie, guard, CORS, ownership, secrets        |
 | File storage                    | validation, compensation, authorization, streaming tests               | Format, path handling, or storage-root changes |
 | External HTTP adapter           | adapter contract tests and application failure tests                   | Timeout, retry, ambiguity, status mapping      |
 | Nx or CI configuration          | affected targets plus a representative clean run                       | Dependency graph, cache inputs, generators     |
@@ -21,7 +21,7 @@ Choose validation based on the boundary changed, not the file count.
 1. Run the narrow test that proves the changed behavior.
 2. Run affected lint and type-check targets.
 3. Run generation or migration checks when an authority changed.
-4. Run affected builds and end-to-end journeys for integration-sensitive work.
+4. Run affected builds and focused contract checks for integration-sensitive work.
 5. Run `git diff --check` and inspect the final diff for secrets, personal data, uploads, and generated artifacts.
 
 ## Failure discipline

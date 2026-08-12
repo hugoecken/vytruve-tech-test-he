@@ -40,7 +40,7 @@ src/
 - Keep the same role directories across features when those roles exist. Do not add empty directories merely to fill the template.
 - Do not import one feature's internals from another feature. Promote a responsibility to `shared` only after cross-feature ownership is proven.
 - Do not create generic `utils`, `helpers`, `services`, or `components` buckets.
-- Keep tests beside the unit they protect unless a dedicated integration or browser project owns them.
+- Keep tests beside the component, hook, or feature they protect.
 
 ## Route boundaries
 

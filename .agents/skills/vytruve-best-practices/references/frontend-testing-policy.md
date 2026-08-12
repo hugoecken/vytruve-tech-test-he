@@ -5,7 +5,6 @@
 - Use Vitest for frontend execution and Testing Library for component and feature behavior.
 - Test pure mapping or formatting logic directly.
 - Test components through accessible user interactions and observable output.
-- Use Playwright for a small set of complete browser journeys against the real local API and PostgreSQL.
 
 ## Component and feature tests
 
@@ -23,12 +22,6 @@ Verify that the UI:
 - redirects or presents login when unauthenticated;
 - never reads or writes an authentication token in browser storage;
 - handles session expiry during an action without losing safe recoverable state.
-
-## Playwright journeys
-
-Load the repository's product overlay and implement the smallest set of browser journeys that covers its critical user outcomes, ownership boundaries, one representative validation failure, and one recoverable external failure.
-
-Use synthetic seeded identities and resources. Keep tests deterministic, isolate their records, and replace real external providers with controlled substitutes.
 
 ## Accessibility
 
