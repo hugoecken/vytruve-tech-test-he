@@ -1,0 +1,43 @@
+{
+  "common": {
+    "languages": {
+      "en": "English",
+      "fr": "French"
+    }
+  },
+  "errors": {
+    "network": "The service is temporarily unavailable. Please try again.",
+    "unexpected": "The request could not be completed. Please try again.",
+    "problem": {
+      "ACCOUNT_ALREADY_EXISTS": "An account already exists for this email.",
+      "AUTHENTICATION_FAILED": "The email or password is incorrect.",
+      "AUTHENTICATION_REQUIRED": "Please sign in to continue.",
+      "AUTH_RATE_LIMITED": "Too many attempts. Please wait before trying again.",
+      "INTERNAL_ERROR": "The service encountered an unexpected problem.",
+      "PATIENT_NOT_FOUND": "The patient record could not be found.",
+      "PRINTING_CAPACITY_REACHED": "The printing center cannot accept another request right now.",
+      "PRINTING_UNAVAILABLE": "Printing is temporarily unavailable. Please try again later.",
+      "PRINT_REQUEST_CONFLICT": "This scan already has a print request in progress.",
+      "ROUTE_NOT_FOUND": "The requested page could not be found.",
+      "SCAN_INVALID_CONTENT": "The selected file is not a valid PLY 3D scan.",
+      "SCAN_NOT_FOUND": "The 3D scan could not be found.",
+      "SCAN_STORAGE_UNAVAILABLE": "The scan storage service is temporarily unavailable.",
+      "SCAN_TOO_LARGE": "The selected 3D scan exceeds the allowed size.",
+      "SCAN_UNSUPPORTED_TYPE": "Only PLY 3D scans are supported.",
+      "VALIDATION_FAILED": "Some information needs your attention."
+    },
+    "validation": {
+      "EMAIL_INVALID": "Enter a valid email address.",
+      "INTEGER_REQUIRED": "Enter a whole number.",
+      "INVALID": "Check this value.",
+      "LENGTH_INVALID": "Use the required number of characters.",
+      "OUT_OF_RANGE": "Enter a value within the allowed range.",
+      "REQUIRED": "This field is required.",
+      "STRING_REQUIRED": "Enter text for this field.",
+      "TOO_LONG": "This value is too long.",
+      "TOO_SHORT": "This value is too short.",
+      "UNKNOWN_FIELD": "This field is not supported.",
+      "UUID_INVALID": "The selected resource is invalid."
+    }
+  }
+}

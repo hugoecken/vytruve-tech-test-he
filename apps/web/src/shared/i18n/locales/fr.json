@@ -1,0 +1,43 @@
+{
+  "common": {
+    "languages": {
+      "en": "Anglais",
+      "fr": "Français"
+    }
+  },
+  "errors": {
+    "network": "Le service est temporairement indisponible. Réessayez.",
+    "unexpected": "La demande n'a pas pu aboutir. Réessayez.",
+    "problem": {
+      "ACCOUNT_ALREADY_EXISTS": "Un compte existe déjà pour cet e-mail.",
+      "AUTHENTICATION_FAILED": "L'e-mail ou le mot de passe est incorrect.",
+      "AUTHENTICATION_REQUIRED": "Connectez-vous pour continuer.",
+      "AUTH_RATE_LIMITED": "Trop de tentatives. Patientez avant de réessayer.",
+      "INTERNAL_ERROR": "Le service a rencontré un problème inattendu.",
+      "PATIENT_NOT_FOUND": "Le dossier patient est introuvable.",
+      "PRINTING_CAPACITY_REACHED": "Le centre d'impression ne peut pas accepter de nouvelle demande pour le moment.",
+      "PRINTING_UNAVAILABLE": "L'impression est temporairement indisponible. Réessayez plus tard.",
+      "PRINT_REQUEST_CONFLICT": "Une demande d'impression est déjà en cours pour ce scan.",
+      "ROUTE_NOT_FOUND": "La page demandée est introuvable.",
+      "SCAN_INVALID_CONTENT": "Le fichier sélectionné n'est pas un scan 3D PLY valide.",
+      "SCAN_NOT_FOUND": "Le scan 3D est introuvable.",
+      "SCAN_STORAGE_UNAVAILABLE": "Le stockage des scans est temporairement indisponible.",
+      "SCAN_TOO_LARGE": "Le scan 3D dépasse la taille autorisée.",
+      "SCAN_UNSUPPORTED_TYPE": "Seuls les scans 3D PLY sont acceptés.",
+      "VALIDATION_FAILED": "Certaines informations doivent être vérifiées."
+    },
+    "validation": {
+      "EMAIL_INVALID": "Saisissez une adresse e-mail valide.",
+      "INTEGER_REQUIRED": "Saisissez un nombre entier.",
+      "INVALID": "Vérifiez cette valeur.",
+      "LENGTH_INVALID": "Respectez le nombre de caractères demandé.",
+      "OUT_OF_RANGE": "Saisissez une valeur dans l'intervalle autorisé.",
+      "REQUIRED": "Ce champ est obligatoire.",
+      "STRING_REQUIRED": "Saisissez du texte dans ce champ.",
+      "TOO_LONG": "Cette valeur est trop longue.",
+      "TOO_SHORT": "Cette valeur est trop courte.",
+      "UNKNOWN_FIELD": "Ce champ n'est pas pris en charge.",
+      "UUID_INVALID": "La ressource sélectionnée est invalide."
+    }
+  }
+}
