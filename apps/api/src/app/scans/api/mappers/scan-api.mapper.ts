@@ -38,7 +38,7 @@ export class ScanApiMapper {
       encoding: scan.encoding,
       format: 'ply',
       id: scan.id,
-      printingAvailable: true,
+      printingAvailable: scan.printingAvailable,
       sizeBytes: scan.sizeBytes,
     };
   }

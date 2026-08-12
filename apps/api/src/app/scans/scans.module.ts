@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { memoryStorage } from 'multer';
-import type { ApiEnvironment } from '../../config/environment';
-import { PatientsModule } from '../patients/patients.module';
+import { PatientsModule } from '@api/app/patients/patients.module';
+import type { ApiEnvironment } from '@api/config/environment';
 import { ScansController } from './api/controllers/scans.controller';
 import { ScanApiMapper } from './api/mappers/scan-api.mapper';
 import {
@@ -21,6 +21,7 @@ import { MinioScanStorageAdapter } from './infrastructure/storage/minio-scan-sto
 /** Composes owner-scoped scan HTTP, validation, persistence, and storage. */
 @Module({
   controllers: [ScansController],
+  exports: [ScansService],
   imports: [
     MulterModule.registerAsync({
       inject: [ConfigService],

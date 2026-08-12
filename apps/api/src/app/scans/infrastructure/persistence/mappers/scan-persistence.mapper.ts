@@ -36,14 +36,16 @@ export class ScanPersistenceMapper {
    * Projects stored metadata without its private object key.
    *
    * @param entity Stored scan metadata.
+   * @param printingAvailable Whether no non-terminal request reserves the scan.
    * @returns Framework-independent scan model.
    */
-  toModel(entity: ScanEntity): ScanModel {
+  toModel(entity: ScanEntity, printingAvailable: boolean): ScanModel {
     return {
       createdAt: entity.createdAt,
       encoding: entity.encoding,
       id: entity.id,
       patientId: entity.patientId,
+      printingAvailable,
       sizeBytes: entity.sizeBytes,
     };
   }

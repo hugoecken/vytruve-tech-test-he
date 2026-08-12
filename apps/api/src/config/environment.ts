@@ -20,6 +20,9 @@ export interface ApiEnvironment {
   POSTGRES_DB: string;
   POSTGRES_PASSWORD: string;
   POSTGRES_USER: string;
+  PRINTING_API_BASE_URL: string;
+  PRINTING_API_KEY: string;
+  PRINTING_API_TIMEOUT_MS: number;
   WEB_ORIGIN: string;
 }
 
@@ -48,6 +51,30 @@ export function validateEnvironment(
   } catch {
     throw new Error('WEB_ORIGIN must be an absolute HTTP(S) origin');
   }
+
+  const printingBaseUrlValue = requireString(
+    environment,
+    'PRINTING_API_BASE_URL',
+  );
+  let printingBaseUrl: URL;
+  try {
+    printingBaseUrl = new URL(printingBaseUrlValue);
+  } catch {
+    throw new Error('PRINTING_API_BASE_URL must be an absolute HTTP(S) URL');
+  }
+  if (
+    !['http:', 'https:'].includes(printingBaseUrl.protocol) ||
+    printingBaseUrl.username.length > 0 ||
+    printingBaseUrl.password.length > 0 ||
+    printingBaseUrl.search.length > 0 ||
+    printingBaseUrl.hash.length > 0
+  ) {
+    throw new Error('PRINTING_API_BASE_URL must be an absolute HTTP(S) URL');
+  }
+  const printingPath =
+    printingBaseUrl.pathname === '/'
+      ? ''
+      : printingBaseUrl.pathname.replace(/\/+$/, '');
   if (
     !['http:', 'https:'].includes(webOrigin.protocol) ||
     webOrigin.username.length > 0 ||
@@ -81,6 +108,12 @@ export function validateEnvironment(
     POSTGRES_DB: requireString(environment, 'POSTGRES_DB'),
     POSTGRES_PASSWORD: requireString(environment, 'POSTGRES_PASSWORD'),
     POSTGRES_USER: requireString(environment, 'POSTGRES_USER'),
+    PRINTING_API_BASE_URL: `${printingBaseUrl.origin}${printingPath}`,
+    PRINTING_API_KEY: requireString(environment, 'PRINTING_API_KEY'),
+    PRINTING_API_TIMEOUT_MS: parsePositiveInteger(
+      environment,
+      'PRINTING_API_TIMEOUT_MS',
+    ),
     WEB_ORIGIN: webOrigin.origin,
   };
 }
@@ -163,8 +196,8 @@ function parseBoolean(
  *
  * @param environment Raw environment values loaded by Nest.
  * @param name Integer variable name.
- * @returns The configured positive integer within PostgreSQL integer range.
- * @throws When the value cannot be stored with the scan metadata.
+ * @returns The configured positive integer within the runtime timer range.
+ * @throws When the value exceeds the supported signed-integer boundary.
  */
 function parsePositiveInteger(
   environment: Record<string, unknown>,
