@@ -5,7 +5,10 @@
 - Build a client-rendered React SPA with Vite.
 - Use TanStack Router file-based routing through its Vite plugin. Do not add a second router or a framework runtime.
 - Use generated Orval functions and TanStack Query hooks for HTTP communication and remote server state.
-- Use React Hook Form without Zod for editable form state.
+- Use React Hook Form for editable form state. Let the repository overlay select whether validation uses native rules,
+  focused handwritten validators, or schemas generated from the executable contract.
+- Do not duplicate request contracts in handwritten frontend schemas when the selected generator can derive them from
+  the same OpenAPI authority.
 - Keep browser code independent from backend persistence entities and provider payloads.
 
 ## Source hierarchy
@@ -68,9 +71,11 @@ src/
 
 ## Forms and errors
 
-- Express simple UX rules with native attributes and React Hook Form validators.
+- Express simple UX rules with native attributes and the repository-selected React Hook Form validation strategy.
+- Keep local refinements limited to interaction rules that the executable contract cannot represent faithfully.
 - Frontend validation improves interaction only; the backend remains the trust boundary.
 - Map field-level server validation to the owning control and stable Problem Details codes to translated, actionable feedback.
+- Translate generated validation issues through stable codes, paths, and limits; never display generated messages raw.
 - Do not expose raw server details, stack traces, or transport errors to users.
 - Disable or guard duplicate submissions while preserving keyboard and screen-reader feedback.
 - Move focus to the first invalid field when appropriate and announce asynchronous outcomes.
