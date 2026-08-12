@@ -1,21 +1,25 @@
 import { HttpStatus } from '@nestjs/common';
 import type { ValidationError } from 'class-validator';
+import {
+  FieldViolationCode,
+  type FieldViolationCode as FieldViolationCodeValue,
+} from '../http/field-violation-code';
 import { ProblemCode } from '../http/problem-code';
 import type { FieldViolation } from '../http/problem-details.model';
 import { ProblemDetailsException } from '../http/problem-details.exception';
 
-const CONSTRAINT_CODES: Readonly<Record<string, string>> = {
-  graphemeLength: 'LENGTH_INVALID',
-  isEmail: 'EMAIL_INVALID',
-  isInt: 'INTEGER_REQUIRED',
-  isNotEmpty: 'REQUIRED',
-  isString: 'STRING_REQUIRED',
-  isUuid: 'UUID_INVALID',
-  max: 'OUT_OF_RANGE',
-  maxLength: 'TOO_LONG',
-  min: 'OUT_OF_RANGE',
-  minLength: 'TOO_SHORT',
-  whitelistValidation: 'UNKNOWN_FIELD',
+const CONSTRAINT_CODES: Readonly<Record<string, FieldViolationCodeValue>> = {
+  graphemeLength: FieldViolationCode.LENGTH_INVALID,
+  isEmail: FieldViolationCode.EMAIL_INVALID,
+  isInt: FieldViolationCode.INTEGER_REQUIRED,
+  isNotEmpty: FieldViolationCode.REQUIRED,
+  isString: FieldViolationCode.STRING_REQUIRED,
+  isUuid: FieldViolationCode.UUID_INVALID,
+  max: FieldViolationCode.OUT_OF_RANGE,
+  maxLength: FieldViolationCode.TOO_LONG,
+  min: FieldViolationCode.OUT_OF_RANGE,
+  minLength: FieldViolationCode.TOO_SHORT,
+  whitelistValidation: FieldViolationCode.UNKNOWN_FIELD,
 };
 
 /**
@@ -52,7 +56,7 @@ function flattenViolations(
       parent.length === 0 ? error.property : `${parent}.${error.property}`;
     const ownViolations = Object.keys(error.constraints ?? {}).map(
       (constraint): FieldViolation => ({
-        code: CONSTRAINT_CODES[constraint] ?? 'INVALID',
+        code: CONSTRAINT_CODES[constraint] ?? FieldViolationCode.INVALID,
         field,
       }),
     );

@@ -4,5 +4,20 @@
   "sourceRoot": "apps/web/src",
   "projectType": "application",
   "tags": [],
-  "targets": {}
+  "targets": {
+    "generate-api": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        {
+          "projects": ["api"],
+          "target": "openapi"
+        }
+      ],
+      "outputs": ["{workspaceRoot}/apps/web/src/shared/api/generated"],
+      "options": {
+        "command": "orval --config orval.config.ts",
+        "cwd": "."
+      }
+    }
+  }
 }

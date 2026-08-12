@@ -1,8 +1,9 @@
+import type { FieldViolationCode } from './field-violation-code';
 import type { ProblemCode } from './problem-code';
 
 /** One safe field-level validation failure without the rejected value. */
 export interface FieldViolation {
-  code: string;
+  code: FieldViolationCode;
   field: string;
 }
 

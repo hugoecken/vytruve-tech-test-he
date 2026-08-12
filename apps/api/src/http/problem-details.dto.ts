@@ -1,13 +1,21 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  FieldViolationCode,
+  type FieldViolationCode as FieldViolationCodeValue,
+} from './field-violation-code';
+import {
   ProblemCode,
   type ProblemCode as ProblemCodeValue,
 } from './problem-code';
 
 /** OpenAPI representation of one field-level validation violation. */
 export class FieldViolationResponse {
-  @ApiProperty({ example: 'OUT_OF_RANGE' })
-  code!: ProblemCodeValue;
+  @ApiProperty({
+    enum: Object.values(FieldViolationCode),
+    enumName: 'FieldViolationCode',
+    example: FieldViolationCode.OUT_OF_RANGE,
+  })
+  code!: FieldViolationCodeValue;
 
   @ApiProperty({ example: 'age' })
   field!: string;
@@ -20,7 +28,7 @@ export class ProblemDetailsResponse {
     enumName: 'ProblemCode',
     example: ProblemCode.VALIDATION_FAILED,
   })
-  code!: string;
+  code!: ProblemCodeValue;
 
   @ApiProperty({ example: 'The request contains invalid fields.' })
   detail!: string;

@@ -9,4 +9,6 @@
 /coverage/
 /dist/
 /generated/
+/apps/web/src/routeTree.gen.ts
+/apps/web/src/shared/api/generated/
 /node_modules/
