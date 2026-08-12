@@ -39,7 +39,7 @@
 
 - [x] CHK019 Authentication, patient directory, and patient workspace are the only primary destinations and each has a stable `DST-xxx` identifier. [Spec §Destinations]
 - [x] CHK020 Patient identity remains visible while the scan and print-request collections use two internal tabs within one patient workspace, without separate destinations, routes, or a sidebar. [Spec DST-PATIENT-WORKSPACE, NAV-PATIENT-SECTIONS, FR-014]
-- [x] CHK021 Every required table has a `TBL-xxx` identifier, required information, row actions, and cursor-pagination rule. [Spec §Functional Tables]
+- [x] CHK021 Every required table has a `TBL-xxx` identifier, required information, row actions, and server-pagination rule. [Spec §Functional Tables]
 - [x] CHK022 Every user action needed by the four journeys has an `ACT-xxx` identifier and an explicit availability or safety rule. [Spec §Action Index]
 - [x] CHK023 Every required authentication, patient, scan, print, and system-navigation state has a stable identifier and observable intent. [Spec §Required State Index]
 - [x] CHK024 The specification leaves visual composition, components, density, and compact-layout strategy to Figma without weakening required information or actions. [Spec §Authority And Scope, §Functional Tables]

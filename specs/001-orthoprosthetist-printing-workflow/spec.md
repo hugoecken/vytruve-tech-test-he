@@ -78,7 +78,7 @@ An authenticated orthoprosthetist uses the patient directory as the primary dest
 
 1. **US2-AS1** — **Given** an authenticated account with no patients, **When** the directory loads, **Then** an empty state explains the next action and offers patient creation.
 2. **US2-AS2** — **Given** owned patients, **When** the directory loads, **Then** the patient table shows each patient's full name, age, date added, and opening action.
-3. **US2-AS3** — **Given** a patient list with a next page, **When** the user activates Next and later Previous, **Then** the adjacent cursor page is shown without claiming a total count.
+3. **US2-AS3** — **Given** a patient list with a next page, **When** the user activates Next and later Previous, **Then** the adjacent server page is shown without claiming a total count.
 4. **US2-AS4** — **Given** the patient creation action, **When** the user enters valid first name, last name, and age, **Then** one patient is created and its workspace opens directly.
 5. **US2-AS5** — **Given** invalid patient fields, **When** creation is submitted, **Then** localized field errors identify every actionable correction and no patient is created.
 6. **US2-AS6** — **Given** a creation request in progress, **When** the user repeats the submit interaction, **Then** no duplicate patient is created.
@@ -104,7 +104,7 @@ Within one patient workspace, an orthoprosthetist reviews a paginated scan table
 5. **US3-AS5** — **Given** valid scan content and unavailable storage, **When** upload fails, **Then** no successful upload is implied and the user can retry deliberately.
 6. **US3-AS6** — **Given** an available scan, **When** download is requested, **Then** the PLY content is downloaded without navigating away from the workspace.
 7. **US3-AS7** — **Given** temporarily unavailable scan storage, **When** download is requested, **Then** the existing workspace remains visible and an actionable unavailability message is shown.
-8. **US3-AS8** — **Given** multiple scan pages, **When** Previous or Next is activated, **Then** the adjacent cursor page is shown without a fabricated total.
+8. **US3-AS8** — **Given** multiple scan pages, **When** Previous or Next is activated, **Then** the adjacent server page is shown without a fabricated total.
 9. **US3-AS9** — **Given** an owned patient workspace opens, **When** its content becomes available, **Then** patient identity remains visible, `TAB-PATIENT-SCANS` is selected by default, and only the scan collection panel is displayed.
 10. **US3-AS10** — **Given** scan rows are already displayed and an upload file is selected, **When** the file is rejected, **Then** the scan table remains visible, the upload context remains open with the selected file, and the localized validation reason is shown within that context so another file can be chosen.
 11. **US3-AS11** — **Given** the scan upload context opens without a file, **When** it is displayed, **Then** its file-selection surface opens the system file chooser and its upload confirmation remains disabled.
@@ -132,7 +132,7 @@ Within the same patient workspace, an orthoprosthetist requests printing of an e
 8. **US4-AS8** — **Given** a failed provider outcome, **When** it is refreshed, **Then** the state is failed, no percentage implies progress toward success, and reprinting the scan becomes available.
 9. **US4-AS9** — **Given** already displayed print requests, **When** background refresh fails, **Then** the rows remain visible with their last known update and a non-blocking warning.
 10. **US4-AS10** — **Given** no eligible scan, **When** the printing region is reviewed, **Then** the unavailable action is explained and scan upload is offered in the same workspace.
-11. **US4-AS11** — **Given** multiple print-request pages, **When** Previous or Next is activated, **Then** the adjacent cursor page is shown without a fabricated total.
+11. **US4-AS11** — **Given** multiple print-request pages, **When** Previous or Next is activated, **Then** the adjacent server page is shown without a fabricated total.
 12. **US4-AS12** — **Given** a print request is accepted from `TAB-PATIENT-SCANS`, **When** submission succeeds, **Then** `TAB-PATIENT-PRINTS` becomes selected and the accepted request is visible in `TBL-PRINTS` without leaving the patient workspace.
 
 ### Edge Cases
@@ -191,9 +191,9 @@ The tabs do not create destinations, routes, or a sidebar. On compact screens bo
 
 | ID           | Collection             | Required columns or information                                              | Required row actions                    | Pagination                                                   |
 | ------------ | ---------------------- | ---------------------------------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------ |
-| TBL-PATIENTS | Owned patients         | Patient full name, Age, Added                                                | `ACT-PATIENT-OPEN`                      | Previous/Next using available cursors; no total is invented. |
-| TBL-SCANS    | Patient 3D scans       | Safe identifier, Format, Size, Added                                         | `ACT-SCAN-DOWNLOAD`, `ACT-PRINT-CREATE` | Previous/Next using available cursors; no total is invented. |
-| TBL-PRINTS   | Patient print requests | Reference, Associated scan, Status, Estimated progress, temporal information | No mandatory row action                 | Previous/Next using available cursors; no total is invented. |
+| TBL-PATIENTS | Owned patients         | Patient full name, Age, Added                                                | `ACT-PATIENT-OPEN`                      | Previous/Next using zero-based server pages; no total is invented. |
+| TBL-SCANS    | Patient 3D scans       | Safe identifier, Format, Size, Added                                         | `ACT-SCAN-DOWNLOAD`, `ACT-PRINT-CREATE` | Previous/Next using zero-based server pages; no total is invented. |
+| TBL-PRINTS   | Patient print requests | Reference, Associated scan, Status, Estimated progress, temporal information | No mandatory row action                 | Previous/Next using zero-based server pages; no total is invented. |
 
 Desktop and mobile retain a tabular representation. On compact screens, essential information and actions remain available. Figma may choose horizontal scrolling or reduce secondary information, but it may not replace these collections with unrelated card-based navigation or remove their pagination position.
 
@@ -222,8 +222,8 @@ Scheduled start and end information remains visibly estimated. A derived time po
 | ACT-SCAN-UPLOAD     | Upload 3D scan                                             | Available in `DST-PATIENT-WORKSPACE`; confirmation is disabled until one valid file is selected. |
 | ACT-SCAN-DOWNLOAD   | Download 3D scan                                           | Available for retrievable rows in `TBL-SCANS`.                                                   |
 | ACT-PRINT-CREATE    | Request printing                                           | Available only for a valid scan without a non-terminal request.                                  |
-| ACT-PAGE-PREVIOUS   | Show previous page                                         | Enabled only when a previous cursor exists.                                                      |
-| ACT-PAGE-NEXT       | Show next page                                             | Enabled only when a next cursor exists.                                                          |
+| ACT-PAGE-PREVIOUS   | Show previous page                                         | Enabled only when the current zero-based page index is greater than zero.                        |
+| ACT-PAGE-NEXT       | Show next page                                             | Enabled only when the current response reports that a following page exists.                     |
 | ACT-RETRY           | Retry a safe read or explicitly restart a failed operation | Never represents a blind retry of an ambiguous print submission.                                 |
 
 ### Required State Index
@@ -300,7 +300,7 @@ Every identifier below must be traceable in future Figma evidence. Related state
 
 #### Collections, Errors, Accessibility, And Privacy
 
-- **FR-045**: `TBL-PATIENTS`, `TBL-SCANS`, and `TBL-PRINTS` MUST use Previous and Next cursor navigation, MUST communicate whether each direction is available, and MUST NOT invent a server total or arbitrary page count.
+- **FR-045**: `TBL-PATIENTS`, `TBL-SCANS`, and `TBL-PRINTS` MUST use Previous and Next server-page navigation, MUST communicate whether each direction is available, and MUST NOT invent a server total or arbitrary page count.
 - **FR-046**: Desktop and mobile MUST retain a tabular representation of all three collections and keep essential information and actions available on compact screens.
 - **FR-047**: Every state in the Required State Index MUST have explicit, localized, perceivable feedback and a safe next action when recovery is possible.
 - **FR-048**: User-visible error translation MUST be selected from stable problem codes and local context, never from raw backend or printing-center messages.
@@ -375,7 +375,7 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - A printing request represents a socket-production job for the selected patient scan.
 - Printing-center timing is an estimate; the application clearly labels derived progress as Estimated progress.
 - The printing center may be delayed or temporarily unavailable, so the last confirmed state remains preferable to invented freshness.
-- Cursor availability, rather than a total record count, is sufficient for the bounded Previous/Next navigation required by the MVP.
+- The current page index and `hasNext`, rather than a total record count, are sufficient for the bounded Previous/Next navigation required by the MVP.
 - Figma will provide desktop and compact-screen evidence after this specification is accepted, using the stable identifiers defined here.
 
 ## Repository Specification Constraints

@@ -43,6 +43,11 @@ The accepted issue #4 plan selects:
 - a second Orval output deriving Zod Mini v4 request schemas from the same OpenAPI document;
 - React Hook Form with generated schemas for JSON mutation forms and focused local refinements only;
 - TanStack Table as the headless table engine and shadcn/ui as the complete visual authority;
+- zero-based `page` and bounded `pageSize` parameters for server-side collections, implemented with deterministic
+  TypeORM ordering plus `skip` and `take`;
+- `hasNext` derived from a one-item lookahead, without a total-count query;
+- paginated TanStack Query queries with `keepPreviousData` and controlled TanStack Table state with
+  `manualPagination: true`;
 - dedicated testing ownership in issues #9, #12, and #13, with no implementation tests added by issues #5–#8,
   #10, or #11.
 

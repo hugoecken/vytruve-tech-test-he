@@ -9,7 +9,6 @@ import type {
   PatientModel,
   PatientPageModel,
 } from '../models/patient.model';
-import { PatientCursorCodec } from '../../infrastructure/pagination/patient-cursor-codec';
 import { PatientEntity } from '../../infrastructure/persistence/patient.entity';
 import { PatientPersistenceMapper } from '../../infrastructure/persistence/mappers/patient-persistence.mapper';
 
@@ -21,13 +20,11 @@ export class PatientsService {
    *
    * @param patients Patient entity repository injected by Nest TypeORM.
    * @param mapper Patient persistence boundary mapper.
-   * @param cursors Owner-bound pagination cursor codec.
    */
   constructor(
     @InjectRepository(PatientEntity)
     private readonly patients: Repository<PatientEntity>,
     private readonly mapper: PatientPersistenceMapper,
-    private readonly cursors: PatientCursorCodec,
   ) {}
 
   /**
@@ -42,53 +39,36 @@ export class PatientsService {
   }
 
   /**
-   * Reads one forward page ordered by creation time and UUID descending.
+   * Reads one server page ordered by creation time and UUID descending.
    *
    * @param accountId Verified collection owner.
-   * @param query Validated page size and optional opaque cursor.
-   * @returns Owner-scoped page and continuation metadata without a total.
-   * @throws INVALID_CURSOR when the cursor cannot be safely applied.
+   * @param query Validated page index and size.
+   * @returns Owner-scoped page and next-page availability without a total.
    */
   async list(
     accountId: string,
     query: ListPatientsQuery,
   ): Promise<PatientPageModel> {
-    const boundary =
-      query.cursor === undefined
-        ? undefined
-        : this.cursors.decode(query.cursor);
-    const builder = this.patients
-      .createQueryBuilder('patient')
-      .select([
-        'patient.id',
-        'patient.age',
-        'patient.createdAt',
-        'patient.firstName',
-        'patient.lastName',
-      ])
-      .where('patient.account_id = :accountId', { accountId })
-      .orderBy('patient.created_at', 'DESC')
-      .addOrderBy('patient.id', 'DESC')
-      .take(query.pageSize + 1);
-
-    if (boundary !== undefined) {
-      builder.andWhere(
-        '(patient.created_at < :createdAt OR (patient.created_at = :createdAt AND patient.id < :id))',
-        { createdAt: boundary.createdAt, id: boundary.id },
-      );
-    }
-
-    const entities = await builder.getMany();
+    const entities = await this.patients.find({
+      order: { createdAt: 'DESC', id: 'DESC' },
+      select: {
+        age: true,
+        createdAt: true,
+        firstName: true,
+        id: true,
+        lastName: true,
+      },
+      skip: query.page * query.pageSize,
+      take: query.pageSize + 1,
+      where: { accountId },
+    });
     const hasNext = entities.length > query.pageSize;
     const pageEntities = entities.slice(0, query.pageSize);
-    const last = pageEntities.at(-1);
     return {
       hasNext,
       items: pageEntities.map((entity) => this.mapper.toModel(entity)),
-      nextCursor:
-        hasNext && last !== undefined
-          ? this.cursors.encode({ createdAt: last.createdAt, id: last.id })
-          : null,
+      page: query.page,
+      pageSize: query.pageSize,
     };
   }
 

@@ -15,21 +15,16 @@ export interface CreatePatientCommand {
   lastName: string;
 }
 
-/** Decoded deterministic cursor boundary for a patient collection. */
-export interface PatientCursorModel {
-  createdAt: Date;
-  id: string;
-}
-
-/** Application input for one forward patient collection read. */
+/** Application input for one server-paginated patient collection read. */
 export interface ListPatientsQuery {
-  cursor?: string;
+  page: number;
   pageSize: number;
 }
 
-/** Forward-only patient collection page without a fabricated total. */
+/** Server-paginated patient collection page without a fabricated total. */
 export interface PatientPageModel {
   hasNext: boolean;
   items: PatientModel[];
-  nextCursor: string | null;
+  page: number;
+  pageSize: number;
 }

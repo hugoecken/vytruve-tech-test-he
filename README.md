@@ -14,7 +14,7 @@ The current implementation provides:
 - PostgreSQL and private MinIO services through Docker Compose;
 - a Liquibase XML schema executed only in a disposable container;
 - cookie-based account registration and authentication; and
-- owner-scoped patient creation, retrieval, and cursor pagination.
+- owner-scoped patient creation, retrieval, and server-side pagination.
 
 It does not yet implement scan storage, printing integration, automated tests, or product UI.
 

@@ -49,9 +49,9 @@ Represents the minimal patient record owned by one account.
 - `pk_patient` on `id`.
 - `fk_patient_account` references `account(id)` with restrictive deletion behavior.
 - `ck_patient_age` requires `age BETWEEN 0 AND 150` because this scalar invariant is stable and safety-relevant.
-- `ix_patient_account_created` on `(account_id, created_at DESC, id DESC)` supports owner-scoped cursor pages and member lookup.
+- `ix_patient_account_created` on `(account_id, created_at DESC, id DESC)` supports owner-scoped ordered pages and member lookup.
 
-Patient names and age are never copied into scans, print requests, cursors, storage keys, or logs.
+Patient names and age are never copied into scans, print requests, pagination metadata, storage keys, or logs.
 
 ## Scan
 
@@ -173,21 +173,19 @@ Estimated progress is computed when mapping a print-request view and is never st
 
 All date arithmetic uses UTC instants. Scheduled dates are provider observations, not guarantees.
 
-## Cursor Model
+## Server Pagination Model
 
-The cursor is a transport token, not a database entity. Its decoded version-1 payload contains only:
+Pagination state is transport input, not a database entity:
 
 ```text
-version
-createdAt
-id
-context discriminator
+page
+pageSize
 ```
 
-- The context discriminator identifies the collection and parent/owner context through a non-personal opaque digest.
-- The payload is authenticated or otherwise tamper-evident, encoded opaquely, and strictly schema-validated.
-- A cursor never contains a name, email, provider credential, storage key, original filename, or raw owner identifier.
-- Queries fetch `pageSize + 1` rows with `(created_at, id)` keyset predicates and build `nextCursor` from the final returned item.
+- `page` is zero-based and defaults to `0`.
+- `pageSize` defaults to `20` and is bounded between `1` and `50`.
+- Queries remain owner-scoped, ordered by `created_at DESC, id DESC`, and use `skip = page * pageSize` with `take = pageSize + 1`.
+- The look-ahead row determines `hasNext`; responses do not execute a total-count query or invent a page count.
 
 ## Scan Storage Consistency
 
