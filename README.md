@@ -4,17 +4,19 @@ Specification-driven React and NestJS implementation of the Vytruve technical as
 
 ## Current stage
 
-The repository contains the accepted product specification, design handoff, technical plan, and the executable
-foundation. Product workflows remain deliberately deferred to their owning delivery issues.
+The repository contains the accepted product specification, design handoff, technical plan, executable foundation,
+and the first backend product slice.
 
-The current foundation provides:
+The current implementation provides:
 
 - an Nx monorepo with React/Vite and NestJS applications;
 - strict TypeScript, ESLint, Prettier, type-check, and build targets;
-- PostgreSQL and private MinIO services through Docker Compose; and
-- an empty Liquibase XML migration chain executed only in a disposable container.
+- PostgreSQL and private MinIO services through Docker Compose;
+- a Liquibase XML schema executed only in a disposable container;
+- cookie-based account registration and authentication; and
+- owner-scoped patient creation, retrieval, and cursor pagination.
 
-It does not yet expose a product API endpoint or render product UI.
+It does not yet implement scan storage, printing integration, automated tests, or product UI.
 
 ## Prerequisites
 
@@ -83,8 +85,8 @@ npm exec nx -- run database:migrate
 npm exec nx -- run database:rollback
 ```
 
-`database/db.changelog-master.xml` is intentionally empty during the foundation stage. Product tables belong to the
-backend delivery that owns their invariants.
+`database/db.changelog-master.xml` is the schema authority. TypeORM maps the resulting tables at runtime with schema
+synchronization and TypeORM migrations disabled.
 
 ## Applications
 
@@ -95,8 +97,18 @@ npm exec nx -- serve api
 npm exec nx -- serve web
 ```
 
-The API validates `NODE_ENV` and `API_PORT` before listening and reserves the `/api` prefix. The Web application
-mounts React without rendering a product screen.
+The API validates every required runtime setting before listening under `/api`. It currently exposes account session
+and owner-scoped patient endpoints. The Web application mounts React without rendering a product screen.
+
+Generate the code-first OpenAPI contract without serving a public Swagger interface:
+
+```bash
+npm exec nx -- run api:openapi
+```
+
+The ignored output is written to `generated/openapi.json`. It is a generated contract and must not be edited by hand.
+Swagger remains pinned to the selected release; the targeted npm override keeps its transitive YAML parser on
+the patched compatible release validated by this generation command.
 
 ## Quality commands
 
@@ -126,7 +138,7 @@ technical translation, and derived tasks without creating a competing roadmap.
 
 ## Deferred work
 
-- Backend product modules, persistence mappings, storage adapters, printing integration, and OpenAPI
+- Scan storage and printing integration
 - Backend unit and HTTP integration tests
 - Tailwind CSS, shadcn/ui, the Premium registry, routing, forms, and product screens
 - Frontend component and browser tests
