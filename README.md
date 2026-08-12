@@ -17,7 +17,9 @@ The current implementation provides:
 - owner-scoped patient creation, retrieval, and server-side pagination;
 - content-validated PLY uploads stored in a private MinIO bucket; and
 - owner-authorized scan listing and byte-for-byte content streaming; and
-- duplicate-safe print submission, reconciliation, lifecycle tracking, and estimated progress.
+- duplicate-safe print submission, reconciliation, lifecycle tracking, and estimated progress;
+- a file-based React application shell with TanStack Router and Query; and
+- the public shadcn/ui Base UI catalog on Tailwind CSS 4.
 
 It does not yet implement the product UI.
 
@@ -119,7 +121,7 @@ The committed example uses a reserved `.invalid` URL and a local placeholder key
 never retries that non-idempotent request automatically. If the result is ambiguous, the reservation remains in
 `confirmation_pending` and later reads reconcile it by stable reference before consulting the provider identifier.
 Terminal observations release the scan for a later print request. The Web application mounts React without rendering
-a product screen.
+a product screen. Its neutral index route establishes only the routing, localization, and query-provider boundaries.
 
 Generate the code-first OpenAPI contract without serving a public Swagger interface:
 
@@ -130,6 +132,38 @@ npm exec nx -- run api:openapi
 The ignored output is written to `generated/openapi.json`. It is a generated contract and must not be edited by hand.
 Swagger remains pinned to the selected release; the targeted npm override keeps its transitive YAML parser on
 the patched compatible release validated by this generation command.
+
+Generate the ignored frontend Fetch hooks, OpenAPI types, and Zod Mini request schemas from that contract with:
+
+```bash
+npm exec nx -- run web:generate-api
+```
+
+The target depends explicitly on `api:openapi`. Generation remains a deliberate operation so ordinary Web builds do
+not start PostgreSQL or regenerate contracts implicitly. Never edit files below
+`apps/web/src/shared/api/generated/`; update the NestJS OpenAPI contract or `orval.config.ts`, then regenerate.
+
+The browser transport uses `VITE_API_BASE_URL`, includes the session cookie, preserves multipart uploads and binary
+downloads, and converts RFC 9457 responses into safe typed errors. One bundled JSON catalog per supported language
+translates stable problem and validation codes; raw Backend or Zod messages are never user-facing. Additional i18next
+namespaces will be introduced only when a catalog becomes large or benefits from independent loading.
+
+## Frontend component platform
+
+The repository contains the complete public shadcn/ui Base Nova catalog configured for Base UI, Tailwind CSS 4, CSS
+variables, and Lucide icons. Shared components live under `apps/web/src/shared/ui`; no global barrel or showcase is
+maintained.
+
+Inspect the resolved shadcn configuration or preview a catalog refresh without writing files:
+
+```bash
+npx shadcn info
+npx shadcn add --all --dry-run
+```
+
+Add or refresh a specific public component deliberately with `npx shadcn add <component>`. The Premium registry,
+MedTech color customization, associated agents, and Figma reconciliation are intentionally deferred to their
+dedicated delivery.
 
 ## Quality commands
 
@@ -168,6 +202,6 @@ technical translation, and derived tasks without creating a competing roadmap.
 
 ## Deferred work
 
-- Tailwind CSS, shadcn/ui, the Premium registry, routing, forms, and product screens
+- Premium shadcn resources, MedTech tokens, forms, tables, and product screens
 - Frontend component and feature tests
 - GitHub Actions and deployment
