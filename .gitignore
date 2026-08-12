@@ -13,10 +13,13 @@ coverage/
 generated/
 playwright-report/
 test-results/
+apps/web/src/routeTree.gen.ts
+apps/web/src/shared/api/generated/
 
 # Local runtime data
 data/
 uploads/
+*.ply
 *.log
 
 # Local Spec Kit state

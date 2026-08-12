@@ -1,0 +1,12 @@
+# Generated or externally governed artifacts
+/.agents/
+/.specify/
+/specs/
+/AGENTS.md
+
+# Build, cache, and runtime artifacts
+/.nx/
+/coverage/
+/dist/
+/generated/
+/node_modules/
