@@ -27,7 +27,7 @@
 ## Scenario And Requirement Completeness
 
 - [x] CHK011 The four user stories are prioritized, independently testable, and cover authentication, patients, scans, and printing. [Spec §User Scenarios & Testing]
-- [x] CHK012 Every acceptance scenario uses explicit Given/When/Then conditions and has a stable identifier. [Spec US1-AS1–US4-AS11]
+- [x] CHK012 Every acceptance scenario uses explicit Given/When/Then conditions and has a stable identifier. [Spec US1-AS1–US4-AS12, including US3-AS10–US3-AS12]
 - [x] CHK013 No `[NEEDS CLARIFICATION]` marker or unresolved alternative remains. [Spec]
 - [x] CHK014 Every `FR-xxx` is atomic enough to test, uses a normative term, and identifies observable behavior or a source-mandated constraint. [Spec §Functional Requirements]
 - [x] CHK015 Every `SC-xxx` is measurable through acceptance evidence and avoids unsupported market or performance claims. [Spec §Measurable Outcomes]
@@ -38,16 +38,20 @@
 ## Experience Readiness For Figma
 
 - [x] CHK019 Authentication, patient directory, and patient workspace are the only primary destinations and each has a stable `DST-xxx` identifier. [Spec §Destinations]
-- [x] CHK020 Patient identity, scans, and print requests remain in one patient workspace without artificial scan or printing destinations. [Spec DST-PATIENT-WORKSPACE, FR-014]
+- [x] CHK020 Patient identity remains visible while the scan and print-request collections use two internal tabs within one patient workspace, without separate destinations, routes, or a sidebar. [Spec DST-PATIENT-WORKSPACE, NAV-PATIENT-SECTIONS, FR-014]
 - [x] CHK021 Every required table has a `TBL-xxx` identifier, required information, row actions, and cursor-pagination rule. [Spec §Functional Tables]
 - [x] CHK022 Every user action needed by the four journeys has an `ACT-xxx` identifier and an explicit availability or safety rule. [Spec §Action Index]
-- [x] CHK023 Every required authentication, patient, scan, and print state has a stable identifier and observable intent. [Spec §Required State Index]
+- [x] CHK023 Every required authentication, patient, scan, print, and system-navigation state has a stable identifier and observable intent. [Spec §Required State Index]
 - [x] CHK024 The specification leaves visual composition, components, density, and compact-layout strategy to Figma without weakening required information or actions. [Spec §Authority And Scope, §Functional Tables]
 - [x] CHK025 Desktop and mobile requirements preserve tabular collections, essential actions, and Previous/Next navigation without inventing totals. [Spec FR-045–FR-046]
+- [x] CHK042 Patient workspace navigation exposes only `TAB-PATIENT-SCANS` and `TAB-PATIENT-PRINTS`, selects scans by default, displays one collection panel at a time, and selects print requests after an accepted submission. [Spec US3-AS9, US4-AS12, FR-014, FR-042]
+- [x] CHK043 Scan validation preserves the displayed scan table and keeps selected-file feedback within the bounded upload context until correction or dismissal. [Spec US3-AS10, FR-023]
+- [x] CHK044 Scan upload separates file selection from confirmation, keeps confirmation disabled without a valid selection, and groups removal plus file-specific feedback with the selected attachment. [Spec US3-AS11–US3-AS12, FR-023]
+- [x] CHK045 The not-found fallback is explicitly a system state rather than a fourth primary destination, uses non-disclosing language, and exposes one safe return action. [Spec SYS-NOT-FOUND, ROUTE-NOT-FOUND, FR-055]
 
 ## Error, Degradation, And Safety Quality
 
-- [x] CHK026 Initial loading, empty, pending, success, validation, network, session-expiry, storage, capacity, ambiguous-confirmation, failure, and degraded-refresh states are all specified where relevant. [Spec §Required State Index]
+- [x] CHK026 Initial loading, empty, pending, success, validation, network, session-expiry, storage, capacity, ambiguous-confirmation, failure, degraded-refresh, and unknown-route states are all specified where relevant. [Spec §Required State Index]
 - [x] CHK027 Background refresh failure explicitly preserves displayed data, marks it as last known, and provides a safe retry. [Spec FR-050, SC-010]
 - [x] CHK028 Duplicate prevention covers repeated account, patient, scan, and print interactions, while ambiguous printing forbids blind resubmission. [Spec FR-040, FR-051]
 - [x] CHK029 Cross-account access reveals neither resource data nor resource existence. [Spec FR-015–FR-016, SC-011]
@@ -55,11 +59,12 @@
 
 ## Localization And Accessibility
 
-- [x] CHK031 French and English selection, browser preference, English fallback, persistence, and pre/post-authentication access are unambiguous. [Spec FR-010]
+- [x] CHK031 French and English behavior, browser preference, English fallback, persistence, and authenticated profile-menu access are unambiguous; authentication screens expose no manual language control. [Spec US1-AS9, FR-010]
 - [x] CHK032 User-visible failures are derived from stable problem codes rather than raw backend or printing-center messages. [Spec FR-048]
 - [x] CHK033 Keyboard navigation, visible focus, accessible names, field associations, and asynchronous announcements cover every destination and interaction. [Spec FR-052]
 - [x] CHK034 Compact-screen touch targets and non-color status communication are explicit acceptance requirements. [Spec FR-053]
 - [x] CHK035 Localized date, number, and size presentation preserves underlying values. [Spec §Edge Cases]
+- [x] CHK046 The not-found fallback is localized, keyboard accessible, independent of color, and safe for both authenticated and unauthenticated contexts. [Spec FR-052–FR-055, SC-015]
 
 ## Data Protection And Delivery Boundaries
 

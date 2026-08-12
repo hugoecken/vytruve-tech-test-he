@@ -4,6 +4,8 @@
 
 **Created**: 2026-08-11
 
+**Last clarified**: 2026-08-12
+
 **Status**: Accepted
 
 **Input**: Define the observable MVP experience for orthoprosthetists who manage patients, handle 3D scans, and request socket printing through the supplied printing center.
@@ -60,7 +62,7 @@ An orthoprosthetist creates an account or signs in, chooses the interface langua
 6. **US1-AS6** — **Given** a valid persisted session, **When** the application starts, **Then** a restoration state is shown until the authorized destination is resolved.
 7. **US1-AS7** — **Given** an expired session while viewing authorized content, **When** the next protected operation is resolved, **Then** authentication is requested and the authorized destination can be restored after sign-in, while unsubmitted sensitive form content is discarded.
 8. **US1-AS8** — **Given** an authenticated session, **When** the user signs out, **Then** protected content is no longer available and the authentication destination opens.
-9. **US1-AS9** — **Given** any authentication state, **When** the user changes language, **Then** the interface switches between French and English and retains the preference for later visits.
+9. **US1-AS9** — **Given** an authenticated session, **When** the user changes language from the profile menu, **Then** the interface switches between French and English and retains the preference for later visits.
 
 ---
 
@@ -103,6 +105,10 @@ Within one patient workspace, an orthoprosthetist reviews a paginated scan table
 6. **US3-AS6** — **Given** an available scan, **When** download is requested, **Then** the PLY content is downloaded without navigating away from the workspace.
 7. **US3-AS7** — **Given** temporarily unavailable scan storage, **When** download is requested, **Then** the existing workspace remains visible and an actionable unavailability message is shown.
 8. **US3-AS8** — **Given** multiple scan pages, **When** Previous or Next is activated, **Then** the adjacent cursor page is shown without a fabricated total.
+9. **US3-AS9** — **Given** an owned patient workspace opens, **When** its content becomes available, **Then** patient identity remains visible, `TAB-PATIENT-SCANS` is selected by default, and only the scan collection panel is displayed.
+10. **US3-AS10** — **Given** scan rows are already displayed and an upload file is selected, **When** the file is rejected, **Then** the scan table remains visible, the upload context remains open with the selected file, and the localized validation reason is shown within that context so another file can be chosen.
+11. **US3-AS11** — **Given** the scan upload context opens without a file, **When** it is displayed, **Then** its file-selection surface opens the system file chooser and its upload confirmation remains disabled.
+12. **US3-AS12** — **Given** one file has been selected, **When** it is reviewable, **Then** its name, size, validation state, and removal action are grouped together, and upload confirmation is enabled only while that selection is valid.
 
 ---
 
@@ -127,6 +133,7 @@ Within the same patient workspace, an orthoprosthetist requests printing of an e
 9. **US4-AS9** — **Given** already displayed print requests, **When** background refresh fails, **Then** the rows remain visible with their last known update and a non-blocking warning.
 10. **US4-AS10** — **Given** no eligible scan, **When** the printing region is reviewed, **Then** the unavailable action is explained and scan upload is offered in the same workspace.
 11. **US4-AS11** — **Given** multiple print-request pages, **When** Previous or Next is activated, **Then** the adjacent cursor page is shown without a fabricated total.
+12. **US4-AS12** — **Given** a print request is accepted from `TAB-PATIENT-SCANS`, **When** submission succeeds, **Then** `TAB-PATIENT-PRINTS` becomes selected and the accepted request is visible in `TBL-PRINTS` without leaving the patient workspace.
 
 ### Edge Cases
 
@@ -139,6 +146,7 @@ Within the same patient workspace, an orthoprosthetist requests printing of an e
 - If the account loses access to a resource during a view, the next protected operation removes inaccessible content without revealing a different owner.
 - A confirmed request without usable scheduling information remains queued at 0% until active production or a terminal outcome can be inferred from confirmed information.
 - Localized dates, numbers, and sizes preserve the underlying value while adapting presentation to the selected language.
+- An unknown application path or unavailable deep link displays a localized not-found fallback without revealing whether a protected resource exists and offers a safe return to the appropriate authenticated or unauthenticated destination.
 
 ## Experience Contract For Figma
 
@@ -153,13 +161,31 @@ Within the same patient workspace, an orthoprosthetist requests printing of an e
 
 ### Destinations
 
-| ID                    | Destination       | Required content and transitions                                                                                                                                                                  |
-| --------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| DST-AUTH              | Authentication    | Sign in and account creation are mutually reachable. The language selector is always available. Success opens the requested authorized destination or `DST-PATIENTS`.                             |
-| DST-PATIENTS          | Patient directory | This is the primary authenticated destination. It contains `TBL-PATIENTS`, `ACT-PATIENT-CREATE`, pagination, and the patient creation flow. Successful creation opens `DST-PATIENT-WORKSPACE`.    |
-| DST-PATIENT-WORKSPACE | Patient workspace | This single destination contains patient identity, `TBL-SCANS`, and `TBL-PRINTS`. Upload, download, printing, and tracking occur without artificial navigation between scan and printing screens. |
+| ID                    | Destination       | Required content and transitions                                                                                                                                                                                                     |
+| --------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| DST-AUTH              | Authentication    | Sign in and account creation are mutually reachable. The browser preference selects the initial supported language without exposing a manual language control. Success opens the requested authorized destination or `DST-PATIENTS`. |
+| DST-PATIENTS          | Patient directory | This is the primary authenticated destination. It contains `TBL-PATIENTS`, `ACT-PATIENT-CREATE`, pagination, and the patient creation flow. Successful creation opens `DST-PATIENT-WORKSPACE`.                                       |
+| DST-PATIENT-WORKSPACE | Patient workspace | This single destination keeps patient identity visible and exposes `TBL-SCANS` and `TBL-PRINTS` through `NAV-PATIENT-SECTIONS`. Upload, download, printing, and tracking occur without separate scan or printing destinations.       |
 
 There is no dashboard. Figma may use pages, dialogs, sheets, or inline regions for bounded actions, provided these three destinations and transitions remain recognizable.
+
+### System Fallback
+
+| ID            | Label     | Required behavior                                                                                                                                                                                         |
+| ------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SYS-NOT-FOUND | Not found | A localized fallback for unknown application paths and unavailable deep links. It is not a primary destination and MUST offer a safe return to `DST-PATIENTS` when authenticated or `DST-AUTH` otherwise. |
+
+The fallback MUST use neutral product language, MUST NOT reveal whether a protected patient, 3D scan, or Print request exists, and MUST remain visually consistent with the MedTech workspace.
+
+### Patient Workspace Navigation
+
+| ID                   | Label           | Required behavior                                                                                                                                         |
+| -------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| NAV-PATIENT-SECTIONS | Patient content | An internal tab list within `DST-PATIENT-WORKSPACE`; patient identity remains visible and exactly one associated collection panel is displayed at a time. |
+| TAB-PATIENT-SCANS    | 3D scans        | Selected by default when the workspace opens; displays `TBL-SCANS` and its upload, download, printing, state, and pagination behavior.                    |
+| TAB-PATIENT-PRINTS   | Print requests  | Displays `TBL-PRINTS` and its tracking, state, and pagination behavior; becomes selected after a print request is accepted.                               |
+
+The tabs do not create destinations, routes, or a sidebar. On compact screens both triggers occupy the available width and provide touch targets of at least 44 pixels. The navigation structure may accommodate future peer sections, but the MVP exposes only these two tabs.
 
 ### Functional Tables
 
@@ -185,31 +211,32 @@ Scheduled start and end information remains visibly estimated. A derived time po
 
 ### Action Index
 
-| ID                  | Action                                                     | Availability rule                                                                       |
-| ------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| ACT-LANGUAGE-CHANGE | Change language                                            | Available before and after authentication.                                              |
-| ACT-AUTH-SIGN-IN    | Sign in                                                    | Available in the sign-in mode; pending prevents duplicate submission.                   |
-| ACT-AUTH-SIGN-UP    | Create account                                             | Available in the account-creation mode; pending prevents duplicate submission.          |
-| ACT-AUTH-SIGN-OUT   | Sign out                                                   | Available from every authenticated destination without competing with the primary task. |
-| ACT-PATIENT-CREATE  | Create patient                                             | Available from `DST-PATIENTS`.                                                          |
-| ACT-PATIENT-OPEN    | Open patient                                               | Available for each row in `TBL-PATIENTS`.                                               |
-| ACT-SCAN-UPLOAD     | Upload 3D scan                                             | Available in `DST-PATIENT-WORKSPACE`.                                                   |
-| ACT-SCAN-DOWNLOAD   | Download 3D scan                                           | Available for retrievable rows in `TBL-SCANS`.                                          |
-| ACT-PRINT-CREATE    | Request printing                                           | Available only for a valid scan without a non-terminal request.                         |
-| ACT-PAGE-PREVIOUS   | Show previous page                                         | Enabled only when a previous cursor exists.                                             |
-| ACT-PAGE-NEXT       | Show next page                                             | Enabled only when a next cursor exists.                                                 |
-| ACT-RETRY           | Retry a safe read or explicitly restart a failed operation | Never represents a blind retry of an ambiguous print submission.                        |
+| ID                  | Action                                                     | Availability rule                                                                                |
+| ------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| ACT-LANGUAGE-CHANGE | Change language                                            | Available from the authenticated profile menu.                                                   |
+| ACT-AUTH-SIGN-IN    | Sign in                                                    | Available in the sign-in mode; pending prevents duplicate submission.                            |
+| ACT-AUTH-SIGN-UP    | Create account                                             | Available in the account-creation mode; pending prevents duplicate submission.                   |
+| ACT-AUTH-SIGN-OUT   | Sign out                                                   | Available from every authenticated destination without competing with the primary task.          |
+| ACT-PATIENT-CREATE  | Create patient                                             | Available from `DST-PATIENTS`.                                                                   |
+| ACT-PATIENT-OPEN    | Open patient                                               | Available for each row in `TBL-PATIENTS`.                                                        |
+| ACT-SCAN-UPLOAD     | Upload 3D scan                                             | Available in `DST-PATIENT-WORKSPACE`; confirmation is disabled until one valid file is selected. |
+| ACT-SCAN-DOWNLOAD   | Download 3D scan                                           | Available for retrievable rows in `TBL-SCANS`.                                                   |
+| ACT-PRINT-CREATE    | Request printing                                           | Available only for a valid scan without a non-terminal request.                                  |
+| ACT-PAGE-PREVIOUS   | Show previous page                                         | Enabled only when a previous cursor exists.                                                      |
+| ACT-PAGE-NEXT       | Show next page                                             | Enabled only when a next cursor exists.                                                          |
+| ACT-RETRY           | Retry a safe read or explicitly restart a failed operation | Never represents a blind retry of an ambiguous print submission.                                 |
 
 ### Required State Index
 
 Every identifier below must be traceable in future Figma evidence. Related states may share a frame when their differences remain explicit and reviewable.
 
-| Area           | State IDs                                                                                                                                                                            | Observable requirement                                                                                                                |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Authentication | AUTH-INITIAL, AUTH-PENDING, AUTH-VALIDATION, AUTH-ACCOUNT-EXISTS, AUTH-CREDENTIALS-INVALID, AUTH-RATE-LIMITED, AUTH-NETWORK-UNAVAILABLE, AUTH-RESTORING, AUTH-SESSION-EXPIRED        | Distinguish entry, field correction, safe account-level failures, session restoration, and reauthentication.                          |
-| Patients       | PATIENTS-LOADING, PATIENTS-EMPTY, PATIENTS-LIST, PATIENTS-PAGINATING, PATIENT-CREATE-PENDING, PATIENT-CREATE-SUCCESS, PATIENT-CREATE-ERROR, PATIENTS-REFRESH-DEGRADED                | Preserve existing table data during pagination and degraded refresh; creation success transitions to the new workspace.               |
-| 3D scans       | SCANS-EMPTY, SCAN-SELECTED, SCAN-UPLOADING, SCAN-CONTENT-INVALID, SCAN-TOO-LARGE, SCAN-UPLOAD-SUCCESS, SCAN-STORAGE-UNAVAILABLE, SCAN-DOWNLOAD-UNAVAILABLE                           | Explain eligibility and keep the patient workspace stable through upload and storage outcomes.                                        |
-| Print requests | PRINT-NO-ELIGIBLE-SCAN, PRINT-SUBMITTING, PRINT-CONFIRMATION-PENDING, PRINT-CAPACITY-REACHED, PRINT-QUEUED, PRINT-IN-PROGRESS, PRINT-COMPLETED, PRINT-FAILED, PRINT-REFRESH-DEGRADED | Surface safety around duplicate prevention, ambiguous confirmation, provider capacity, lifecycle, estimated progress, and stale data. |
+| Area              | State IDs                                                                                                                                                                            | Observable requirement                                                                                                                |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Authentication    | AUTH-INITIAL, AUTH-PENDING, AUTH-VALIDATION, AUTH-ACCOUNT-EXISTS, AUTH-CREDENTIALS-INVALID, AUTH-RATE-LIMITED, AUTH-NETWORK-UNAVAILABLE, AUTH-RESTORING, AUTH-SESSION-EXPIRED        | Distinguish entry, field correction, safe account-level failures, session restoration, and reauthentication.                          |
+| Patients          | PATIENTS-LOADING, PATIENTS-EMPTY, PATIENTS-LIST, PATIENTS-PAGINATING, PATIENT-CREATE-PENDING, PATIENT-CREATE-SUCCESS, PATIENT-CREATE-ERROR, PATIENTS-REFRESH-DEGRADED                | Preserve existing table data during pagination and degraded refresh; creation success transitions to the new workspace.               |
+| 3D scans          | SCANS-EMPTY, SCAN-SELECTED, SCAN-UPLOADING, SCAN-CONTENT-INVALID, SCAN-TOO-LARGE, SCAN-UPLOAD-SUCCESS, SCAN-STORAGE-UNAVAILABLE, SCAN-DOWNLOAD-UNAVAILABLE                           | Explain eligibility and keep the patient workspace stable through upload and storage outcomes.                                        |
+| Print requests    | PRINT-NO-ELIGIBLE-SCAN, PRINT-SUBMITTING, PRINT-CONFIRMATION-PENDING, PRINT-CAPACITY-REACHED, PRINT-QUEUED, PRINT-IN-PROGRESS, PRINT-COMPLETED, PRINT-FAILED, PRINT-REFRESH-DEGRADED | Surface safety around duplicate prevention, ambiguous confirmation, provider capacity, lifecycle, estimated progress, and stale data. |
+| System navigation | ROUTE-NOT-FOUND                                                                                                                                                                      | Explain that the requested page is unavailable without exposing protected-resource existence and provide one safe return action.      |
 
 ## Requirements _(mandatory)_
 
@@ -226,14 +253,14 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - **FR-007**: The product MUST restore a valid authenticated session at startup and MUST provide sign-out from every authenticated destination.
 - **FR-008**: After successful authentication, the product MUST open the requested authorized destination, or `DST-PATIENTS` when no such destination exists.
 - **FR-009**: After session expiry, successful reauthentication MUST restore the requested authorized destination but MUST NOT restore unsubmitted sensitive form content.
-- **FR-010**: The product MUST support French and English, initially select the browser preference when supported, fall back to English, expose `ACT-LANGUAGE-CHANGE` before and after authentication, and persist the explicit choice.
+- **FR-010**: The product MUST support French and English, initially select the browser preference when supported, fall back to English, expose `ACT-LANGUAGE-CHANGE` from the authenticated profile menu, and persist the explicit choice.
 
 #### Navigation And Patient Ownership
 
 - **FR-011**: The authenticated experience MUST contain only `DST-PATIENTS` and `DST-PATIENT-WORKSPACE` as primary destinations and MUST NOT introduce a dashboard.
 - **FR-012**: `DST-PATIENTS` MUST be the primary destination after authentication and MUST expose `TBL-PATIENTS` and `ACT-PATIENT-CREATE`.
 - **FR-013**: Successful patient creation and `ACT-PATIENT-OPEN` MUST open `DST-PATIENT-WORKSPACE` for the selected patient.
-- **FR-014**: `DST-PATIENT-WORKSPACE` MUST keep patient identity, scans, and print requests in one destination without separate scan or printing navigation.
+- **FR-014**: `DST-PATIENT-WORKSPACE` MUST keep patient identity visible and MUST expose `TAB-PATIENT-SCANS` and `TAB-PATIENT-PRINTS` through `NAV-PATIENT-SECTIONS`, with exactly one collection panel visible at a time, `TAB-PATIENT-SCANS` selected by default, and no separate destination, route, or sidebar.
 - **FR-015**: An account MUST be able to list, create, and open only patients it owns.
 - **FR-016**: Requests for unknown patients and patients owned by another account MUST be indistinguishable and MUST reveal no patient data.
 - **FR-017**: Patient creation MUST require a non-empty Unicode first name and last name, each limited to 100 characters after surrounding whitespace is removed.
@@ -245,7 +272,7 @@ Every identifier below must be traceable in future Figma evidence. Related state
 #### 3D Scans
 
 - **FR-022**: An account MUST be able to list, upload, and download 3D scans only within an owned patient's workspace.
-- **FR-023**: Scan upload MUST show the selected file's name and size before or during submission and MUST provide perceivable pending feedback.
+- **FR-023**: Scan upload MUST preserve the current patient workspace and scan table, MUST provide a keyboard-operable file-selection surface that opens the system file chooser, MUST group the selected file's name, size, validation state, and removal action within one bounded upload context, MUST disable confirmation until one valid file is selected, and MUST keep a localized file-specific validation reason in that same context until the selection is removed or corrected.
 - **FR-024**: A scan MUST be no larger than 25 MiB.
 - **FR-025**: A scan MUST be a PLY 1.0 file using ASCII, binary little-endian, or binary big-endian encoding.
 - **FR-026**: A scan MUST contain a structurally valid, non-empty mesh; a `.ply` filename alone MUST NOT establish validity.
@@ -267,7 +294,7 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - **FR-039**: A printing-center capacity rejection MUST NOT create an accepted request and MUST explain that submission may be retried later.
 - **FR-040**: An ambiguous submission outcome MUST be reconciled by the stable reference and MUST NOT be blindly submitted again.
 - **FR-041**: `TBL-PRINTS` MUST show Reference, Associated scan, Status, Estimated progress, and available production dates or last-known timing information.
-- **FR-042**: A print request accepted by the product MUST appear immediately in `TBL-PRINTS`, initially as confirmation pending when provider confirmation is not yet known.
+- **FR-042**: A print request accepted by the product MUST appear immediately in `TBL-PRINTS`, initially as confirmation pending when provider confirmation is not yet known, and MUST select `TAB-PATIENT-PRINTS` so the accepted request is visible.
 - **FR-043**: Only one confirmation-pending, queued, or in-progress request MAY exist for a scan at one time.
 - **FR-044**: A new print request for the same scan MAY be created after its previous request is completed or failed.
 
@@ -283,6 +310,7 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - **FR-052**: All destinations, tables, actions, forms, messages, and state changes MUST support keyboard navigation, visible focus, accessible names, programmatic field associations, and announcements for asynchronous feedback.
 - **FR-053**: Touch targets MUST be usable on compact screens, and no status, validation result, or available action MAY rely on color alone.
 - **FR-054**: The product MUST minimize displayed and retained personal data to the defined account and patient fields and MUST make no claim of GDPR, HDS, medical-device, or other formal certification.
+- **FR-055**: Unknown application paths and unavailable deep links MUST display `SYS-NOT-FOUND` with localized, non-disclosing language and one safe return action to `DST-PATIENTS` for an authenticated account or `DST-AUTH` otherwise.
 
 ### Key Entities
 
@@ -304,12 +332,12 @@ Every identifier below must be traceable in future Figma evidence. Related state
 ### Measurable Outcomes
 
 - **SC-001**: All four independently testable user stories can be completed from their stated starting condition without introducing a dashboard or leaving the required patient context.
-- **SC-002**: Account creation, sign-in, restoration, expiry, sign-out, and language selection each pass every US1 acceptance scenario in both French and English.
+- **SC-002**: Account creation, sign-in, restoration, expiry, and sign-out pass every US1 acceptance scenario in both French and English; authenticated language selection persists without adding a pre-authentication control.
 - **SC-003**: Patient creation accepts both boundary ages, rejects every invalid boundary class, creates exactly one record per valid submission, and exposes no cross-account patient information.
-- **SC-004**: A user can upload and then download an accepted scan from one patient workspace without navigating to a separate scan destination.
+- **SC-004**: A user can open one patient workspace with persistent patient identity, use the default `TAB-PATIENT-SCANS`, and upload and then download an accepted scan without navigating to a separate scan destination.
 - **SC-005**: Repeated activation and ambiguous provider responses produce at most one non-terminal print request and one stable reference for the intended scan.
 - **SC-006**: Every tracked print request displays exactly one of the five canonical lifecycle states and presents Estimated progress according to the 0%, capped-99%, 100%, or no-percentage invariant.
-- **SC-007**: An accepted print request appears in tracking immediately, can be followed to completed or failed, and permits reprinting only after a terminal state.
+- **SC-007**: An accepted print request selects `TAB-PATIENT-PRINTS`, appears in tracking immediately, can be followed to completed or failed, and permits reprinting only after a terminal state.
 - **SC-008**: Every required validation, network, storage, capacity, session, and refresh-degradation state has localized feedback and a safe next action without losing already displayed data.
 - **SC-009**: All three supplied sample scans are accepted; files over 25 MiB, empty meshes, structurally invalid meshes, and unsupported content are rejected before print eligibility.
 - **SC-010**: One hundred percent of background refresh failures preserve the last displayed table rows and visibly distinguish them from freshly confirmed data.
@@ -317,6 +345,7 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - **SC-012**: Every destination, table, action, required state, source requirement, functional requirement, and success criterion is addressable by a stable identifier for Figma and acceptance review.
 - **SC-013**: The delivered product uses the mandated React frontend and NestJS backend and passes the architecture and code-organization review defined by the brief.
 - **SC-014**: A reviewer can set up and run the delivered repository, understand its choices and trade-offs, inspect meaningful Git history, and identify the declared AI-assisted workflow from the README and repository evidence.
+- **SC-015**: Every unknown path and unavailable deep link displays the localized `ROUTE-NOT-FOUND` state, reveals no protected-resource existence, and returns the user to the appropriate safe destination through one keyboard-accessible action.
 
 ## Delivery Constraints
 
