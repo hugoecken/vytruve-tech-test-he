@@ -1,0 +1,29 @@
+{
+  "name": "infrastructure",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "up": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose --env-file .env -f infrastructure/compose.yaml up --detach --wait postgres minio"
+      }
+    },
+    "status": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose --env-file .env -f infrastructure/compose.yaml ps"
+      }
+    },
+    "down": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose --env-file .env -f infrastructure/compose.yaml down"
+      }
+    }
+  }
+}

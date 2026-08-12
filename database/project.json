@@ -1,0 +1,36 @@
+{
+  "name": "database",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "validate": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose --env-file .env -f infrastructure/compose.yaml run --rm liquibase validate"
+      }
+    },
+    "migrate": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose --env-file .env -f infrastructure/compose.yaml run --rm liquibase update"
+      }
+    },
+    "status": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose --env-file .env -f infrastructure/compose.yaml run --rm liquibase status --verbose"
+      }
+    },
+    "rollback": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose --env-file .env -f infrastructure/compose.yaml run --rm liquibase rollback-count --count=1"
+      }
+    }
+  }
+}
