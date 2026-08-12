@@ -14,9 +14,11 @@ The current implementation provides:
 - PostgreSQL and private MinIO services through Docker Compose;
 - a Liquibase XML schema executed only in a disposable container;
 - cookie-based account registration and authentication; and
-- owner-scoped patient creation, retrieval, and server-side pagination.
+- owner-scoped patient creation, retrieval, and server-side pagination;
+- content-validated PLY uploads stored in a private MinIO bucket; and
+- owner-authorized scan listing and byte-for-byte content streaming.
 
-It does not yet implement scan storage, printing integration, automated tests, or product UI.
+It does not yet implement printing integration, automated tests, or product UI.
 
 ## Prerequisites
 
@@ -98,7 +100,11 @@ npm exec nx -- serve web
 ```
 
 The API validates every required runtime setting before listening under `/api`. It currently exposes account session
-and owner-scoped patient endpoints. The Web application mounts React without rendering a product screen.
+and owner-scoped patient and scan endpoints. `MAX_SCAN_SIZE_BYTES` configures the upload boundary and defaults to the
+accepted 25 MiB product limit in `.env.example`. Scan uploads accept one structurally valid PLY 1.0 mesh within that
+limit, ignore client filenames and MIME claims, and expose neither object keys nor MinIO details. The private bucket is
+created through the official MinIO client when the API starts. The Web application mounts React without rendering a
+product screen.
 
 Generate the code-first OpenAPI contract without serving a public Swagger interface:
 
@@ -138,7 +144,7 @@ technical translation, and derived tasks without creating a competing roadmap.
 
 ## Deferred work
 
-- Scan storage and printing integration
+- Printing integration
 - Backend unit and HTTP integration tests
 - Tailwind CSS, shadcn/ui, the Premium registry, routing, forms, and product screens
 - Frontend component and browser tests
