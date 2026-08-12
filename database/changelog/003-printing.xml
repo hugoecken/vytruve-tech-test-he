@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
+>
+  <changeSet id="004-create-print-request" author="vytruve">
+    <createTable tableName="print_request">
+      <column name="id" type="uuid" defaultValueComputed="gen_random_uuid()">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_print_request" />
+      </column>
+      <column name="scan_id" type="uuid">
+        <constraints nullable="false" />
+      </column>
+      <column name="reference" type="varchar(12)">
+        <constraints
+          nullable="false"
+          unique="true"
+          uniqueConstraintName="uq_print_request_reference"
+        />
+      </column>
+      <column name="provider_id" type="varchar(128)" />
+      <column name="status" type="varchar(32)" defaultValue="confirmation_pending">
+        <constraints nullable="false" />
+      </column>
+      <column name="active_slot" type="boolean" defaultValueBoolean="true" />
+      <column name="scheduled_start_at" type="timestamp(3) with time zone" />
+      <column name="scheduled_end_at" type="timestamp(3) with time zone" />
+      <column name="last_observed_at" type="timestamp(3) with time zone" />
+      <column
+        name="created_at"
+        type="timestamp(3) with time zone"
+        defaultValueComputed="CURRENT_TIMESTAMP"
+      >
+        <constraints nullable="false" />
+      </column>
+      <column
+        name="updated_at"
+        type="timestamp(3) with time zone"
+        defaultValueComputed="CURRENT_TIMESTAMP"
+      >
+        <constraints nullable="false" />
+      </column>
+    </createTable>
+    <addForeignKeyConstraint
+      baseColumnNames="scan_id"
+      baseTableName="print_request"
+      constraintName="fk_print_request_scan"
+      onDelete="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="scan"
+    />
+    <addUniqueConstraint
+      columnNames="scan_id, active_slot"
+      constraintName="uq_print_request_active_slot"
+      tableName="print_request"
+    />
+    <!-- The active slot is the database-owned concurrency invariant selected by the accepted plan. -->
+    <sql dbms="postgresql">
+      ALTER TABLE print_request ADD CONSTRAINT ck_print_request_active_slot CHECK (
+        (status IN ('confirmation_pending', 'queued', 'in_progress') AND active_slot IS TRUE)
+        OR (status IN ('completed', 'failed') AND active_slot IS NULL)
+      )
+    </sql>
+    <createIndex tableName="print_request" indexName="ix_print_request_scan_created">
+      <column name="scan_id" />
+      <column name="created_at" descending="true" />
+      <column name="id" descending="true" />
+    </createIndex>
+    <rollback>
+      <dropTable tableName="print_request" />
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

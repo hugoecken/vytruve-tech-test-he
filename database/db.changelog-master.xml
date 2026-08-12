@@ -6,4 +6,5 @@
 >
   <include file="changelog/001-accounts-patients.xml" relativeToChangelogFile="true" />
   <include file="changelog/002-scans.xml" relativeToChangelogFile="true" />
+  <include file="changelog/003-printing.xml" relativeToChangelogFile="true" />
 </databaseChangeLog>
