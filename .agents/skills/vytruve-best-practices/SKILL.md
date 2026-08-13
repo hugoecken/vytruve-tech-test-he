@@ -24,7 +24,7 @@ task. Technical references explain correct implementation practice; they do not 
 | Repository authorities, phase gates, target paths                       | `overlays/repository-profile.md`                                                                                                     |
 | Spec Kit setup, specification, acceptance, planning, tasks, convergence | `references/specification-driven-development.md`, `overlays/spec-kit-profile.md`                                                     |
 | Git branches, commits, issues, pull requests                            | `references/git-workflow.md`, `overlays/git-profile.md`                                                                              |
-| Figma foundations, components, screens, lifecycle, design handoff       | `references/figma-policy.md`, `overlays/design-profile.md`, plus applicable Figma skills                                             |
+| Figma foundations, components, screens, lifecycle, design handoff       | `references/figma-policy.md`, `overlays/figma-profile.md`, plus applicable Figma skills                                              |
 | Any code implementation or review                                       | `$karpathy-guidelines`, `references/code-documentation-policy.md`, the accepted specification and plan, plus boundary guidance below |
 | Nx generation, workspace structure, task orchestration                  | `$nx-workspace`, `$nx-generate`, `$nx-plugins`, `$nx-run-tasks`, `$link-workspace-packages` as applicable                            |
 | React/Vite UI, routing, forms, server state                             | `references/frontend-web-policy.md`; use `$vercel-react-best-practices`, `$vercel-composition-patterns`, and `$shadcn` when relevant |
