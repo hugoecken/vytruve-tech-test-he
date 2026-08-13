@@ -1,15 +1,10 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
+import { getCachedAccountSession } from '@/modules/auth/api/session-cache';
 
 /** Neutral index route reserved until product routes are implemented. */
 export const Route = createFileRoute('/')({
-  component: IndexRouteComponent,
+  beforeLoad: ({ context }) => {
+    const session = getCachedAccountSession(context.queryClient);
+    throw redirect({ to: session === null ? '/sign-in' : '/patients' });
+  },
 });
-
-/**
- * Keeps the foundation free of provisional product UI.
- *
- * @returns No visible content during the frontend foundation stage.
- */
-function IndexRouteComponent(): null {
-  return null;
-}

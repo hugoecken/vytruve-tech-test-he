@@ -1,8 +1,81 @@
 {
   "common": {
+    "actions": {
+      "retry": "Réessayer"
+    },
     "languages": {
       "en": "Anglais",
       "fr": "Français"
+    }
+  },
+  "auth": {
+    "brand": {
+      "title": "Du scan 3D à la production de l'emboîture.",
+      "description": "Consultez les dossiers patients, contrôlez les scans PLY et suivez la production des emboîtures au même endroit.",
+      "benefits": {
+        "records": "Dossiers patients et historique des scans",
+        "scans": "Scans PLY contrôlés avant utilisation",
+        "printing": "Suivi de la production des emboîtures"
+      }
+    },
+    "fields": {
+      "email": "E-mail",
+      "emailPlaceholder": "Saisissez votre e-mail",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Saisissez votre mot de passe",
+      "newPasswordPlaceholder": "Créez un mot de passe",
+      "passwordDescription": "Utilisez entre 12 et 128 caractères.",
+      "confirmPassword": "Confirmer le mot de passe",
+      "confirmPasswordPlaceholder": "Répétez votre mot de passe"
+    },
+    "signIn": {
+      "title": "Bon retour parmi nous",
+      "description": "Accédez aux dossiers patients, aux scans 3D et aux demandes d'impression.",
+      "submit": "Se connecter",
+      "pending": "Connexion…",
+      "noAccount": "Vous découvrez Vytruve ?",
+      "createAccount": "Créer un compte"
+    },
+    "signUp": {
+      "title": "Créer votre compte",
+      "description": "Configurez votre espace de travail clinique.",
+      "submit": "Créer le compte",
+      "pending": "Création du compte…",
+      "hasAccount": "Vous avez déjà un compte ?",
+      "signIn": "Se connecter"
+    },
+    "session": {
+      "restoring": "Restauration de votre session",
+      "restoreFailedTitle": "Votre espace de travail est temporairement indisponible",
+      "restoreFailedDescription": "Nous n'avons pas pu restaurer votre session. Vérifiez votre connexion et réessayez."
+    },
+    "validation": {
+      "email": "Saisissez une adresse e-mail valide.",
+      "passwordRequired": "Saisissez votre mot de passe.",
+      "passwordInvalid": "Vérifiez votre mot de passe et réessayez.",
+      "passwordLength": "Utilisez entre 12 et 128 caractères.",
+      "passwordConfirmation": "Saisissez le même mot de passe dans les deux champs."
+    }
+  },
+  "shell": {
+    "profile": {
+      "open": "Ouvrir le menu du compte",
+      "account": "Compte",
+      "language": "Langue",
+      "signOut": "Se déconnecter",
+      "signOutFailed": "La déconnexion n'a pas abouti. Réessayez."
+    },
+    "notFound": {
+      "eyebrow": "Erreur 404",
+      "title": "Cette page a fait fausse route",
+      "description": "La page a peut-être été déplacée ou l'adresse est incorrecte. Revenez aux dossiers patients pour poursuivre votre travail.",
+      "backToPatients": "Revenir aux patients",
+      "backToSignIn": "Revenir à la connexion"
+    },
+    "unexpectedError": {
+      "eyebrow": "Erreur inattendue",
+      "title": "L'espace de travail a rencontré un petit contretemps",
+      "description": "Un problème inattendu a interrompu votre travail. Réessayez pour continuer."
     }
   },
   "errors": {

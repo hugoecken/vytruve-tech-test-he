@@ -1,8 +1,81 @@
 {
   "common": {
+    "actions": {
+      "retry": "Try again"
+    },
     "languages": {
       "en": "English",
       "fr": "French"
+    }
+  },
+  "auth": {
+    "brand": {
+      "title": "From 3D scan to socket production.",
+      "description": "Review patient records, check PLY scans and follow socket production in one place.",
+      "benefits": {
+        "records": "Patient records and scan history",
+        "scans": "PLY scans checked before use",
+        "printing": "Socket production tracking"
+      }
+    },
+    "fields": {
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "newPasswordPlaceholder": "Create a password",
+      "passwordDescription": "Use 12 to 128 characters.",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Repeat your password"
+    },
+    "signIn": {
+      "title": "Welcome back",
+      "description": "Access your patient records, 3D scans and print requests.",
+      "submit": "Sign in",
+      "pending": "Signing in…",
+      "noAccount": "New to Vytruve?",
+      "createAccount": "Create an account"
+    },
+    "signUp": {
+      "title": "Create your account",
+      "description": "Set up your clinical workspace.",
+      "submit": "Create account",
+      "pending": "Creating account…",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "session": {
+      "restoring": "Restoring your session",
+      "restoreFailedTitle": "Your workspace is temporarily unavailable",
+      "restoreFailedDescription": "We could not restore your session. Check your connection and try again."
+    },
+    "validation": {
+      "email": "Enter a valid email address.",
+      "passwordRequired": "Enter your password.",
+      "passwordInvalid": "Check your password and try again.",
+      "passwordLength": "Use 12 to 128 characters.",
+      "passwordConfirmation": "Enter the same password in both fields."
+    }
+  },
+  "shell": {
+    "profile": {
+      "open": "Open account menu",
+      "account": "Account",
+      "language": "Language",
+      "signOut": "Sign out",
+      "signOutFailed": "Sign out could not be completed. Try again."
+    },
+    "notFound": {
+      "eyebrow": "Error 404",
+      "title": "This page took a wrong turn",
+      "description": "The page may have moved or the address may be incorrect. Return to your patient records to continue your work.",
+      "backToPatients": "Back to patients",
+      "backToSignIn": "Back to sign in"
+    },
+    "unexpectedError": {
+      "eyebrow": "Unexpected error",
+      "title": "The workspace hit a small snag",
+      "description": "Something unexpected interrupted the workflow. Try again to continue your work."
     }
   },
   "errors": {
