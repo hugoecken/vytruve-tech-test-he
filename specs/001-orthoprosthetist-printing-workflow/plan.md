@@ -4,7 +4,7 @@
 
 **Feature**: `001-orthoprosthetist-printing-workflow` | **Date**: 2026-08-12 | **Specification**: [`spec.md`](spec.md) at `b1cd82fe1347afe4221931cf1301710f7bf34721`
 
-**Historical design evidence**: [`figma-profile.md`](../../.agents/skills/vytruve-best-practices/overlays/figma-profile.md), with the accepted issue #3 snapshot preserved at `c0a65411f83effa5024dec6405d0147a34da05a6`
+**Visual authorities**: The canonical Figma UI Library and Product Design identified by [`figma-profile.md`](../../.agents/skills/vytruve-best-practices/overlays/figma-profile.md). Their current accepted components, tokens, and screen compositions are inspected in Figma rather than duplicated in this plan.
 
 **Planning authority**: GitHub issue #4. Acceptance authorizes publication of these planning artifacts but no application code or Figma change.
 
@@ -44,7 +44,7 @@ The architecture deliberately excludes CQRS, queues, workers, microservices, gen
 | --- | --- | --- |
 | Repository authority first | Pass | Root instructions and routed policies were loaded before planning. |
 | Accepted intent before architecture | Pass | `spec.md` is accepted at the immutable commit above. |
-| Accepted design evidence | Pass | The design profile binds the Ready for Development frames and exact tokens. |
+| Accepted visual authority | Pass | The design profile links the canonical Figma authorities without duplicating their visual values. |
 | GitHub execution authority | Pass | Issue #4 owns planning; no task or Git state is mutated by Spec Kit. |
 | Protected data | Pass | The plan contains no supplied credential, contact, scan content, real filename, or patient data. |
 | Proportionality | Pass | Two applications and two stateful dependencies serve explicit requirements; speculative layers are rejected. |
@@ -192,7 +192,6 @@ specs/001-orthoprosthetist-printing-workflow/
 ├── plan.md
 ├── research.md
 ├── data-model.md
-├── design-handoff.md
 ├── quickstart.md
 ├── contracts/
 │   └── http-api.md

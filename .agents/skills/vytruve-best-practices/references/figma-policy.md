@@ -353,7 +353,8 @@ For every reachable screen family, evaluate and resolve the following state matr
   authority.
 - Keep lineage from every selectively adopted variable, style, icon, component, or pattern to its upstream source and
   local owner. For a complete vendor-native adoption, keep file-level source, version, configuration, and update
-  lineage in the repository profile and owning evidence.
+  lineage inside the canonical design set or task-owned evidence. Keep the repository profile limited to durable
+  authority, configuration, status, and canonical links.
 - Review each proposed update against local modifications and every linked consumer it can affect. Accept, adapt, or
   reject the update explicitly; do not infer compatibility from matching names or appearance. Follow the supplier's
   documented update procedure for a vendor-native library without silently converting it to local ownership.
