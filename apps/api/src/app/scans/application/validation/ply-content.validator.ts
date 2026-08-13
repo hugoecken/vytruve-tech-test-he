@@ -65,7 +65,7 @@ interface PlyHeader {
 }
 
 /** Trusted metadata returned after full bounded PLY validation. */
-export interface ValidatedPly {
+interface ValidatedPly {
   encoding: ScanEncodingValue;
 }
 

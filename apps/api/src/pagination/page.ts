@@ -11,7 +11,7 @@ export interface Page<Item> extends PageParameters {
 }
 
 /** TypeORM-compatible offset window with one look-ahead item. */
-export interface PageWindow {
+interface PageWindow {
   skip: number;
   take: number;
 }
