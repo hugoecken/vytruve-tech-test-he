@@ -23,6 +23,10 @@ uploads/
 # Local Spec Kit state
 .specify/feature.json
 
+# Licensed local Agent Skills
+.agents/skills/generate-code/
+.agents/skills/import-variables/
+
 # Editors and operating systems
 .DS_Store
 .idea/

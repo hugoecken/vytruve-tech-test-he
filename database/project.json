@@ -8,28 +8,28 @@
       "cache": false,
       "executor": "nx:run-commands",
       "options": {
-        "command": "docker compose --env-file .env -f infrastructure/compose.yaml run --rm liquibase validate"
+        "command": "docker compose --env-file .env.local -f infrastructure/compose.yaml run --rm liquibase validate"
       }
     },
     "migrate": {
       "cache": false,
       "executor": "nx:run-commands",
       "options": {
-        "command": "docker compose --env-file .env -f infrastructure/compose.yaml run --rm liquibase update"
+        "command": "docker compose --env-file .env.local -f infrastructure/compose.yaml run --rm liquibase update"
       }
     },
     "status": {
       "cache": false,
       "executor": "nx:run-commands",
       "options": {
-        "command": "docker compose --env-file .env -f infrastructure/compose.yaml run --rm liquibase status --verbose"
+        "command": "docker compose --env-file .env.local -f infrastructure/compose.yaml run --rm liquibase status --verbose"
       }
     },
     "rollback": {
       "cache": false,
       "executor": "nx:run-commands",
       "options": {
-        "command": "docker compose --env-file .env -f infrastructure/compose.yaml run --rm liquibase rollback-count --count=1"
+        "command": "docker compose --env-file .env.local -f infrastructure/compose.yaml run --rm liquibase rollback-count --count=1"
       }
     }
   }

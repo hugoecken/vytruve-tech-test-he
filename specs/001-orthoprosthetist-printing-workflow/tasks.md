@@ -24,7 +24,7 @@
 - [ ] T002 Add only the accepted runtime and build dependencies to `package.json` and lock them in `package-lock.json`, including PostgreSQL, TypeORM, Liquibase orchestration, MinIO, Orval, Zod Mini, React Hook Form, i18next, TanStack Router/Query/Table, shadcn/ui, and Lucide React
 - [ ] T003 [P] Configure strict shared TypeScript, ESLint, Prettier, and Nx defaults in `tsconfig.base.json`, `eslint.config.mjs`, `.prettierignore`, `nx.json`, `apps/api/tsconfig*.json`, and `apps/web/tsconfig*.json`
 - [ ] T004 [P] Define PostgreSQL and private MinIO services, health checks, and named volumes in `infrastructure/compose.yaml`
-- [ ] T005 [P] Document safe environment names in `.env.example`, ignore local values in `.gitignore`, and define typed runtime configuration entry points in `apps/api/src/config/` and `apps/web/src/shared/config/`
+- [ ] T005 [P] Document safe environment names in the root `.env.example`, ignore local values in `.gitignore`, and define typed runtime configuration entry points in `apps/api/src/config/` and `apps/web/src/shared/config/`
 - [ ] T006 Add authoritative Nx targets for infrastructure lifecycle, Liquibase migration, OpenAPI emission, Orval generation, and application serving in `infrastructure/project.json`, `database/project.json`, `apps/api/project.json`, and `apps/web/project.json`
 
 **Checkpoint**: A clean checkout can install dependencies and start or stop local infrastructure exclusively through the documented npm and Nx boundary.

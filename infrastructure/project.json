@@ -8,21 +8,21 @@
       "cache": false,
       "executor": "nx:run-commands",
       "options": {
-        "command": "docker compose --env-file .env -f infrastructure/compose.yaml up --detach --wait postgres minio"
+        "command": "docker compose --env-file .env.local -f infrastructure/compose.yaml up --detach --wait postgres minio"
       }
     },
     "status": {
       "cache": false,
       "executor": "nx:run-commands",
       "options": {
-        "command": "docker compose --env-file .env -f infrastructure/compose.yaml ps"
+        "command": "docker compose --env-file .env.local -f infrastructure/compose.yaml ps"
       }
     },
     "down": {
       "cache": false,
       "executor": "nx:run-commands",
       "options": {
-        "command": "docker compose --env-file .env -f infrastructure/compose.yaml down"
+        "command": "docker compose --env-file .env.local -f infrastructure/compose.yaml down"
       }
     }
   }
