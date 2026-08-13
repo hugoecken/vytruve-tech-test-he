@@ -17,6 +17,7 @@ import { ScansModule } from '@api/app/scans/scans.module';
   imports: [
     ConfigModule.forRoot({
       cache: true,
+      envFilePath: '.env.local',
       isGlobal: true,
       validate: validateEnvironment,
     }),

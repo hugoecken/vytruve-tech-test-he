@@ -46,11 +46,12 @@ npm owns dependency installation only. Nx owns workspace task execution through 
 Create the ignored local environment file once:
 
 ```bash
-cp .env.example .env
+cp .env.example .env.local
 ```
 
-The committed example contains development-only placeholders. Never reuse them outside local development and never
-commit `.env`.
+The root file is the single local configuration source consumed by the API, Web application, Docker Compose,
+Liquibase, and repository-level tools such as the licensed shadcn.design registry. The committed example contains
+development-only placeholders. Never reuse them outside local development or commit `.env.local`.
 
 ## Local infrastructure
 
@@ -117,7 +118,7 @@ Printing uses the following required settings:
 | `PRINTING_API_TIMEOUT_MS` | Positive request timeout in milliseconds                   |
 
 The committed example uses a reserved `.invalid` URL and a local placeholder key. Replace them only in the ignored
-`.env` file. The integration persists a unique reference before submission, sends the scan with a single POST, and
+`.env.local` file. The integration persists a unique reference before submission, sends the scan with a single POST, and
 never retries that non-idempotent request automatically. If the result is ambiguous, the reservation remains in
 `confirmation_pending` and later reads reconcile it by stable reference before consulting the provider identifier.
 Terminal observations release the scan for a later print request. The Web application mounts React without rendering
@@ -161,9 +162,22 @@ npx shadcn info
 npx shadcn add --all --dry-run
 ```
 
-Add or refresh a specific public component deliberately with `npx shadcn add <component>`. The Premium registry,
-MedTech color customization, associated agents, and Figma reconciliation are intentionally deferred to their
-dedicated delivery.
+Add or refresh a specific public component deliberately with `npx shadcn add <component>`.
+
+The licensed shadcn.design registry is configured separately from the public catalog. Keep the effective
+`SHADCNDESIGN_LICENSE_KEY` only in the ignored root `.env.local` file; never place it in `components.json`, committed
+environment files, command arguments, logs, screenshots, or generated output.
+
+After authenticated registry access has been verified, install the licensed Codex skills locally with:
+
+```bash
+npx shadcn@latest add @shadcndesign/skills-codex
+```
+
+The licensed skill payload is local input and is not committed. Repository guidance, accepted specifications, and
+owning GitHub issues take precedence over vendor instructions. The canonical visual system uses a published
+`Vytruve — UI Library` and a separate `Vytruve — Product Design`; runtime token synchronization and product screens
+remain owned by their later frontend delivery.
 
 ## Quality commands
 
