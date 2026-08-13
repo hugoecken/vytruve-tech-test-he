@@ -27,7 +27,7 @@
 ## Scenario And Requirement Completeness
 
 - [x] CHK011 The four user stories are prioritized, independently testable, and cover authentication, patients, scans, and printing. [Spec §User Scenarios & Testing]
-- [x] CHK012 Every acceptance scenario uses explicit Given/When/Then conditions and has a stable identifier. [Spec US1-AS1–US4-AS12, including US3-AS10–US3-AS12]
+- [x] CHK012 Every acceptance scenario uses explicit Given/When/Then conditions and has a stable identifier. [Spec US1-AS1–US4-AS14, including US2-AS9–US2-AS10, US3-AS13–US3-AS15, US4-AS13–US4-AS14]
 - [x] CHK013 No `[NEEDS CLARIFICATION]` marker or unresolved alternative remains. [Spec]
 - [x] CHK014 Every `FR-xxx` is atomic enough to test, uses a normative term, and identifies observable behavior or a source-mandated constraint. [Spec §Functional Requirements]
 - [x] CHK015 Every `SC-xxx` is measurable through acceptance evidence and avoids unsupported market or performance claims. [Spec §Measurable Outcomes]
@@ -51,8 +51,10 @@
 
 ## Error, Degradation, And Safety Quality
 
-- [x] CHK026 Initial loading, empty, pending, success, validation, network, session-expiry, storage, capacity, ambiguous-confirmation, failure, degraded-refresh, and unknown-route states are all specified where relevant. [Spec §Required State Index]
-- [x] CHK027 Background refresh failure explicitly preserves displayed data, marks it as last known, and provides a safe retry. [Spec FR-050, SC-010]
+- [x] CHK026 Initial loading, initial-load failure, empty, pagination, page failure, pending, success, validation, network, session-expiry, storage, capacity, ambiguous-confirmation, failure, degraded-refresh, and unknown-route states are all specified where relevant. [Spec §Required State Index]
+- [x] CHK027 Background refresh failure explicitly preserves displayed data, marks it as last known, and provides a safe retry across all three collections. [Spec FR-050, FR-057, SC-010]
+- [x] CHK048 Initial collection-read failure shows no table or row and offers a localized, accessible retry across patients, scans, and print requests. [Spec US2-AS9, US3-AS13, US4-AS13, FR-057]
+- [x] CHK049 Adjacent-page failure preserves only the last confirmed rows and page indicator, never presents the requested page as loaded, and offers a localized, accessible retry across all three collections. [Spec US2-AS10, US3-AS14, US4-AS14, FR-057, SC-017]
 - [x] CHK028 Duplicate prevention covers repeated account, patient, scan, and print interactions, while ambiguous printing forbids blind resubmission. [Spec FR-040, FR-051]
 - [x] CHK029 Cross-account access reveals neither resource data nor resource existence. [Spec FR-015–FR-016, SC-011]
 - [x] CHK030 Confirmation pending, queued, in progress, completed, and failed have non-misleading Estimated progress rules. [Spec FR-035–FR-038, SC-006]

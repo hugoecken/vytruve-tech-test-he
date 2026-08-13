@@ -2,11 +2,11 @@
 
 **Status**: Accepted
 
-**Feature**: `001-orthoprosthetist-printing-workflow` | **Date**: 2026-08-12 | **Specification**: [`spec.md`](spec.md) at `b1cd82fe1347afe4221931cf1301710f7bf34721`
+**Feature**: `001-orthoprosthetist-printing-workflow` | **Date**: 2026-08-13 | **Accepted specification**: [`spec.md`](spec.md), based on repository state `1c267ffe681511ffc2af0d666b0697d34bedb07a`; immutable replacement binding pending integration
 
 **Visual authorities**: The canonical Figma UI Library and Product Design identified by [`figma-profile.md`](../../.agents/skills/vytruve-best-practices/overlays/figma-profile.md). Their current accepted components, tokens, and screen compositions are inspected in Figma rather than duplicated in this plan.
 
-**Planning authority**: GitHub issue #4. Acceptance authorizes publication of these planning artifacts but no application code or Figma change.
+**Planning authority**: GitHub issue #4 owns the accepted architecture; issue #32 owns this bounded recovery-state reconciliation. Acceptance authorizes publication of these planning artifacts but no application code or Figma change.
 
 ## Summary
 
@@ -43,8 +43,8 @@ The architecture deliberately excludes CQRS, queues, workers, microservices, gen
 | Gate | Result | Evidence |
 | --- | --- | --- |
 | Repository authority first | Pass | Root instructions and routed policies were loaded before planning. |
-| Accepted intent before architecture | Pass | `spec.md` is accepted at the immutable commit above. |
-| Accepted visual authority | Pass | The design profile links the canonical Figma authorities without duplicating their visual values. |
+| Accepted intent before architecture | Pass | The user explicitly accepted the exact FR-057 and SC-017 candidate on 2026-08-13; immutable Git integration remains a separate publication gate. |
+| Accepted visual authority | Pending | Existing Ready for Development evidence remains authoritative for the prior accepted specification; collection-recovery frames require update and explicit visual approval after candidate acceptance. |
 | GitHub execution authority | Pass | Issue #4 owns planning; no task or Git state is mutated by Spec Kit. |
 | Protected data | Pass | The plan contains no supplied credential, contact, scan content, real filename, or patient data. |
 | Proportionality | Pass | Two applications and two stateful dependencies serve explicit requirements; speculative layers are rejected. |
@@ -52,7 +52,7 @@ The architecture deliberately excludes CQRS, queues, workers, microservices, gen
 
 ### Post-design gate
 
-Phase 1 introduces no new observable destination, action, field, lifecycle, or provider promise. Every public contract and technical component maps to the accepted specification. The plan preserves React and NestJS as source-mandated constraints and treats all other technologies as the technical choices owned by this candidate. No constitution violation requires complexity justification.
+This reconciliation introduces no new destination, domain action, field, lifecycle, provider promise, backend contract, or generated artifact. Its collection-recovery behavior maps only to candidate FR-057 and SC-017. The plan preserves React and NestJS as source-mandated constraints and retains every previously accepted architecture choice. No constitution violation requires complexity justification.
 
 ## Architecture
 
@@ -96,10 +96,18 @@ Each feature is organized by business capability and then by `api`, `application
 
 - File routes declare paths, route search, safe redirects, guards, and feature-view composition only.
 - Feature modules own forms, mutation workflows, tables, error translation, and view-specific mapping.
-- TanStack Query owns all server state. Existing data remains visible during background refresh failures.
+- TanStack Query owns all server state. An initial collection failure exposes no table; an adjacent-page failure keeps the last confirmed rows and confirmed page; a background refresh failure keeps confirmed rows visibly last-known.
+- The visible page indicator derives from the successful response's `pageInfo.page`, never from the requested page. Paginated queries use `keepPreviousData`, so a failed adjacent-page request cannot be presented as a loaded page.
 - shadcn/ui source components under `shared/ui` are the only visual primitives. TanStack Table supplies column, row, and pagination state without rendering.
+- Two bounded shared recovery primitives are allowed: `CollectionLoadError` owns the no-data retry state, and `CollectionRecoveryAlert` owns page or refresh recovery when confirmed rows remain visible. Each feature owns its columns, query state classification, copy, and retry behavior.
 - One light table shell owns the surface, horizontal overflow, and Previous/Page/Next controls; patient, scan, and print tables keep separate column definitions and feature behavior.
 - No source is promoted to a shared package until at least two real consumers prove cross-feature ownership.
+
+Reference English recovery copy remains contextualized by collection:
+
+- Initial read: `Unable to load {collection}` and `We couldn’t load this information. Check your connection and try again.`
+- Adjacent page: `This page could not be loaded` and `Your current page is unchanged. Try again.`
+- Background refresh: `{Collection} could not be refreshed` and `Showing the last information received. Try again to check for updates.`
 
 ## Security Model
 
@@ -271,6 +279,7 @@ Exact generated project names and target syntax must be verified after scaffoldi
 | FR-031–FR-044; SC-005–SC-007 | Print reservation, active-slot constraint, provider adapter/reconciliation, polling and print table | #9 provider/state evidence; #12 Query/lifecycle evidence; #14 manual story review |
 | FR-045–FR-046; SC-012 | Server-page contract, TanStack paginated queries, headless tables and shadcn rendering | #9 pagination logic evidence; #12 responsive table/pagination evidence; #14 manual responsive review |
 | FR-047–FR-051; SC-008, SC-010 | Problem Details, typed Fetch error, localized feedback, mutation guards, stale-query preservation | #9 error logic evidence; #12 state/retry evidence; #14 manual degraded-state review |
+| FR-057; SC-017 | `CollectionLoadError`, `CollectionRecoveryAlert`, confirmed-response page derivation, and collection-specific retry behavior | #12 initial/page/refresh state evidence; #14 manual collection-recovery review |
 | FR-052–FR-053 | shadcn semantics, keyboard/focus/announcement behavior, 44 px compact targets | #12 accessibility evidence; #14 manual interaction review |
 | FR-054; SC-011 | Minimal schemas, private storage, logging denylist, synthetic evidence | #9 security review; #14 repository scans |
 | FR-055–FR-056; SC-015–SC-016 | Auth-aware not-found fallback and root route error boundary | #12 fallback evidence; #14 authenticated/public recovery review |
@@ -278,7 +287,7 @@ Exact generated project names and target syntax must be verified after scaffoldi
 | SC-013 | React/Vite and NestJS/Nx structure | #14 type-check/build and architecture review |
 | SC-014 | README, quickstart, decisions, AI disclosure, reviewable Git history | #14 delivery review |
 
-All `FR-001…FR-056` and `SC-001…SC-016` are represented above.
+All `FR-001…FR-057` and `SC-001…SC-017` are represented above.
 
 ## Complexity Tracking
 
@@ -286,6 +295,6 @@ No constitution violation is present. PostgreSQL, MinIO, and the printing adapte
 
 ## Approval Gate
 
-The user explicitly accepted this plan on 2026-08-12. Runtime implementation remains gated by the merged immutable
-plan commit recorded in issues #5–#14, their individual GitHub scope, and every routed source gate. `tasks.md` remains
-derived and advisory; it never authorizes implementation by itself.
+The user explicitly accepted the original plan on 2026-08-12 and this exact FR-057/SC-017 reconciliation on
+2026-08-13. Runtime implementation remains gated by the replacement immutable bindings in the owning issues and every
+routed source gate. `tasks.md` remains derived and advisory; it never authorizes implementation by itself.

@@ -4,7 +4,7 @@
 
 **Input**: Design documents in `specs/001-orthoprosthetist-printing-workflow/`
 
-**Prerequisites**: Accepted `spec.md`, candidate `plan.md`, `research.md`, `data-model.md`, and `contracts/http-api.md`
+**Prerequisites**: Accepted `spec.md`, approved reconciled `plan.md`, `research.md`, `data-model.md`, and `contracts/http-api.md`
 
 ## Execution Rules
 
@@ -85,10 +85,10 @@
 - [ ] T030 [P] [US2] Define patient request, response, page, and query DTOs with OpenAPI metadata in `apps/api/src/patients/dto/` (FR-017–FR-019, FR-045, FR-048)
 - [ ] T031 [US2] Implement owned patient list/create/read use cases, indistinguishable not-found behavior, server pagination, and operational logging in `apps/api/src/patients/application/` (FR-012–FR-021, FR-045, FR-049, FR-051, FR-054; SC-003, SC-011)
 - [ ] T032 [US2] Expose the three patient operations in `apps/api/src/patients/patients.controller.ts` and wire `PatientsModule` in `apps/api/src/patients/patients.module.ts` (FR-012–FR-020, FR-045, FR-047–FR-049)
-- [ ] T033 [P] [US2] Implement the patients TanStack Table definition, controlled server-page state, loading/empty/stale states, and open action in `apps/web/src/modules/patients/ui/patient-table/` (FR-012, FR-019, FR-045–FR-047, FR-050, FR-052–FR-053; SC-001, SC-010)
+- [ ] T033 [P] [US2] Add only the bounded shared `CollectionLoadError` and `CollectionRecoveryAlert` primitives in `apps/web/src/shared/ui/collection-recovery/`, then implement the patients TanStack Table definition, controlled server-page state derived from `data.pageInfo.page`, `keepPreviousData`, loading/empty/initial-error/page-error/degraded-refresh states, retry actions, and open action in `apps/web/src/modules/patients/ui/patient-table/` (FR-012, FR-019, FR-045–FR-047, FR-050, FR-052–FR-053, FR-057; SC-001, SC-010, SC-017)
 - [ ] T034 [P] [US2] Implement the generated-schema React Hook Form patient creation flow in shadcn Dialog/Drawer in `apps/web/src/modules/patients/forms/` and `apps/web/src/modules/patients/ui/create-patient/` (FR-017–FR-020, FR-047–FR-048, FR-051–FR-053; SC-003, SC-008)
 - [ ] T035 [US2] Implement `/patients` and `/patients/$patientId` composition, post-create navigation, persistent identity card, and `NAV-PATIENT-SECTIONS` with scans selected by default in `apps/web/src/routes/` and `apps/web/src/modules/patients/ui/` (FR-011–FR-014, FR-020–FR-021, FR-046, FR-052–FR-053; SC-001, SC-003–SC-004)
-- [ ] T036 [US2] Add professional English and French patient-directory, creation, pagination, empty, stale, and ownership-safe copy in `apps/web/src/shared/i18n/locales/en/patients.json` and `apps/web/src/shared/i18n/locales/fr/patients.json` (FR-047–FR-048, FR-052, FR-054; SC-008, SC-012)
+- [ ] T036 [US2] Add professional English and French patient-directory, creation, pagination, empty, initial-load failure, page failure, degraded refresh, retry, and ownership-safe copy in `apps/web/src/shared/i18n/locales/en/patients.json` and `apps/web/src/shared/i18n/locales/fr/patients.json` (FR-047–FR-048, FR-050, FR-052, FR-054, FR-057; SC-008, SC-010, SC-012, SC-017)
 
 **Checkpoint**: US2 works with authentication and patient persistence while both patient-workspace tables may still be empty.
 
@@ -107,9 +107,9 @@
 - [ ] T041 [US3] Implement scan list/upload/download orchestration with object-first persistence compensation and ownership checks in `apps/api/src/scans/application/` (FR-022–FR-030, FR-043, FR-047–FR-051; SC-004, SC-008–SC-011)
 - [ ] T042 [P] [US3] Define scan page/response/query DTOs and multipart upload contract in `apps/api/src/scans/dto/`, exposing print eligibility but never storage keys (FR-022–FR-030, FR-045, FR-048–FR-049)
 - [ ] T043 [US3] Expose scan list/upload/content operations with `ParseFilePipe`, the exact 26,214,400-byte limit, and `StreamableFile` in `apps/api/src/scans/scans.controller.ts` and `apps/api/src/scans/scans.module.ts` (FR-022–FR-030, FR-045, FR-047–FR-049; SC-004, SC-009)
-- [ ] T044 [P] [US3] Implement the scans TanStack Table definition, controlled server-page state, download behavior, and print-eligibility action state in `apps/web/src/modules/scans/ui/scan-table/` (FR-022, FR-028, FR-030–FR-031, FR-045–FR-047, FR-050, FR-052–FR-053; SC-004, SC-010)
+- [ ] T044 [P] [US3] Implement the scans TanStack Table definition, controlled server-page state derived from `data.pageInfo.page`, `keepPreviousData`, loading/empty/initial-error/page-error/degraded-refresh states, retry actions, download behavior, and print-eligibility action state in `apps/web/src/modules/scans/ui/scan-table/` (FR-022, FR-028, FR-030–FR-031, FR-045–FR-047, FR-050, FR-052–FR-053, FR-057; SC-004, SC-010, SC-017)
 - [ ] T045 [US3] Implement the single-file upload Dialog/Drawer, keyboard-operable drop zone, Attachment states, removal/retry actions, dedicated file validation, and duplicate-submit guard in `apps/web/src/modules/scans/ui/scan-upload/` (FR-023–FR-027, FR-029, FR-047–FR-048, FR-051–FR-053; SC-004, SC-008–SC-009)
-- [ ] T046 [US3] Add professional English and French scan, validation, storage, download, and stale-data translations in `apps/web/src/shared/i18n/locales/en/scans.json` and `apps/web/src/shared/i18n/locales/fr/scans.json` (FR-023, FR-047–FR-050, FR-052; SC-008, SC-010)
+- [ ] T046 [US3] Add professional English and French scan, validation, storage, download, initial-load failure, page failure, degraded refresh, and retry translations in `apps/web/src/shared/i18n/locales/en/scans.json` and `apps/web/src/shared/i18n/locales/fr/scans.json` (FR-023, FR-047–FR-050, FR-052, FR-057; SC-008, SC-010, SC-017)
 
 **Checkpoint**: US3 is complete without requiring the real printing provider or a print request.
 
@@ -128,10 +128,10 @@
 - [ ] T051 [US4] Implement read-time estimated progress, canonical public state mapping, terminal `active_slot` release, reprint eligibility, and owned patient listing in `apps/api/src/printing/application/` (FR-035–FR-044; SC-005–SC-007)
 - [ ] T052 [P] [US4] Define print request/page/query DTOs and stable public enums with OpenAPI `enumName` values in `apps/api/src/printing/dto/` (FR-031–FR-045, FR-048)
 - [ ] T053 [US4] Expose print creation and patient print-list operations in `apps/api/src/printing/printing.controller.ts` and wire `PrintingModule` in `apps/api/src/printing/printing.module.ts` (FR-031–FR-045, FR-047–FR-049; SC-005–SC-008)
-- [ ] T054 [P] [US4] Implement the print-request TanStack Table definition, canonical status badges, estimated-progress display, controlled server-page state, and stale-data behavior in `apps/web/src/modules/printing/ui/print-table/` (FR-035–FR-046, FR-050, FR-052–FR-053; SC-006–SC-007, SC-010)
+- [ ] T054 [P] [US4] Implement the print-request TanStack Table definition, canonical status badges, estimated-progress display, controlled server-page state derived from `data.pageInfo.page`, `keepPreviousData`, and loading/empty/initial-error/page-error/degraded-refresh recovery in `apps/web/src/modules/printing/ui/print-table/` (FR-035–FR-046, FR-050, FR-052–FR-053, FR-057; SC-006–SC-007, SC-010, SC-017)
 - [ ] T055 [US4] Implement the print confirmation Dialog/Drawer, mutation duplicate guard, accepted-request cache insertion, and automatic switch to the prints tab in `apps/web/src/modules/printing/ui/create-print-request/` (FR-031–FR-044, FR-047–FR-051, FR-052–FR-053; SC-005, SC-007–SC-008)
-- [ ] T056 [US4] Implement visible-tab polling every five seconds for at most five minutes, active-request filtering, manual refresh fallback, and preservation of cached rows in `apps/web/src/modules/printing/hooks/` (FR-035–FR-050; SC-006–SC-008, SC-010)
-- [ ] T057 [US4] Add professional English and French printing lifecycle, progress, capacity, confirmation-pending, failure, and stale-refresh translations in `apps/web/src/shared/i18n/locales/en/printing.json` and `apps/web/src/shared/i18n/locales/fr/printing.json` (FR-035–FR-050, FR-052; SC-006–SC-008, SC-010)
+- [ ] T056 [US4] Implement visible-tab polling every five seconds for at most five minutes, active-request filtering, manual refresh fallback, initial/page/refresh failure classification, and preservation of confirmed cached rows in `apps/web/src/modules/printing/hooks/` (FR-035–FR-050, FR-057; SC-006–SC-008, SC-010, SC-017)
+- [ ] T057 [US4] Add professional English and French printing lifecycle, progress, capacity, confirmation-pending, failure, initial-load failure, page failure, degraded refresh, and retry translations in `apps/web/src/shared/i18n/locales/en/printing.json` and `apps/web/src/shared/i18n/locales/fr/printing.json` (FR-035–FR-050, FR-052, FR-057; SC-006–SC-008, SC-010, SC-017)
 
 **Checkpoint**: All four user stories are executable, independently reviewable, and connected through the accepted patient workspace.
 
@@ -142,11 +142,11 @@
 **Purpose**: Close requirements that span routes and stories without adding optional product scope.
 
 - [ ] T058 Implement localized `SYS-NOT-FOUND` and `SYS-UNEXPECTED-ERROR` route fallbacks with safe keyboard-accessible recovery actions in `apps/web/src/routes/` and `apps/web/src/shared/layout/` (FR-047–FR-048, FR-052–FR-056; SC-008, SC-012, SC-015–SC-016)
-- [ ] T059 Audit all mutation and query call sites under `apps/web/src/modules/` for the accepted retry policy, preserved stale content, explicit recovery, and absence of raw generated/server/provider messages (FR-047–FR-051; SC-008, SC-010–SC-011)
-- [ ] T060 Audit all routes, overlays, tabs, tables, forms, feedback, focus restoration, accessible names, live announcements, color-independent states, and 44-pixel compact targets under `apps/web/src/` against the accepted specification and canonical Figma authorities (FR-046–FR-047, FR-052–FR-053; SC-012)
+- [ ] T059 Audit all mutation and query call sites under `apps/web/src/modules/` for the accepted retry policy, initial/page/refresh classification, confirmed-row and confirmed-page preservation, explicit recovery, and absence of raw generated/server/provider messages (FR-047–FR-051, FR-057; SC-008, SC-010–SC-011, SC-017)
+- [ ] T060 Audit all routes, overlays, tabs, tables, forms, feedback, Retry actions, focus restoration, accessible names, live announcements, color-independent states, and 44-pixel compact targets under `apps/web/src/` against the accepted specification and canonical Figma authorities (FR-046–FR-047, FR-052–FR-053, FR-057; SC-012, SC-017)
 - [ ] T061 Regenerate OpenAPI, native Fetch/TanStack Query output, Zod Mini output, and the TanStack route tree through Nx; resolve consumers without editing generated files in `apps/web/src/shared/api/generated/` or `apps/web/src/routeTree.gen.ts` (FR-048–FR-049; SC-013)
 - [ ] T062 Document setup, architecture decisions, AI-assisted workflow, security boundaries, deferred test ownership, and authoritative Nx commands in `README.md` without copying credentials or personal source data (FR-049, FR-054; SC-011, SC-013–SC-014)
-- [ ] T063 Reconcile the implemented routes and components against the approved screens in the canonical Figma Product Design and the linked components in the canonical Figma UI Library, resolving visual deviations without creating a parallel textual design authority (FR-011–FR-056; SC-001–SC-016)
+- [ ] T063 Reconcile the implemented routes and components against the approved screens in the canonical Figma Product Design and the linked components in the canonical Figma UI Library, resolving visual deviations without creating a parallel textual design authority (FR-011–FR-057; SC-001–SC-017)
 
 **Checkpoint**: The application scope is complete. Test evidence and automation remain intentionally deferred to their owning issues.
 
@@ -166,12 +166,14 @@
 | FR-054 | T019–T024, T028–T031, T037–T041, T047–T050, T062 |
 | FR-055 | T058 |
 | FR-056 | T058 |
+| FR-057 | T033, T036, T044, T046, T054, T056–T060, T063 |
 | SC-001–SC-004 | T019–T046 |
 | SC-005–SC-007 | T047–T057 |
 | SC-008–SC-012 | T010–T018, T024–T027, T031–T036, T039–T046, T049–T060 |
 | SC-013–SC-014 | T001–T018, T061–T063 |
 | SC-015 | T058 |
 | SC-016 | T058 |
+| SC-017 | T033, T036, T044, T046, T054, T056–T060, T063 |
 
 ## Dependencies and Delivery Order
 

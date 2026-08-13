@@ -163,6 +163,16 @@ Do not use or commit the supplied assessment scans outside their authorized loca
 5. Confirm ambiguous submission is reconciled without another POST.
 6. Confirm capacity rejection leaves no accepted request and allows a later deliberate attempt.
 
+### 5. Collection recovery
+
+Repeat the following checks for the patient directory, the scan table, and the print-request table:
+
+1. Fail the initial collection read before any successful response; confirm no table or row is displayed, the failure is localized and announced, and Retry can be reached and activated by keyboard.
+2. Load a confirmed page, request an adjacent page, and fail that request; confirm the previous rows and response page remain visible, the requested page is not presented as loaded, and Retry repeats the intended safe read.
+3. Load confirmed rows and fail a background refresh; confirm the rows remain visible as last-known information with a non-blocking warning and Retry.
+4. Restore the collection service and activate Retry; confirm the successful response replaces the recovery state without duplicating rows or changing page position before confirmation.
+5. Repeat the three failures on a compact viewport; confirm the recovery action remains visible, has an accessible name, does not rely on color, and meets the required touch-target size.
+
 ## Planned Validation Targets
 
 The final workspace will expose focused Nx targets rather than undocumented shell recipes:
