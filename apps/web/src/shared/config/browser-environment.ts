@@ -1,5 +1,5 @@
 /** Browser-safe runtime configuration exposed by Vite. */
-export interface BrowserEnvironment {
+interface BrowserEnvironment {
   apiBaseUrl: string;
 }
 

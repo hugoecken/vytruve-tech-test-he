@@ -6,7 +6,7 @@ import type {
 } from './problem-details.model';
 
 /** Parameters required to create one supported public problem response. */
-export interface ProblemDetailsParameters {
+interface ProblemDetailsParameters {
   code: ProblemCode;
   detail: string;
   status: number;
