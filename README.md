@@ -4,8 +4,8 @@ Specification-driven React and NestJS implementation of the Vytruve technical as
 
 ## Current stage
 
-The repository contains the accepted product specification, design handoff, technical plan, executable foundation,
-and the complete backend product workflow.
+The repository contains the accepted product specification, technical plan, executable foundation, and the complete
+backend product workflow. The canonical Figma files remain the sole visual authorities.
 
 The current implementation provides:
 

@@ -4,7 +4,7 @@
 
 **Input**: Design documents in `specs/001-orthoprosthetist-printing-workflow/`
 
-**Prerequisites**: Accepted `spec.md`, candidate `plan.md`, `research.md`, `data-model.md`, `contracts/http-api.md`, and `design-handoff.md`
+**Prerequisites**: Accepted `spec.md`, candidate `plan.md`, `research.md`, `data-model.md`, and `contracts/http-api.md`
 
 ## Execution Rules
 
@@ -46,7 +46,7 @@
 - [ ] T013 Implement the typed native Fetch transport in `apps/web/src/shared/api/http/` with `credentials: include`, correct `FormData` handling, typed Problem Details, no payload logging, and the accepted retry classification
 - [ ] T014 [P] Configure TanStack Query defaults, mutation retry behavior, i18next browser-language initialization, and the root providers in `apps/web/src/shared/query/`, `apps/web/src/shared/i18n/`, and `apps/web/src/main.tsx`
 - [ ] T015 [P] Configure TanStack Router file generation, authenticated/public layouts, safe internal redirect validation, and route context in `apps/web/vite.config.ts`, `apps/web/src/router.tsx`, and `apps/web/src/routes/`
-- [ ] T016 [P] Install the required shadcn/ui source primitives and exact accepted CSS tokens in `apps/web/src/shared/ui/`, `apps/web/src/shared/lib/cn.ts`, and `apps/web/src/styles/globals.css` without a competing visual component library
+- [ ] T016 [P] Install the required shadcn/ui source primitives and implement the current Figma UI Library tokens in `apps/web/src/shared/ui/`, `apps/web/src/shared/lib/cn.ts`, and `apps/web/src/styles/globals.css` without duplicating their values in Spec Kit artifacts or adding a competing visual component library
 - [ ] T017 Compose a lightweight server-pagination table shell from shadcn Table/Pagination and headless TanStack Table behavior in `apps/web/src/shared/ui/data-table/`, without sorting, search, selection, totals, or a universal domain table
 - [ ] T018 Create the compact authenticated header, profile menu, language control, sign-out action slot, dialog/drawer responsive overlay boundary, and shared feedback primitives in `apps/web/src/shared/layout/` and `apps/web/src/shared/ui/`
 
@@ -143,10 +143,10 @@
 
 - [ ] T058 Implement localized public and authenticated `SYS-NOT-FOUND` route fallbacks with one safe keyboard-accessible return action in `apps/web/src/routes/$.tsx` and `apps/web/src/modules/system/ui/not-found-view.tsx` (FR-047–FR-048, FR-052–FR-055; SC-008, SC-012, SC-015)
 - [ ] T059 Audit all mutation and query call sites under `apps/web/src/modules/` for the accepted retry policy, preserved stale content, explicit recovery, and absence of raw generated/server/provider messages (FR-047–FR-051; SC-008, SC-010–SC-011)
-- [ ] T060 Audit all routes, overlays, tabs, tables, forms, feedback, focus restoration, accessible names, live announcements, color-independent states, and 44-pixel compact targets under `apps/web/src/` against `design-handoff.md` (FR-046–FR-047, FR-052–FR-053; SC-012)
+- [ ] T060 Audit all routes, overlays, tabs, tables, forms, feedback, focus restoration, accessible names, live announcements, color-independent states, and 44-pixel compact targets under `apps/web/src/` against the accepted specification and canonical Figma authorities (FR-046–FR-047, FR-052–FR-053; SC-012)
 - [ ] T061 Regenerate OpenAPI, native Fetch/TanStack Query output, Zod Mini output, and the TanStack route tree through Nx; resolve consumers without editing generated files in `apps/web/src/shared/api/generated/` or `apps/web/src/routeTree.gen.ts` (FR-048–FR-049; SC-013)
 - [ ] T062 Document setup, architecture decisions, AI-assisted workflow, security boundaries, deferred test ownership, and authoritative Nx commands in `README.md` without copying credentials or personal source data (FR-049, FR-054; SC-011, SC-013–SC-014)
-- [ ] T063 Reconcile the implemented routes and components against every Ready for Development frame identifier recorded in `specs/001-orthoprosthetist-printing-workflow/design-handoff.md`, recording only genuine approved deviations in `README.md` (FR-011–FR-055; SC-001–SC-015)
+- [ ] T063 Reconcile the implemented routes and components against the approved screens in the canonical Figma Product Design and the linked components in the canonical Figma UI Library, resolving visual deviations without creating a parallel textual design authority (FR-011–FR-055; SC-001–SC-015)
 
 **Checkpoint**: The application scope is complete. Test evidence and automation remain intentionally deferred to their owning issues.
 
