@@ -5,7 +5,11 @@ import { GraphemeLength } from '@api/validation/grapheme-length.validator';
 
 /** Validated request for registering one account identity. */
 export class CreateAccountRequest {
-  @ApiProperty({ example: 'clinician@example.test', maxLength: 320 })
+  @ApiProperty({
+    example: 'clinician@example.test',
+    format: 'email',
+    maxLength: 320,
+  })
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsEmail()
   @MaxLength(320)
