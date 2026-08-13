@@ -17,7 +17,7 @@ architecture decisions.
 1. Root `AGENTS.md` and the routed repository guidance govern agent behavior.
 2. The supplied technical-test brief owns non-negotiable source requirements.
 3. The explicitly accepted `specs/001-orthoprosthetist-printing-workflow/spec.md` snapshot owns observable MVP intent.
-4. Accepted Figma evidence in `600 - Ready for Development` owns visual composition only within that specification.
+4. Accepted Figma evidence in `Ready for Development` owns visual composition only within that specification.
 5. The approved feature `plan.md` owns technical translation after issue #4.
 6. GitHub issues and pull requests own execution scope, dependencies, review, and delivery state.
 7. Current source, generated contracts, migrations, and tests own delivered executable behavior.
@@ -29,8 +29,8 @@ screenshots, local feature selection, and derived tasks are never parallel autho
 
 - Issue #1 established governance.
 - Issue #2 accepted the product specification at commit `2dd91218cf0d9114fd440efbfbd9843987c9036c`.
-- Issue #3 produced explicitly approved responsive product evidence in `600 - Ready for Development` of the
-  canonical Figma file.
+- Issue #19 reconciled the explicitly approved responsive product evidence with the canonical Premium design set and
+  promoted the accepted nodes to `Ready for Development`.
 - Issue #4 has an explicitly accepted technical plan that selects the executable application architecture. Runtime
   work still requires the merged immutable plan binding in its owning implementation issue.
 - React and NestJS remain mandated by the supplied brief; the accepted plan owns every additional architecture choice.
