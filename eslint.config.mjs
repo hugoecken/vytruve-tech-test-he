@@ -1,9 +1,13 @@
 import nx from '@nx/eslint-plugin';
+import pluginQuery from '@tanstack/eslint-plugin-query';
+import pluginRouter from '@tanstack/eslint-plugin-router';
 
 export default [
   ...nx.configs['flat/base'],
   ...nx.configs['flat/typescript'],
   ...nx.configs['flat/javascript'],
+  ...pluginQuery.configs['flat/recommended'],
+  ...pluginRouter.configs['flat/recommended'],
   {
     ignores: [
       '**/dist',
