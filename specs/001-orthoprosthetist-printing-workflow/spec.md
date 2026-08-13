@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-11
 
-**Last clarified**: 2026-08-12
+**Last clarified**: 2026-08-13
 
 **Status**: Accepted
 
@@ -19,6 +19,12 @@
 - Figma owns visual composition after acceptance. It may choose components, density, responsive composition, and layout, but may not add or remove behavior defined here.
 - A future technical plan may translate this specification into architecture. Except for the mandated React frontend and NestJS backend, this document does not select implementation technologies.
 
+## Clarifications
+
+### Session 2026-08-13
+
+- Q: How must collection reads recover when an initial load, adjacent-page request, or background refresh fails? → A: Show no table before any successful response; otherwise preserve only the last confirmed rows and page, distinguish stale refresh data, and offer an explicit safe retry.
+
 ## Source Requirement Matrix
 
 | ID     | Safe source requirement                                                                                        | Product or delivery binding           | Acceptance binding |
@@ -30,7 +36,7 @@
 | SR-005 | Allow an authenticated account to upload and download patient 3D scans.                                        | US3; FR-022–FR-030                    | SC-004, SC-009     |
 | SR-006 | Allow an eligible uploaded scan to be submitted for printing and eventually reach a successful outcome.        | US4; FR-031–FR-040                    | SC-005, SC-007     |
 | SR-007 | List a patient's print requests with their references, associated scans, statuses, and progress.               | US4; FR-041–FR-044                    | SC-006, SC-007     |
-| SR-008 | Handle validation, errors, and printing center unavailability deliberately.                                    | US1–US4; FR-047–FR-052                | SC-008, SC-010     |
+| SR-008 | Handle validation, errors, and printing center unavailability deliberately.                                    | US1–US4; FR-047–FR-052, FR-057        | SC-008, SC-010, SC-017 |
 | SR-009 | Document setup, execution, choices, and trade-offs for reviewers.                                              | DC-002                                | SC-014             |
 | SR-010 | Maintain a meaningful Git history suitable for review.                                                         | DC-003                                | SC-014             |
 | SR-011 | Present clear architecture and code organization.                                                              | DC-004                                | SC-013             |
@@ -84,6 +90,8 @@ An authenticated orthoprosthetist uses the patient directory as the primary dest
 6. **US2-AS6** — **Given** a creation request in progress, **When** the user repeats the submit interaction, **Then** no duplicate patient is created.
 7. **US2-AS7** — **Given** already displayed patients, **When** a background refresh fails, **Then** the table remains visible with a non-blocking warning and an explicit retry action.
 8. **US2-AS8** — **Given** an identifier owned by another account or unknown to the current account, **When** it is requested, **Then** no patient information or existence signal is disclosed.
+9. **US2-AS9** — **Given** the patient directory has no previously confirmed collection response, **When** its initial read fails, **Then** no patient table or row is shown and a localized blocking state offers an explicit retry action.
+10. **US2-AS10** — **Given** a confirmed patient page is displayed, **When** an adjacent-page request fails, **Then** the confirmed rows and page indicator remain unchanged, the requested page is not presented as loaded, and an explicit retry action is available.
 
 ---
 
@@ -109,6 +117,9 @@ Within one patient workspace, an orthoprosthetist reviews a paginated scan table
 10. **US3-AS10** — **Given** scan rows are already displayed and an upload file is selected, **When** the file is rejected, **Then** the scan table remains visible, the upload context remains open with the selected file, and the localized validation reason is shown within that context so another file can be chosen.
 11. **US3-AS11** — **Given** the scan upload context opens without a file, **When** it is displayed, **Then** its file-selection surface opens the system file chooser and its upload confirmation remains disabled.
 12. **US3-AS12** — **Given** one file has been selected, **When** it is reviewable, **Then** its name, size, validation state, and removal action are grouped together, and upload confirmation is enabled only while that selection is valid.
+13. **US3-AS13** — **Given** the patient workspace has no previously confirmed scan collection response, **When** the initial scan read fails, **Then** no scan table or row is shown and a localized blocking state offers an explicit retry action without removing patient identity.
+14. **US3-AS14** — **Given** a confirmed scan page is displayed, **When** an adjacent-page request fails, **Then** the confirmed rows and page indicator remain unchanged, the requested page is not presented as loaded, and an explicit retry action is available.
+15. **US3-AS15** — **Given** confirmed scan rows are displayed, **When** a background refresh fails, **Then** the rows remain visible as last-known information with a non-blocking warning and an explicit retry action.
 
 ---
 
@@ -134,6 +145,8 @@ Within the same patient workspace, an orthoprosthetist requests printing of an e
 10. **US4-AS10** — **Given** no eligible scan, **When** the printing region is reviewed, **Then** the unavailable action is explained and scan upload is offered in the same workspace.
 11. **US4-AS11** — **Given** multiple print-request pages, **When** Previous or Next is activated, **Then** the adjacent server page is shown without a fabricated total.
 12. **US4-AS12** — **Given** a print request is accepted from `TAB-PATIENT-SCANS`, **When** submission succeeds, **Then** `TAB-PATIENT-PRINTS` becomes selected and the accepted request is visible in `TBL-PRINTS` without leaving the patient workspace.
+13. **US4-AS13** — **Given** the patient workspace has no previously confirmed print-request collection response, **When** the initial print-request read fails, **Then** no print-request table or row is shown and a localized blocking state offers an explicit retry action without removing patient identity.
+14. **US4-AS14** — **Given** a confirmed print-request page is displayed, **When** an adjacent-page request fails, **Then** the confirmed rows and page indicator remain unchanged, the requested page is not presented as loaded, and an explicit retry action is available.
 
 ### Edge Cases
 
@@ -235,9 +248,9 @@ Every identifier below must be traceable in future Figma evidence. Related state
 | Area              | State IDs                                                                                                                                                                            | Observable requirement                                                                                                                |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
 | Authentication    | AUTH-INITIAL, AUTH-PENDING, AUTH-VALIDATION, AUTH-ACCOUNT-EXISTS, AUTH-CREDENTIALS-INVALID, AUTH-RATE-LIMITED, AUTH-NETWORK-UNAVAILABLE, AUTH-RESTORING, AUTH-SESSION-EXPIRED        | Distinguish entry, field correction, safe account-level failures, session restoration, and reauthentication.                          |
-| Patients          | PATIENTS-LOADING, PATIENTS-EMPTY, PATIENTS-LIST, PATIENTS-PAGINATING, PATIENT-CREATE-PENDING, PATIENT-CREATE-SUCCESS, PATIENT-CREATE-ERROR, PATIENTS-REFRESH-DEGRADED                | Preserve existing table data during pagination and degraded refresh; creation success transitions to the new workspace.               |
-| 3D scans          | SCANS-EMPTY, SCAN-SELECTED, SCAN-UPLOADING, SCAN-CONTENT-INVALID, SCAN-TOO-LARGE, SCAN-UPLOAD-SUCCESS, SCAN-STORAGE-UNAVAILABLE, SCAN-DOWNLOAD-UNAVAILABLE                           | Explain eligibility and keep the patient workspace stable through upload and storage outcomes.                                        |
-| Print requests    | PRINT-NO-ELIGIBLE-SCAN, PRINT-SUBMITTING, PRINT-CONFIRMATION-PENDING, PRINT-CAPACITY-REACHED, PRINT-QUEUED, PRINT-IN-PROGRESS, PRINT-COMPLETED, PRINT-FAILED, PRINT-REFRESH-DEGRADED | Surface safety around duplicate prevention, ambiguous confirmation, provider capacity, lifecycle, estimated progress, and stale data. |
+| Patients          | PATIENTS-LOADING, PATIENTS-LOAD-ERROR, PATIENTS-EMPTY, PATIENTS-LIST, PATIENTS-PAGINATING, PATIENTS-PAGE-ERROR, PATIENTS-REFRESH-DEGRADED, PATIENT-CREATE-PENDING, PATIENT-CREATE-SUCCESS, PATIENT-CREATE-ERROR | Distinguish an unconfirmed initial failure from page and refresh failures; creation success transitions to the new workspace. |
+| 3D scans          | SCANS-LOADING, SCANS-LOAD-ERROR, SCANS-EMPTY, SCANS-LIST, SCANS-PAGINATING, SCANS-PAGE-ERROR, SCANS-REFRESH-DEGRADED, SCAN-SELECTED, SCAN-UPLOADING, SCAN-CONTENT-INVALID, SCAN-TOO-LARGE, SCAN-UPLOAD-SUCCESS, SCAN-STORAGE-UNAVAILABLE, SCAN-DOWNLOAD-UNAVAILABLE | Preserve patient identity, distinguish collection recovery states, and keep upload or storage feedback in its owning context. |
+| Print requests    | PRINT-LOADING, PRINT-LOAD-ERROR, PRINT-NO-ELIGIBLE-SCAN, PRINT-LIST, PRINT-PAGINATING, PRINT-PAGE-ERROR, PRINT-REFRESH-DEGRADED, PRINT-SUBMITTING, PRINT-CONFIRMATION-PENDING, PRINT-CAPACITY-REACHED, PRINT-QUEUED, PRINT-IN-PROGRESS, PRINT-COMPLETED, PRINT-FAILED | Distinguish collection recovery states while preserving duplicate prevention, provider capacity, lifecycle, and progress safety. |
 | System fallbacks  | SYS-NOT-FOUND, SYS-UNEXPECTED-ERROR                                                                                                                                                   | Provide safe recovery without exposing protected-resource existence or technical failure details.                                     |
 
 ## Requirements _(mandatory)_
@@ -314,6 +327,7 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - **FR-054**: The product MUST minimize displayed and retained personal data to the defined account and patient fields and MUST make no claim of GDPR, HDS, medical-device, or other formal certification.
 - **FR-055**: Unknown application paths and unavailable deep links MUST display `SYS-NOT-FOUND` with localized, non-disclosing language and one safe return action to `DST-PATIENTS` for an authenticated account or `DST-AUTH` otherwise.
 - **FR-056**: An unrecoverable application failure MUST display `SYS-UNEXPECTED-ERROR` with localized, non-technical language and one safe retry action, without exposing the underlying error or implementation detail.
+- **FR-057**: `TBL-PATIENTS`, `TBL-SCANS`, and `TBL-PRINTS` MUST distinguish three collection-read failures: an initial failure before any confirmed response MUST display no table or rows and MUST offer an explicit safe retry; an adjacent-page failure MUST preserve the last confirmed rows and page indicator, MUST NOT present the requested page as loaded, and MUST offer an explicit safe retry; a background-refresh failure MUST follow FR-050. Only rows and page information confirmed by a successful response MAY remain visible.
 
 ### Key Entities
 
@@ -350,6 +364,7 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - **SC-014**: A reviewer can set up and run the delivered repository, understand its choices and trade-offs, inspect meaningful Git history, and identify the declared AI-assisted workflow from the README and repository evidence.
 - **SC-015**: Every unknown path and unavailable deep link displays the localized `SYS-NOT-FOUND` state, reveals no protected-resource existence, and returns the user to the appropriate safe destination through one keyboard-accessible action.
 - **SC-016**: Every unrecoverable application failure displays the localized `SYS-UNEXPECTED-ERROR` state, exposes no technical error detail, and offers one keyboard-accessible retry action.
+- **SC-017**: One hundred percent of initial and adjacent-page collection-read failures across `TBL-PATIENTS`, `TBL-SCANS`, and `TBL-PRINTS` show localized recovery, invent no row or loaded page, and preserve only the last confirmed data when any exists.
 
 ## Delivery Constraints
 
