@@ -147,6 +147,7 @@ Within the same patient workspace, an orthoprosthetist requests printing of an e
 - A confirmed request without usable scheduling information remains queued at 0% until active production or a terminal outcome can be inferred from confirmed information.
 - Localized dates, numbers, and sizes preserve the underlying value while adapting presentation to the selected language.
 - An unknown application path or unavailable deep link displays a localized not-found fallback without revealing whether a protected resource exists and offers a safe return to the appropriate authenticated or unauthenticated destination.
+- An unrecoverable application failure displays a localized generic fallback without technical details and offers a safe retry action.
 
 ## Experience Contract For Figma
 
@@ -171,11 +172,12 @@ There is no dashboard. Figma may use pages, dialogs, sheets, or inline regions f
 
 ### System Fallback
 
-| ID            | Label     | Required behavior                                                                                                                                                                                         |
-| ------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| SYS-NOT-FOUND | Not found | A localized fallback for unknown application paths and unavailable deep links. It is not a primary destination and MUST offer a safe return to `DST-PATIENTS` when authenticated or `DST-AUTH` otherwise. |
+| ID                   | Label            | Required behavior                                                                                                                                                                                         |
+| -------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SYS-NOT-FOUND        | Not found        | A localized fallback for unknown application paths and unavailable deep links. It is not a primary destination and MUST offer a safe return to `DST-PATIENTS` when authenticated or `DST-AUTH` otherwise. |
+| SYS-UNEXPECTED-ERROR | Unexpected error | A localized fallback for an unrecoverable application failure. It MUST hide technical error details and MUST offer a safe retry action.                                                                   |
 
-The fallback MUST use neutral product language, MUST NOT reveal whether a protected patient, 3D scan, or Print request exists, and MUST remain visually consistent with the MedTech workspace.
+System fallbacks MUST use neutral product language, MUST NOT reveal whether a protected patient, 3D scan, or Print request exists, and MUST NOT expose error messages, stack traces, or implementation details.
 
 ### Patient Workspace Navigation
 
@@ -236,7 +238,7 @@ Every identifier below must be traceable in future Figma evidence. Related state
 | Patients          | PATIENTS-LOADING, PATIENTS-EMPTY, PATIENTS-LIST, PATIENTS-PAGINATING, PATIENT-CREATE-PENDING, PATIENT-CREATE-SUCCESS, PATIENT-CREATE-ERROR, PATIENTS-REFRESH-DEGRADED                | Preserve existing table data during pagination and degraded refresh; creation success transitions to the new workspace.               |
 | 3D scans          | SCANS-EMPTY, SCAN-SELECTED, SCAN-UPLOADING, SCAN-CONTENT-INVALID, SCAN-TOO-LARGE, SCAN-UPLOAD-SUCCESS, SCAN-STORAGE-UNAVAILABLE, SCAN-DOWNLOAD-UNAVAILABLE                           | Explain eligibility and keep the patient workspace stable through upload and storage outcomes.                                        |
 | Print requests    | PRINT-NO-ELIGIBLE-SCAN, PRINT-SUBMITTING, PRINT-CONFIRMATION-PENDING, PRINT-CAPACITY-REACHED, PRINT-QUEUED, PRINT-IN-PROGRESS, PRINT-COMPLETED, PRINT-FAILED, PRINT-REFRESH-DEGRADED | Surface safety around duplicate prevention, ambiguous confirmation, provider capacity, lifecycle, estimated progress, and stale data. |
-| System navigation | ROUTE-NOT-FOUND                                                                                                                                                                      | Explain that the requested page is unavailable without exposing protected-resource existence and provide one safe return action.      |
+| System fallbacks  | SYS-NOT-FOUND, SYS-UNEXPECTED-ERROR                                                                                                                                                   | Provide safe recovery without exposing protected-resource existence or technical failure details.                                     |
 
 ## Requirements _(mandatory)_
 
@@ -311,6 +313,7 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - **FR-053**: Touch targets MUST be usable on compact screens, and no status, validation result, or available action MAY rely on color alone.
 - **FR-054**: The product MUST minimize displayed and retained personal data to the defined account and patient fields and MUST make no claim of GDPR, HDS, medical-device, or other formal certification.
 - **FR-055**: Unknown application paths and unavailable deep links MUST display `SYS-NOT-FOUND` with localized, non-disclosing language and one safe return action to `DST-PATIENTS` for an authenticated account or `DST-AUTH` otherwise.
+- **FR-056**: An unrecoverable application failure MUST display `SYS-UNEXPECTED-ERROR` with localized, non-technical language and one safe retry action, without exposing the underlying error or implementation detail.
 
 ### Key Entities
 
@@ -345,7 +348,8 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - **SC-012**: Every destination, table, action, required state, source requirement, functional requirement, and success criterion is addressable by a stable identifier for Figma and acceptance review.
 - **SC-013**: The delivered product uses the mandated React frontend and NestJS backend and passes the architecture and code-organization review defined by the brief.
 - **SC-014**: A reviewer can set up and run the delivered repository, understand its choices and trade-offs, inspect meaningful Git history, and identify the declared AI-assisted workflow from the README and repository evidence.
-- **SC-015**: Every unknown path and unavailable deep link displays the localized `ROUTE-NOT-FOUND` state, reveals no protected-resource existence, and returns the user to the appropriate safe destination through one keyboard-accessible action.
+- **SC-015**: Every unknown path and unavailable deep link displays the localized `SYS-NOT-FOUND` state, reveals no protected-resource existence, and returns the user to the appropriate safe destination through one keyboard-accessible action.
+- **SC-016**: Every unrecoverable application failure displays the localized `SYS-UNEXPECTED-ERROR` state, exposes no technical error detail, and offers one keyboard-accessible retry action.
 
 ## Delivery Constraints
 

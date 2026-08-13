@@ -273,12 +273,12 @@ Exact generated project names and target syntax must be verified after scaffoldi
 | FR-047–FR-051; SC-008, SC-010 | Problem Details, typed Fetch error, localized feedback, mutation guards, stale-query preservation | #9 error logic evidence; #12 state/retry evidence; #14 manual degraded-state review |
 | FR-052–FR-053 | shadcn semantics, keyboard/focus/announcement behavior, 44 px compact targets | #12 accessibility evidence; #14 manual interaction review |
 | FR-054; SC-011 | Minimal schemas, private storage, logging denylist, synthetic evidence | #9 security review; #14 repository scans |
-| FR-055; SC-015 | Auth-aware TanStack Router not-found fallback | #12 fallback evidence; #14 authenticated/public fallback review |
+| FR-055–FR-056; SC-015–SC-016 | Auth-aware not-found fallback and root route error boundary | #12 fallback evidence; #14 authenticated/public recovery review |
 | SC-001 | Four story slices remain independently executable | #9 and #12 focused evidence plus #14 manual story review |
 | SC-013 | React/Vite and NestJS/Nx structure | #14 type-check/build and architecture review |
 | SC-014 | README, quickstart, decisions, AI disclosure, reviewable Git history | #14 delivery review |
 
-All `FR-001…FR-055` and `SC-001…SC-015` are represented above.
+All `FR-001…FR-056` and `SC-001…SC-016` are represented above.
 
 ## Complexity Tracking
 

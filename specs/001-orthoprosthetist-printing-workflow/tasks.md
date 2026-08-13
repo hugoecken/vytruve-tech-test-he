@@ -141,12 +141,12 @@
 
 **Purpose**: Close requirements that span routes and stories without adding optional product scope.
 
-- [ ] T058 Implement localized public and authenticated `SYS-NOT-FOUND` route fallbacks with one safe keyboard-accessible return action in `apps/web/src/routes/$.tsx` and `apps/web/src/modules/system/ui/not-found-view.tsx` (FR-047–FR-048, FR-052–FR-055; SC-008, SC-012, SC-015)
+- [ ] T058 Implement localized `SYS-NOT-FOUND` and `SYS-UNEXPECTED-ERROR` route fallbacks with safe keyboard-accessible recovery actions in `apps/web/src/routes/` and `apps/web/src/shared/layout/` (FR-047–FR-048, FR-052–FR-056; SC-008, SC-012, SC-015–SC-016)
 - [ ] T059 Audit all mutation and query call sites under `apps/web/src/modules/` for the accepted retry policy, preserved stale content, explicit recovery, and absence of raw generated/server/provider messages (FR-047–FR-051; SC-008, SC-010–SC-011)
 - [ ] T060 Audit all routes, overlays, tabs, tables, forms, feedback, focus restoration, accessible names, live announcements, color-independent states, and 44-pixel compact targets under `apps/web/src/` against the accepted specification and canonical Figma authorities (FR-046–FR-047, FR-052–FR-053; SC-012)
 - [ ] T061 Regenerate OpenAPI, native Fetch/TanStack Query output, Zod Mini output, and the TanStack route tree through Nx; resolve consumers without editing generated files in `apps/web/src/shared/api/generated/` or `apps/web/src/routeTree.gen.ts` (FR-048–FR-049; SC-013)
 - [ ] T062 Document setup, architecture decisions, AI-assisted workflow, security boundaries, deferred test ownership, and authoritative Nx commands in `README.md` without copying credentials or personal source data (FR-049, FR-054; SC-011, SC-013–SC-014)
-- [ ] T063 Reconcile the implemented routes and components against the approved screens in the canonical Figma Product Design and the linked components in the canonical Figma UI Library, resolving visual deviations without creating a parallel textual design authority (FR-011–FR-055; SC-001–SC-015)
+- [ ] T063 Reconcile the implemented routes and components against the approved screens in the canonical Figma Product Design and the linked components in the canonical Figma UI Library, resolving visual deviations without creating a parallel textual design authority (FR-011–FR-056; SC-001–SC-016)
 
 **Checkpoint**: The application scope is complete. Test evidence and automation remain intentionally deferred to their owning issues.
 
@@ -165,11 +165,13 @@
 | FR-052–FR-053 | T016–T018, T025–T027, T033–T036, T044–T046, T054–T060 |
 | FR-054 | T019–T024, T028–T031, T037–T041, T047–T050, T062 |
 | FR-055 | T058 |
+| FR-056 | T058 |
 | SC-001–SC-004 | T019–T046 |
 | SC-005–SC-007 | T047–T057 |
 | SC-008–SC-012 | T010–T018, T024–T027, T031–T036, T039–T046, T049–T060 |
 | SC-013–SC-014 | T001–T018, T061–T063 |
 | SC-015 | T058 |
+| SC-016 | T058 |
 
 ## Dependencies and Delivery Order
 

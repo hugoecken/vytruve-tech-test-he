@@ -47,7 +47,7 @@
 - [x] CHK042 Patient workspace navigation exposes only `TAB-PATIENT-SCANS` and `TAB-PATIENT-PRINTS`, selects scans by default, displays one collection panel at a time, and selects print requests after an accepted submission. [Spec US3-AS9, US4-AS12, FR-014, FR-042]
 - [x] CHK043 Scan validation preserves the displayed scan table and keeps selected-file feedback within the bounded upload context until correction or dismissal. [Spec US3-AS10, FR-023]
 - [x] CHK044 Scan upload separates file selection from confirmation, keeps confirmation disabled without a valid selection, and groups removal plus file-specific feedback with the selected attachment. [Spec US3-AS11–US3-AS12, FR-023]
-- [x] CHK045 The not-found fallback is explicitly a system state rather than a fourth primary destination, uses non-disclosing language, and exposes one safe return action. [Spec SYS-NOT-FOUND, ROUTE-NOT-FOUND, FR-055]
+- [x] CHK045 The not-found fallback is explicitly a system state rather than a fourth primary destination, uses non-disclosing language, and exposes one safe return action. [Spec SYS-NOT-FOUND, FR-055]
 
 ## Error, Degradation, And Safety Quality
 
@@ -65,6 +65,7 @@
 - [x] CHK034 Compact-screen touch targets and non-color status communication are explicit acceptance requirements. [Spec FR-053]
 - [x] CHK035 Localized date, number, and size presentation preserves underlying values. [Spec §Edge Cases]
 - [x] CHK046 The not-found fallback is localized, keyboard accessible, independent of color, and safe for both authenticated and unauthenticated contexts. [Spec FR-052–FR-055, SC-015]
+- [x] CHK047 The unexpected-error fallback is localized, hides technical details, and exposes one keyboard-accessible retry action. [Spec SYS-UNEXPECTED-ERROR, FR-056, SC-016]
 
 ## Data Protection And Delivery Boundaries
 

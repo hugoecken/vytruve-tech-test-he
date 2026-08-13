@@ -149,6 +149,20 @@ downloads, and converts RFC 9457 responses into safe typed errors. One bundled J
 translates stable problem and validation codes; raw Backend or Zod messages are never user-facing. Additional i18next
 namespaces will be introduced only when a catalog becomes large or benefits from independent loading.
 
+## Frontend navigation and server state
+
+TanStack Router owns typed URLs, file routes, navigation, and route guards. TanStack Query is the only owner of remote
+server state. The single `QueryClient` is injected through the typed router context, and the cookie-backed session is
+restored before route guards mount. Successful authentication writes the returned session to its generated query key;
+sign-out and expiry clear all account-scoped cache state before navigation.
+
+Router intent preloading remains enabled, with its preload stale time set to zero so TanStack Query retains sole
+authority over data freshness. Future route loaders may prime generated query options through the injected client,
+while components subscribe through generated Query hooks. TanStack Table remains a headless rendering engine and will
+own only table state when collection screens are implemented; shadcn/ui remains the visual authority. The official
+recommended TanStack Query and Router ESLint configurations protect query dependencies, client stability, route
+parameter names, and route-property ordering.
+
 ## Frontend component platform
 
 The repository contains the complete public shadcn/ui Base Nova catalog configured for Base UI, Tailwind CSS 4, CSS
