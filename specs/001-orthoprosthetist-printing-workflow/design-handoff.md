@@ -2,46 +2,46 @@
 
 **Status**: Accepted
 
-**Canonical Figma file**: [Vytruve — Product Design](https://www.figma.com/design/1c0CXC7lQwsS8SqhEc7sd6)
+**Canonical Figma file**: [Vytruve — Product Design](https://www.figma.com/design/tnvp3CFNnb4aC6VWTkK2BI)
 
-**Visual authority**: `600 - Ready for Development`, bound by the repository [design profile](../../.agents/skills/vytruve-best-practices/overlays/design-profile.md). This handoff translates accepted composition into runtime ownership without changing product intent or Figma.
+**Visual authority**: the exact accepted nodes in `Ready for Development`, bound by the repository [Figma profile](../../.agents/skills/vytruve-best-practices/overlays/figma-profile.md). The former Product Design is historical evidence only.
 
 ## Route And Screen Mapping
 
 | Route | Access | Primary Figma evidence | Runtime composition |
 | --- | --- | --- | --- |
-| `/sign-in` | Public-only | `80:4`, `80:5` | `Authentication`, sign-in form, safe redirect search |
-| `/sign-up` | Public-only | `80:143`, `80:144` | `Authentication`, account form with local password confirmation |
-| `/patients` | Authenticated | `80:413`, `80:414`, `80:1082`, `80:1083` | `AppShell`, patient directory, creation Dialog/Drawer |
-| `/patients/$patientId` | Authenticated | `81:1625`, `81:1626` | Patient identity, patient-section Tabs, exactly one table panel |
-| Public not found | Public | `258:7813`, `258:7835` | `NotFound` returning safely to `/sign-in` |
-| Authenticated not found or unavailable deep link | Authenticated | `255:7739`, `255:7765` | `NotFound` returning safely to `/patients` |
+| `/sign-in` | Public-only | `95:3`, `95:42` | `Authentication`, sign-in form, safe redirect search |
+| `/sign-up` | Public-only | `95:78`, `95:123` | `Authentication`, account form with local password confirmation |
+| `/patients` | Authenticated | `96:260`, `96:392`, `96:502`, `96:626` | `AppShell`, patient directory, creation Dialog/Drawer |
+| `/patients/$patientId` | Authenticated | `97:1152`, `97:1347` | Patient identity, patient-section Tabs, exactly one table panel |
+| Public not found | Public | `116:2947`, `116:3031` | `NotFound` returning safely to `/sign-in` |
+| Authenticated not found or unavailable deep link | Authenticated | `116:2791`, `116:2875` | `NotFound` returning safely to `/patients` |
 
 TanStack Router file routes use a public-only auth layout and a pathless authenticated layout. `beforeLoad` resolves session state before protected composition and retains only a validated internal pathname for post-authentication return.
 
 ## Ready Frame Matrix
 
-Node URLs follow `https://www.figma.com/design/1c0CXC7lQwsS8SqhEc7sd6?node-id=<colon-replaced-with-hyphen>`.
+Node URLs follow `https://www.figma.com/design/tnvp3CFNnb4aC6VWTkK2BI?node-id=<colon-replaced-with-hyphen>`.
 
 | Scenario | Desktop | Compact | Runtime owner |
 | --- | --- | --- | --- |
-| Sign in | `80:4` | `80:5` | `modules/auth` |
-| Create account | `80:143` | `80:144` | `modules/auth` |
-| Patient directory list | `80:413` | `80:414` | `modules/patients` |
-| Patient loading and empty | `80:1082` | `80:1083` | `modules/patients` |
-| Patient creation | `81:1106` | `81:1107` | `modules/patients` |
-| Populated patient workspace | `81:1625` | `81:1626` | patient route composition |
-| Scan upload — selection | `186:3938` | `186:4130` | `modules/scans` |
-| Scan upload — valid file | `193:3` | `193:539` | `modules/scans` |
-| Scan upload — recoverable error | `203:7839` | `203:7919` | `modules/scans` |
-| Print submission and lifecycle | `81:1827` | `81:1828` | `modules/printing` |
-| Degraded workspace refresh | `81:1969` | `81:1970` | Query error presentation in patient workspace |
-| Profile menu | `117:4993` | `117:4995` | shared application header plus auth/i18n actions |
-| French account stress | — | `83:1808` | `modules/auth` locale verification |
-| French directory stress | `83:1853` | — | `modules/patients` locale verification |
-| French workspace stress | — | `83:2008` | patient workspace locale verification |
-| Authenticated not found | `255:7739` | `255:7765` | authenticated fallback route |
-| Public not found | `258:7813` | `258:7835` | root fallback route |
+| Sign in | `95:3` | `95:42` | `modules/auth` |
+| Create account | `95:78` | `95:123` | `modules/auth` |
+| Patient directory list | `96:260` | `96:392` | `modules/patients` |
+| Patient loading and empty | `96:502` | `96:626` | `modules/patients` |
+| Patient creation | `96:738` | `96:794` | `modules/patients` |
+| Populated patient workspace | `97:1152` | `97:1347` | patient route composition |
+| Scan upload — selection | `97:1502` | `97:1551` | `modules/scans` |
+| Scan upload — valid file | `97:1599` | `97:1648` | `modules/scans` |
+| Scan upload — recoverable error | `106:1955` | `106:2005` | `modules/scans` |
+| Print submission and lifecycle | `107:2159` | `107:2432` | `modules/printing` |
+| Degraded workspace refresh | `108:2461` | `108:2601` | Query error presentation in patient workspace |
+| Profile menu | `96:849` | `96:899` | shared application header plus auth/i18n actions |
+| French account stress | — | `95:165` | `modules/auth` locale verification |
+| French directory stress | `96:924` | — | `modules/patients` locale verification |
+| French workspace stress | — | `109:2700` | patient workspace locale verification |
+| Authenticated not found | `116:2791` | `116:2875` | authenticated fallback route |
+| Public not found | `116:2947` | `116:3031` | root fallback route |
 
 ## Viewports And Layout
 
@@ -83,12 +83,12 @@ Tailwind semantic tokens alias these CSS variables. Product code never uses prim
 
 ### Typography, spacing, radius, and effects
 
-- Font family: Geist with Inter fallback.
-- Type scale: `40/48`, `32/40`, `24/32`, `20/28`, `16/24`, `14/20`, `12/16`.
-- Spacing scale: `4`, `8`, `12`, `16`, `20`, `24`, `32`, `40`, `48`, `64`.
-- Radius scale: `8`, `16`, `20`, `24`, `999`; `16px` is the default product surface radius.
-- Control heights: `44px` default, `36px` compact; default icon size `24px`.
-- One soft elevation: `0 8px 24px -8px rgb(22 49 48 / 10%)`.
+- Consume the published UI Library variables and styles directly; do not duplicate their numeric values in the
+  Product Design or application feature layers.
+- Issue #19 customizes only the Clinical Teal color aliases. Typography, spacing, radius, density, shadows, component
+  structure, and variant APIs remain vendor-native.
+- Preserve the minimum `44px` compact interaction target required by the accepted specification without changing the
+  visual API of the underlying Premium component.
 
 ## Component Ownership
 
@@ -175,7 +175,9 @@ TanStack Table is headless and shadcn Table is visual.
 
 - Use Lucide React for interface icons: `CirclePlus`, `UserRound`, `CloudUpload`, `Download`, `Printer`, `ChevronLeft`, `ChevronRight`, `CircleCheck`, `CircleX`, `CircleAlert`, `Clock`, `RefreshCw`, `Languages`, and `LogOut`.
 - Icon color follows the button or control foreground token, including disabled upload actions.
-- Use the repository brand asset in a square container; do not substitute the logo for action-specific Lucide icons such as Print.
+- Use the official Vytruve wordmark asset. Select its light or dark treatment for sufficient contrast instead of
+  placing an artificial background behind it. Do not substitute the brand for action-specific Lucide icons such as
+  Print.
 - Every icon-only action has an accessible name and visible focus.
 
 ## Localization

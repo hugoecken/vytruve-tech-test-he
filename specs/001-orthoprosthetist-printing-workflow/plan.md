@@ -4,7 +4,7 @@
 
 **Feature**: `001-orthoprosthetist-printing-workflow` | **Date**: 2026-08-12 | **Specification**: [`spec.md`](spec.md) at `b1cd82fe1347afe4221931cf1301710f7bf34721`
 
-**Design evidence**: [`design-profile.md`](../../.agents/skills/vytruve-best-practices/overlays/design-profile.md) at `c0a65411f83effa5024dec6405d0147a34da05a6`
+**Historical design evidence**: [`figma-profile.md`](../../.agents/skills/vytruve-best-practices/overlays/figma-profile.md), with the accepted issue #3 snapshot preserved at `c0a65411f83effa5024dec6405d0147a34da05a6`
 
 **Planning authority**: GitHub issue #4. Acceptance authorizes publication of these planning artifacts but no application code or Figma change.
 
