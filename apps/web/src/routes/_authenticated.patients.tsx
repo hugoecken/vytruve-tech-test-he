@@ -1,15 +1,15 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 
-/** Protected patient destination reserved for the next frontend slice. */
+/** Protected patient route layout. */
 export const Route = createFileRoute('/_authenticated/patients')({
-  component: PatientsOutletComponent,
+  component: PatientsLayoutComponent,
 });
 
 /**
- * Keeps the protected shell free of provisional patient UI.
+ * Renders the active patient directory or workspace child route.
  *
- * @returns No route content until the patient slice is implemented.
+ * @returns The active nested patient route.
  */
-function PatientsOutletComponent(): null {
-  return null;
+function PatientsLayoutComponent(): React.JSX.Element {
+  return <Outlet />;
 }

@@ -15,7 +15,7 @@ export function AppShell({ children }: AppShellProps): React.JSX.Element {
   return (
     <div className="min-h-svh bg-secondary">
       <AppHeader />
-      <main className="mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-6">
+      <main className="mx-auto w-full max-w-[1248px] px-4 py-12 sm:px-6">
         {children}
       </main>
     </div>

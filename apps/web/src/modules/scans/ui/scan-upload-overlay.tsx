@@ -1,0 +1,294 @@
+import * as React from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { CircleAlertIcon, FileBoxIcon, PlusIcon, XIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import {
+  getListPatientScansQueryKey,
+  useCreatePatientScan,
+} from '@/shared/api/generated/client/scans/scans';
+import {
+  ApiProblemError,
+  ApiTransportError,
+} from '@/shared/api/http/api-error';
+import { useIsMobile } from '@/shared/hooks/use-mobile';
+import { Alert, AlertDescription } from '@/shared/ui/alert';
+import {
+  Attachment,
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentMedia,
+  AttachmentTitle,
+} from '@/shared/ui/attachment';
+import { Button } from '@/shared/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/ui/dialog';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/shared/ui/drawer';
+import { Input } from '@/shared/ui/input';
+import { Spinner } from '@/shared/ui/spinner';
+
+const MAX_SCAN_BYTES = 25 * 1024 * 1024;
+
+/** Props for the scan upload workflow. */
+interface ScanUploadOverlayProps {
+  patientId: string;
+}
+
+/** Supported local scan validation failure. */
+type ScanFileFailure = 'size' | 'type';
+
+/**
+ * Selects, validates and uploads one PLY scan through the generated mutation.
+ *
+ * @param props Parent patient identity used by the ownership-scoped API.
+ * @returns A responsive Dialog or compact Drawer upload workflow.
+ */
+export function ScanUploadOverlay({
+  patientId,
+}: ScanUploadOverlayProps): React.JSX.Element {
+  const { i18n, t } = useTranslation();
+  const isMobile = useIsMobile();
+  const queryClient = useQueryClient();
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const [file, setFile] = React.useState<File | null>(null);
+  const [open, setOpen] = React.useState(false);
+  const mutation = useCreatePatientScan();
+  let fileFailure: ScanFileFailure | null = null;
+  if (file !== null && !file.name.toLocaleLowerCase().endsWith('.ply')) {
+    fileFailure = 'type';
+  } else if (file !== null && file.size > MAX_SCAN_BYTES) {
+    fileFailure = 'size';
+  }
+
+  const resetSelection = () => {
+    setFile(null);
+    mutation.reset();
+    if (inputRef.current !== null) {
+      inputRef.current.value = '';
+    }
+  };
+
+  const setOverlayOpen = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      resetSelection();
+    }
+  };
+
+  const selectFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.currentTarget.files?.[0] ?? null;
+    mutation.reset();
+    setFile(selectedFile);
+  };
+
+  const upload = async () => {
+    if (file === null || fileFailure !== null || mutation.isPending) {
+      return;
+    }
+    try {
+      await mutation.mutateAsync({ data: { file }, patientId });
+      await queryClient.invalidateQueries({
+        queryKey: getListPatientScansQueryKey(patientId),
+      });
+      setOverlayOpen(false);
+    } catch {
+      // The generated mutation retains the safe error for contextual rendering.
+    }
+  };
+
+  const uploadError = mutation.isError
+    ? getScanUploadError(mutation.error, t)
+    : undefined;
+  const localError =
+    fileFailure === null
+      ? undefined
+      : t(`scans.upload.validation.${fileFailure}`);
+  let attachmentState: 'done' | 'error' | 'uploading' = 'done';
+  if (localError !== undefined || uploadError !== undefined) {
+    attachmentState = 'error';
+  } else if (mutation.isPending) {
+    attachmentState = 'uploading';
+  }
+  let attachmentDescription: string | undefined;
+  if (localError !== undefined) {
+    attachmentDescription = localError;
+  } else if (uploadError !== undefined) {
+    attachmentDescription = t('scans.upload.failed');
+  } else if (file !== null) {
+    attachmentDescription = t('scans.upload.fileReady', {
+      size: formatFileSize(file.size, i18n.language),
+    });
+  }
+  const content = (
+    <div className="flex flex-col gap-4">
+      {uploadError !== undefined && (
+        <Alert variant="destructive">
+          <CircleAlertIcon aria-hidden="true" />
+          <AlertDescription>{uploadError}</AlertDescription>
+        </Alert>
+      )}
+      <Input
+        accept=".ply"
+        hidden
+        onChange={selectFile}
+        ref={inputRef}
+        type="file"
+      />
+      {file === null ? (
+        <div className="flex min-h-32 flex-col items-center justify-center gap-3 rounded-xl border border-dashed bg-muted/30 p-4 text-center">
+          <FileBoxIcon
+            aria-hidden="true"
+            className="size-6 text-muted-foreground"
+          />
+          <p className="text-sm text-muted-foreground">
+            {t('scans.upload.fileHint')}
+          </p>
+          <Button
+            className="h-9"
+            onClick={() => inputRef.current?.click()}
+            type="button"
+            variant="outline"
+          >
+            {t('scans.upload.choose')}
+          </Button>
+        </div>
+      ) : (
+        <Attachment className="w-full" state={attachmentState}>
+          <AttachmentMedia>
+            {mutation.isPending ? (
+              <Spinner aria-hidden="true" />
+            ) : (
+              <FileBoxIcon aria-hidden="true" />
+            )}
+          </AttachmentMedia>
+          <AttachmentContent>
+            <AttachmentTitle title={file.name}>{file.name}</AttachmentTitle>
+            <AttachmentDescription>
+              {attachmentDescription}
+            </AttachmentDescription>
+          </AttachmentContent>
+          <AttachmentActions>
+            <AttachmentAction
+              aria-label={t('scans.upload.remove')}
+              disabled={mutation.isPending}
+              onClick={resetSelection}
+              type="button"
+            >
+              <XIcon aria-hidden="true" />
+            </AttachmentAction>
+          </AttachmentActions>
+        </Attachment>
+      )}
+      {file !== null && (
+        <p className="text-sm leading-[25px] text-muted-foreground">
+          {t('scans.upload.review')}
+        </p>
+      )}
+    </div>
+  );
+  const footer = (
+    <>
+      <Button
+        className="h-9 w-[5.75rem]"
+        disabled={mutation.isPending}
+        onClick={() => setOverlayOpen(false)}
+        type="button"
+        variant="outline"
+      >
+        {t('scans.upload.cancel')}
+      </Button>
+      <Button
+        className="h-9 w-[8.75rem]"
+        disabled={file === null || fileFailure !== null || mutation.isPending}
+        onClick={() => void upload()}
+        type="button"
+      >
+        {mutation.isPending && <Spinner aria-hidden="true" />}
+        {mutation.isPending
+          ? t('scans.upload.pending')
+          : mutation.isError
+            ? t('common.actions.retry')
+            : t('scans.upload.submit')}
+      </Button>
+    </>
+  );
+
+  return (
+    <>
+      <Button
+        className="h-9 w-full sm:w-[8.75rem]"
+        onClick={() => setOverlayOpen(true)}
+        type="button"
+      >
+        <PlusIcon aria-hidden="true" data-icon="inline-start" />
+        {t('scans.add')}
+      </Button>
+      {isMobile ? (
+        <Drawer onOpenChange={setOverlayOpen} open={open} showSwipeHandle>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>{t('scans.upload.title')}</DrawerTitle>
+              <DrawerDescription>
+                {t('scans.upload.description')}
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="overflow-y-auto px-4 py-4">{content}</div>
+            <DrawerFooter className="flex-row justify-end gap-3">
+              {footer}
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog onOpenChange={setOverlayOpen} open={open}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t('scans.upload.title')}</DialogTitle>
+              <DialogDescription>
+                {t('scans.upload.description')}
+              </DialogDescription>
+            </DialogHeader>
+            {content}
+            <DialogFooter className="gap-3">{footer}</DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
+  );
+}
+
+/** Resolves a safe localized upload failure. */
+function getScanUploadError(
+  error: unknown,
+  t: ReturnType<typeof useTranslation>['t'],
+): string {
+  if (error instanceof ApiProblemError) {
+    return t(`errors.problem.${error.problem.code}`);
+  }
+  return error instanceof ApiTransportError
+    ? t('errors.network')
+    : t('errors.unexpected');
+}
+
+/** Formats scan bytes without retaining or exposing file content. */
+function formatFileSize(bytes: number, language: string): string {
+  if (bytes < 1024 * 1024) {
+    const kibibytes = bytes / 1024;
+    return `${new Intl.NumberFormat(language, { maximumFractionDigits: 1 }).format(kibibytes)} KiB`;
+  }
+  const mebibytes = bytes / (1024 * 1024);
+  return `${new Intl.NumberFormat(language, { maximumFractionDigits: 1 }).format(mebibytes)} MiB`;
+}

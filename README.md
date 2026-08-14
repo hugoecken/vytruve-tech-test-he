@@ -19,9 +19,10 @@ The current implementation provides:
 - owner-authorized scan listing and byte-for-byte content streaming; and
 - duplicate-safe print submission, reconciliation, lifecycle tracking, and estimated progress;
 - a file-based React application shell with TanStack Router and Query; and
+- responsive patient records, scan upload/download workflows, and explicit collection recovery states; and
 - the public shadcn/ui Base UI catalog on Tailwind CSS 4.
 
-It does not yet implement the product UI.
+The print-request runtime UI remains intentionally deferred to its dedicated delivery issue.
 
 ## Prerequisites
 
@@ -121,8 +122,9 @@ The committed example uses a reserved `.invalid` URL and a local placeholder key
 `.env.local` file. The integration persists a unique reference before submission, sends the scan with a single POST, and
 never retries that non-idempotent request automatically. If the result is ambiguous, the reservation remains in
 `confirmation_pending` and later reads reconcile it by stable reference before consulting the provider identifier.
-Terminal observations release the scan for a later print request. The Web application mounts React without rendering
-a product screen. Its neutral index route establishes only the routing, localization, and query-provider boundaries.
+Terminal observations release the scan for a later print request. The Web application provides the authenticated
+patient directory and patient workspace. It creates patient records, validates and uploads one PLY scan at a time,
+downloads owner-authorized scan content with synthetic output names, and keeps failures within their owning context.
 
 Generate the code-first OpenAPI contract without serving a public Swagger interface:
 
@@ -157,11 +159,12 @@ restored before route guards mount. Successful authentication writes the returne
 sign-out and expiry clear all account-scoped cache state before navigation.
 
 Router intent preloading remains enabled, with its preload stale time set to zero so TanStack Query retains sole
-authority over data freshness. Future route loaders may prime generated query options through the injected client,
-while components subscribe through generated Query hooks. TanStack Table remains a headless rendering engine and will
-own only table state when collection screens are implemented; shadcn/ui remains the visual authority. The official
-recommended TanStack Query and Router ESLint configurations protect query dependencies, client stability, route
-parameter names, and route-property ordering.
+authority over data freshness. Components subscribe through generated Query hooks. TanStack Table is the headless
+rendering engine for patients and scans, while each feature owns its columns and behavior. The visible page always
+comes from the last confirmed API response: an initial failure replaces the collection, a pagination failure preserves
+the confirmed page, and a refresh failure preserves confirmed rows as potentially stale. The official recommended
+TanStack Query and Router ESLint configurations protect query dependencies, client stability, route parameter names,
+and route-property ordering.
 
 ## Frontend component platform
 
@@ -190,8 +193,7 @@ npx shadcn@latest add @shadcndesign/skills-codex
 
 The licensed skill payload is local input and is not committed. Repository guidance, accepted specifications, and
 owning GitHub issues take precedence over vendor instructions. The canonical visual system uses a published
-`Vytruve — UI Library` and a separate `Vytruve — Product Design`; runtime token synchronization and product screens
-remain owned by their later frontend delivery.
+`Vytruve — UI Library` and a separate `Vytruve — Product Design`.
 
 ## Quality commands
 
@@ -230,6 +232,6 @@ technical translation, and derived tasks without creating a competing roadmap.
 
 ## Deferred work
 
-- Premium shadcn resources, MedTech tokens, forms, tables, and product screens
+- Print-request runtime screens and interactions
 - Frontend component and feature tests
 - GitHub Actions and deployment
