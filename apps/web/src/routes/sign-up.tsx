@@ -27,7 +27,7 @@ export const Route = createFileRoute('/sign-up')({
  *
  * @returns The public account-creation screen.
  */
-function SignUpRouteComponent(): React.JSX.Element {
+function SignUpRouteComponent() {
   const { redirect } = Route.useSearch();
   return (
     <AuthenticationLayout>

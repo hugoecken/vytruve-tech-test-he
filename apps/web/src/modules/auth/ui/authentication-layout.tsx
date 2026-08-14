@@ -1,10 +1,11 @@
+import { type ReactNode } from 'react';
 import { CircleCheckIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BrandLockup } from '@/shared/brand/brand-lockup';
 
 /** Props for the shared account-access composition. */
 interface AuthenticationLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 /**
@@ -13,9 +14,7 @@ interface AuthenticationLayoutProps {
  * @param props Form content supplied by the active authentication route.
  * @returns The desktop split view and compact stacked view.
  */
-export function AuthenticationLayout({
-  children,
-}: AuthenticationLayoutProps): React.JSX.Element {
+export function AuthenticationLayout({ children }: AuthenticationLayoutProps) {
   const { t } = useTranslation();
 
   return (

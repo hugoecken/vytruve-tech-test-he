@@ -101,7 +101,7 @@ export class PrintRequestsController {
   }
 
   /**
-   * Lists one patient page while retaining last-known rows on provider degradation.
+   * Lists one patient page from persisted state without provider latency.
    *
    * @param session Verified authenticated session.
    * @param parameters Validated patient identifier.
@@ -111,7 +111,7 @@ export class PrintRequestsController {
   @Get('print-requests')
   @ApiOperation({
     description:
-      'Reconciles non-terminal rows only through their stable reference and known provider identifier, then returns the last safe state.',
+      'Returns the latest persisted print-request lifecycle projection without contacting the printing provider.',
     operationId: 'listPatientPrintRequests',
     summary: 'List patient print requests',
   })
@@ -134,6 +134,51 @@ export class PrintRequestsController {
   ): Promise<PrintRequestPageResponse> {
     return this.mapper.toPageResponse(
       await this.printing.list(session.accountId, parameters.patientId, query),
+    );
+  }
+
+  /**
+   * Reconciles active rows in one patient page without submitting new work.
+   *
+   * @param session Verified authenticated session.
+   * @param parameters Validated patient identifier.
+   * @param query Validated zero-based server page.
+   * @returns Owner-scoped provider-neutral print history after reconciliation.
+   */
+  @Get('print-requests/statuses')
+  @ApiOperation({
+    description:
+      'Reconciles active rows through their stable reference and durable provider identifier, persists validated observations, and never submits a new print request.',
+    operationId: 'refreshPatientPrintRequests',
+    summary: 'Refresh patient print-request statuses',
+  })
+  @ApiResponse({
+    description: 'Reconciled print-request page with estimated progress.',
+    status: HttpStatus.OK,
+    type: PrintRequestPageResponse,
+  })
+  @ApiProblemResponse(400, 'The patient path or pagination input is invalid.')
+  @ApiProblemResponse(401, 'A valid session cookie is required.')
+  @ApiProblemResponse(
+    404,
+    'The patient is missing or not owned by the current account.',
+  )
+  @ApiProblemResponse(
+    503,
+    'The printing center could not refresh one or more non-terminal requests.',
+  )
+  @ApiProblemResponse(500, 'The print-request page could not be loaded safely.')
+  async refreshPrintRequests(
+    @CurrentSession() session: AuthenticatedSessionModel,
+    @Param() parameters: PatientPrintRequestsPathParameters,
+    @Query() query: PageQuery,
+  ): Promise<PrintRequestPageResponse> {
+    return this.mapper.toPageResponse(
+      await this.printing.refresh(
+        session.accountId,
+        parameters.patientId,
+        query,
+      ),
     );
   }
 }

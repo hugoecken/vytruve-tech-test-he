@@ -1,6 +1,6 @@
 'use client';
 
-import * as React from 'react';
+import { type ReactNode } from 'react';
 import { Toast as ToastPrimitive } from '@base-ui/react/toast';
 
 import { cn } from '@/shared/lib/utils';
@@ -138,7 +138,7 @@ function ToastClose({
 }
 
 function ToastIcon({ type }: { type: string | undefined }) {
-  let icon: React.ReactNode = null;
+  let icon: ReactNode = null;
 
   if (type === 'success') {
     icon = <CircleCheckIcon aria-hidden="true" />;

@@ -10,6 +10,6 @@ export const Route = createFileRoute('/_authenticated/patients')({
  *
  * @returns The active nested patient route.
  */
-function PatientsLayoutComponent(): React.JSX.Element {
+function PatientsLayoutComponent() {
   return <Outlet />;
 }

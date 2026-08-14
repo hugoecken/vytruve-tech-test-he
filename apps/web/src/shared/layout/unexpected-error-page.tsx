@@ -13,9 +13,7 @@ interface UnexpectedErrorPageProps {
  * @param props Recovery action supplied by TanStack Router.
  * @returns The localized generic error fallback.
  */
-export function UnexpectedErrorPage({
-  onRetry,
-}: UnexpectedErrorPageProps): React.JSX.Element {
+export function UnexpectedErrorPage({ onRetry }: UnexpectedErrorPageProps) {
   const { t } = useTranslation();
 
   return (

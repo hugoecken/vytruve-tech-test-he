@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import type { Page } from '@api/pagination/page';
 import {
+  type PrintRequestPageModel,
   PrintRequestStatus,
   type PrintRequestModel,
   type PrintRequestViewModel,
@@ -8,6 +10,17 @@ import {
 /** Maps persisted application state to its public-safe read projection. */
 @Injectable()
 export class PrintRequestViewMapper {
+  /** Adds read-time presentation values to one application-model page. */
+  toPage(
+    page: Page<PrintRequestModel>,
+    observedAt: Date,
+  ): PrintRequestPageModel {
+    return {
+      ...page,
+      items: page.items.map((request) => this.toView(request, observedAt)),
+    };
+  }
+
   /**
    * Adds the non-authoritative progress estimate selected by the product contract.
    *

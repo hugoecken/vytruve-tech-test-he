@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { keepPreviousData } from '@tanstack/react-query';
 import {
   createColumnHelper,
@@ -8,15 +8,15 @@ import {
 import { CircleAlertIcon, PrinterIcon, RefreshCwIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { CollectionLoadError } from '@/modules/collections/ui/collection-load-error';
-import { CollectionRecoveryAlert } from '@/modules/collections/ui/collection-recovery-alert';
 import { CollectionTableShell } from '@/modules/collections/ui/collection-table-shell';
 import {
   isActivePrintRequestStatus,
   PRINT_REQUEST_PAGE_SIZE,
 } from '@/modules/printing/config/printing';
-import { usePrintRequestPolling } from '@/modules/printing/hooks/use-print-request-polling';
-import { useListPatientPrintRequests } from '@/shared/api/generated/client/printing/printing';
-import type { PrintRequestPageResponse } from '@/shared/api/generated/models/printRequestPageResponse';
+import {
+  useListPatientPrintRequests,
+  useRefreshPatientPrintRequests,
+} from '@/shared/api/generated/client/printing/printing';
 import type { PrintRequestResponse } from '@/shared/api/generated/models/printRequestResponse';
 import type { PrintRequestStatus } from '@/shared/api/generated/models/printRequestStatus';
 import { ApiProblemError } from '@/shared/api/http/api-error';
@@ -32,6 +32,11 @@ import {
   EmptyTitle,
 } from '@/shared/ui/empty';
 import { Progress } from '@/shared/ui/progress';
+import {
+  DetailItem,
+  DetailList,
+  ResponsiveDetailsOverlay,
+} from '@/shared/ui/responsive-details-overlay';
 import { Skeleton } from '@/shared/ui/skeleton';
 import {
   Table,
@@ -40,6 +45,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
+  InteractiveTableRow,
   TableRow,
 } from '@/shared/ui/table';
 
@@ -75,88 +81,75 @@ export function PrintRequestsPanel({
   onPatientUnavailable,
   onShowScans,
   patientId,
-}: PrintRequestsPanelProps): React.JSX.Element {
+}: PrintRequestsPanelProps) {
   const { i18n, t } = useTranslation();
-  const [requestedPage, setRequestedPage] = React.useState(0);
-  const confirmedData = React.useRef<PrintRequestPageResponse | undefined>(
-    undefined,
+  const [requestedPage, setRequestedPage] = useState(0);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(
+    null,
   );
-  const query = useListPatientPrintRequests(
+  const [manualRefreshPending, setManualRefreshPending] = useState(false);
+  const listQuery = useListPatientPrintRequests(
     patientId,
     { page: requestedPage, pageSize: PRINT_REQUEST_PAGE_SIZE },
     {
       query: {
+        enabled: active,
         placeholderData: keepPreviousData,
         select: (response) => response.data,
       },
     },
   );
+  const statusQuery = useRefreshPatientPrintRequests(
+    patientId,
+    { page: requestedPage, pageSize: PRINT_REQUEST_PAGE_SIZE },
+    {
+      query: {
+        enabled:
+          active &&
+          listQuery.data !== undefined &&
+          !listQuery.isPlaceholderData &&
+          listQuery.data.items.length > 0,
+        retry: false,
+        select: (response) => response.data,
+      },
+    },
+  );
 
-  React.useEffect(() => {
-    if (
-      query.data !== undefined &&
-      !query.isPlaceholderData &&
-      !query.isError
-    ) {
-      confirmedData.current = query.data;
-    }
-  }, [query.data, query.isError, query.isPlaceholderData]);
+  usePrintRequestAccessRecovery(
+    statusQuery.error ?? listQuery.error,
+    onAuthenticationRequired,
+    onPatientUnavailable,
+  );
 
-  const authenticationRequired =
-    query.error instanceof ApiProblemError &&
-    query.error.problem.code === 'AUTHENTICATION_REQUIRED';
-  const patientUnavailable =
-    query.error instanceof ApiProblemError &&
-    query.error.problem.code === 'PATIENT_NOT_FOUND';
-  React.useEffect(() => {
-    if (authenticationRequired) {
-      onAuthenticationRequired();
-    }
-  }, [authenticationRequired, onAuthenticationRequired]);
-  React.useEffect(() => {
-    if (patientUnavailable) {
-      onPatientUnavailable();
-    }
-  }, [onPatientUnavailable, patientUnavailable]);
-
-  const data = query.data ?? confirmedData.current;
-  const confirmedPage = data?.pageInfo.page ?? 0;
-  const pageFailed =
-    query.isError && data !== undefined && requestedPage !== confirmedPage;
-  const refreshFailed =
-    query.isError && data !== undefined && requestedPage === confirmedPage;
+  const persistedData = listQuery.data;
+  const data = statusQuery.data ?? persistedData;
+  const loadFailed = listQuery.isError && persistedData === undefined;
   let items = data?.items ?? EMPTY_PRINT_REQUESTS;
   if (
     acceptedRequest !== null &&
-    (data === undefined || confirmedPage === 0) &&
+    (data === undefined || data.pageInfo.page === 0) &&
     !items.some((item) => item.id === acceptedRequest.id)
   ) {
     items = [acceptedRequest, ...items];
   }
-  const acceptedWithoutPage = acceptedRequest !== null && data === undefined;
-  const hasActiveRequests = items.some((item) =>
-    isActivePrintRequestStatus(item.status),
-  );
-  const refetch = query.refetch;
-  /** Performs the safe GET used by the bounded polling window. */
-  const refreshAutomatically = React.useCallback((): void => {
-    void refetch({ cancelRefetch: false });
-  }, [refetch]);
-  const polling = usePrintRequestPolling({
-    enabled:
-      active && data !== undefined && hasActiveRequests && !query.isError,
-    onRefresh: refreshAutomatically,
-    restartKey: acceptedRequest?.id ?? null,
-  });
-  /** Retries the collection and reopens polling after a successful manual GET. */
-  const refresh = async (): Promise<void> => {
-    const result = await refetch();
-    if (!result.isError) {
-      polling.restart();
+  const acceptedWithoutPage =
+    acceptedRequest !== null && persistedData === undefined && !loadFailed;
+  const statusRefreshPending = statusQuery.isFetching;
+
+  /** Runs the provider refresh with feedback reserved for user activation. */
+  const refreshStatusesManually = async (): Promise<void> => {
+    if (statusQuery.isFetching) {
+      return;
+    }
+    setManualRefreshPending(true);
+    try {
+      await statusQuery.refetch();
+    } finally {
+      setManualRefreshPending(false);
     }
   };
 
-  const columns = React.useMemo(
+  const columns = useMemo(
     () =>
       printColumnHelper.columns([
         printColumnHelper.accessor('reference', {
@@ -170,11 +163,27 @@ export function PrintRequestsPanel({
           },
         ),
         printColumnHelper.accessor('status', {
-          cell: ({ getValue }) => <PrintStatusBadge status={getValue()} />,
+          cell: ({ getValue, row }) =>
+            statusRefreshPending &&
+            isActivePrintRequestStatus(row.original.status) ? (
+              <PrintStatusSkeleton
+                loadingLabel={t('printing.refresh.loading')}
+              />
+            ) : (
+              <PrintStatusBadge status={getValue()} />
+            ),
           header: t('printing.table.status'),
         }),
         printColumnHelper.display({
-          cell: ({ row }) => <PrintProgress request={row.original} />,
+          cell: ({ row }) =>
+            statusRefreshPending &&
+            isActivePrintRequestStatus(row.original.status) ? (
+              <PrintProgressSkeleton
+                loadingLabel={t('printing.refresh.loading')}
+              />
+            ) : (
+              <PrintProgress request={row.original} />
+            ),
           header: t('printing.table.progress'),
           id: 'progress',
         }),
@@ -184,43 +193,44 @@ export function PrintRequestsPanel({
           id: 'timing',
         }),
       ]),
-    [i18n.language, t],
+    [i18n.language, statusRefreshPending, t],
   );
+  const selectedRequest =
+    items.find((request) => request.id === selectedRequestId) ?? null;
   const table = useTable({
     features: printTableFeatures,
     columns,
     data: items,
   });
   const tableContent = (
-    <PrintRequestsTable caption={t('printing.table.caption')} table={table} />
+    <PrintRequestsTable
+      caption={t('printing.table.caption')}
+      onRequestOpen={setSelectedRequestId}
+      table={table}
+    />
   );
 
   return (
-    <section
-      aria-label={t('printing.title')}
-      className="flex flex-col gap-6"
-    >
+    <section aria-label={t('printing.title')} className="flex flex-col gap-6">
       <div className="relative flex flex-col gap-3">
         <p className="text-sm leading-[25px] text-muted-foreground sm:max-w-[47.5rem]">
           {t('printing.description')}
         </p>
-        {polling.expired && hasActiveRequests && (
-          <Button
-            className="sm:absolute sm:-top-1 sm:right-0"
-            disabled={query.isFetching}
-            onClick={() => void refresh()}
-            size="lg"
-            type="button"
-            variant="outline"
-          >
-            <RefreshCwIcon
-              aria-hidden="true"
-              className={query.isFetching ? 'animate-spin' : undefined}
-              data-icon="inline-start"
-            />
-            {t('printing.refresh.action')}
-          </Button>
-        )}
+        <Button
+          className="sm:absolute sm:-top-1 sm:right-0"
+          disabled={persistedData === undefined || statusRefreshPending}
+          onClick={() => void refreshStatusesManually()}
+          size="lg"
+          type="button"
+          variant="outline"
+        >
+          <RefreshCwIcon
+            aria-hidden="true"
+            className={manualRefreshPending ? 'animate-spin' : undefined}
+            data-icon="inline-start"
+          />
+          {t('printing.refresh.action')}
+        </Button>
       </div>
 
       {acceptedRequest !== null && (
@@ -241,15 +251,15 @@ export function PrintRequestsPanel({
         </Alert>
       )}
 
-      {query.isPending && acceptedRequest === null && (
+      {listQuery.isPending && acceptedRequest === null && (
         <PrintRequestsTableLoading loadingLabel={t('common.status.loading')} />
       )}
 
-      {query.isError && data === undefined && acceptedRequest === null && (
+      {loadFailed && (
         <CollectionLoadError
           description={t('collections.load.description')}
-          onRetry={() => void refresh()}
-          pending={query.isFetching}
+          onRetry={() => void listQuery.refetch()}
+          pending={listQuery.isFetching}
           retryLabel={t('common.actions.retry')}
           title={t('collections.load.title', {
             collection: t('printing.collection').toLowerCase(),
@@ -278,19 +288,8 @@ export function PrintRequestsPanel({
 
       {acceptedWithoutPage && (
         <div className="flex flex-col gap-3">
-          {query.isError && (
-            <CollectionRecoveryAlert
-              description={t('collections.refresh.description')}
-              onRetry={() => void refresh()}
-              pending={query.isFetching}
-              retryLabel={t('common.actions.refresh')}
-              title={t('collections.refresh.title', {
-                collection: t('printing.collection'),
-              })}
-            />
-          )}
           <div
-            aria-busy={query.isFetching}
+            aria-busy={listQuery.isFetching || statusRefreshPending}
             className="overflow-hidden rounded-xl border bg-card"
           >
             {tableContent}
@@ -300,70 +299,175 @@ export function PrintRequestsPanel({
 
       {data !== undefined && items.length > 0 && (
         <div className="flex flex-col gap-3">
-          {pageFailed && (
-            <CollectionRecoveryAlert
-              description={t('collections.page.description')}
-              onRetry={() => void refresh()}
-              pending={query.isFetching}
-              retryLabel={t('common.actions.refresh')}
-              title={t('collections.page.title')}
-            />
-          )}
-          {refreshFailed && (
-            <CollectionRecoveryAlert
-              description={t('collections.refresh.description')}
-              onRetry={() => void refresh()}
-              pending={query.isFetching}
-              retryLabel={t('common.actions.refresh')}
-              title={t('collections.refresh.title', {
-                collection: t('printing.collection'),
-              })}
-            />
+          {statusQuery.isError && (
+            <Alert variant="destructive">
+              <CircleAlertIcon aria-hidden="true" />
+              <AlertTitle>
+                {t('collections.refresh.title', {
+                  collection: t('printing.collection'),
+                })}
+              </AlertTitle>
+              <AlertDescription>
+                {t('collections.refresh.description')}
+              </AlertDescription>
+            </Alert>
           )}
           <CollectionTableShell
             hasNext={data.pageInfo.hasNext}
             nextLabel={t('collections.pagination.next')}
-            onNext={() => setRequestedPage(confirmedPage + 1)}
-            onPrevious={() => setRequestedPage(confirmedPage - 1)}
-            page={confirmedPage}
+            onNext={() => setRequestedPage(data.pageInfo.page + 1)}
+            onPrevious={() => setRequestedPage(data.pageInfo.page - 1)}
+            page={data.pageInfo.page}
             pageLabel={t('collections.pagination.page', {
-              page: confirmedPage + 1,
+              page: data.pageInfo.page + 1,
             })}
-            pending={query.isFetching || pageFailed}
+            pending={listQuery.isFetching}
             previousLabel={t('collections.pagination.previous')}
           >
             {tableContent}
           </CollectionTableShell>
         </div>
       )}
+
+      <PrintRequestDetailsOverlay
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedRequestId(null);
+          }
+        }}
+        request={selectedRequest}
+      />
     </section>
   );
+}
+
+/** Props for the read-only print-request consultation overlay. */
+interface PrintRequestDetailsOverlayProps {
+  onOpenChange: (open: boolean) => void;
+  request: PrintRequestResponse | null;
+}
+
+/**
+ * Presents the latest safe print-request lifecycle information from the table.
+ *
+ * @param props Selected request and controlled close action.
+ * @returns A responsive read-only print-request consultation overlay.
+ */
+function PrintRequestDetailsOverlay({
+  onOpenChange,
+  request,
+}: PrintRequestDetailsOverlayProps) {
+  const { i18n, t } = useTranslation();
+  const estimatedProgress =
+    request === null ? null : getEstimatedProgress(request);
+
+  return (
+    <ResponsiveDetailsOverlay
+      closeLabel={t('common.actions.close')}
+      description={t('printing.details.description')}
+      onOpenChange={onOpenChange}
+      open={request !== null}
+      title={
+        request === null
+          ? t('printing.details.title')
+          : t('printing.details.titleNamed', {
+              reference: request.reference,
+            })
+      }
+    >
+      {request !== null && (
+        <DetailList>
+          <DetailItem label={t('printing.details.fields.reference')}>
+            <span className="font-mono text-xs">{request.reference}</span>
+          </DetailItem>
+          <DetailItem label={t('printing.details.fields.scan')}>
+            {formatScanName(request.scanId)}
+          </DetailItem>
+          <DetailItem label={t('printing.details.fields.status')}>
+            <PrintStatusBadge status={request.status} />
+          </DetailItem>
+          <DetailItem label={t('printing.details.fields.progress')}>
+            {estimatedProgress === null ? (
+              <span>
+                <span aria-hidden="true">—</span>
+                <span className="sr-only">
+                  {t('printing.progress.unavailable')}
+                </span>
+              </span>
+            ) : (
+              <span className="tabular-nums">
+                {formatEstimatedProgress(estimatedProgress, i18n.language)}
+              </span>
+            )}
+          </DetailItem>
+          <DetailItem label={t('printing.details.fields.requested')}>
+            {formatDateTime(request.createdAt, i18n.language)}
+          </DetailItem>
+          <DetailItem label={t('printing.details.fields.start')}>
+            {formatOptionalDateTime(request.scheduledStartAt, i18n.language, t)}
+          </DetailItem>
+          <DetailItem label={t('printing.details.fields.end')}>
+            {formatOptionalDateTime(request.scheduledEndAt, i18n.language, t)}
+          </DetailItem>
+          <DetailItem label={t('printing.details.fields.updated')}>
+            {formatOptionalDateTime(request.lastObservedAt, i18n.language, t)}
+          </DetailItem>
+        </DetailList>
+      )}
+    </ResponsiveDetailsOverlay>
+  );
+}
+
+/**
+ * Synchronizes collection access failures with the owning workspace boundary.
+ *
+ * @param error Safe query error produced by the generated collection hook.
+ * @param onAuthenticationRequired Recovery action for an expired session.
+ * @param onPatientUnavailable Recovery action for a concealed patient scope.
+ */
+function usePrintRequestAccessRecovery(
+  error: unknown,
+  onAuthenticationRequired: () => void,
+  onPatientUnavailable: () => void,
+): void {
+  useEffect(() => {
+    if (!(error instanceof ApiProblemError)) {
+      return;
+    }
+
+    if (error.problem.code === 'AUTHENTICATION_REQUIRED') {
+      onAuthenticationRequired();
+    } else if (error.problem.code === 'PATIENT_NOT_FOUND') {
+      onPatientUnavailable();
+    }
+  }, [error, onAuthenticationRequired, onPatientUnavailable]);
 }
 
 /** Props for the feature-owned TanStack print-request table. */
 interface PrintRequestsTableProps {
   caption: string;
+  onRequestOpen: (requestId: string) => void;
   table: ReturnType<
     typeof useTable<typeof printTableFeatures, PrintRequestResponse>
   >;
 }
 
-/** Renders print-request rows with Figma-approved responsive disclosure. */
+/** Renders print-request rows with horizontally scrollable responsive columns. */
 function PrintRequestsTable({
   caption,
+  onRequestOpen,
   table,
-}: PrintRequestsTableProps): React.JSX.Element {
+}: PrintRequestsTableProps) {
+  const { t } = useTranslation();
+
   return (
-    <Table className="table-fixed">
+    <Table>
       <TableCaption className="sr-only">{caption}</TableCaption>
       <TableHeader className="bg-muted/70">
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow className="h-10" key={headerGroup.id}>
             {headerGroup.headers.map((header) => (
-              <TableHead
-                className={getResponsiveColumnClass(header.column.id)}
-                key={header.id}
-              >
+              <TableHead key={header.id}>
                 {header.isPlaceholder ? null : (
                   <table.FlexRender header={header} />
                 )}
@@ -374,16 +478,20 @@ function PrintRequestsTable({
       </TableHeader>
       <TableBody>
         {table.getRowModel().rows.map((row) => (
-          <TableRow className="h-12" key={row.id}>
+          <InteractiveTableRow
+            aria-label={t('printing.details.action', {
+              reference: row.original.reference,
+            })}
+            className="h-12"
+            key={row.id}
+            onActivate={() => onRequestOpen(row.original.id)}
+          >
             {row.getAllCells().map((cell) => (
-              <TableCell
-                className={getResponsiveColumnClass(cell.column.id)}
-                key={cell.id}
-              >
+              <TableCell key={cell.id}>
                 <table.FlexRender cell={cell} />
               </TableCell>
             ))}
-          </TableRow>
+          </InteractiveTableRow>
         ))}
       </TableBody>
     </Table>
@@ -391,11 +499,7 @@ function PrintRequestsTable({
 }
 
 /** Renders the canonical status with text and a visible shape marker. */
-function PrintStatusBadge({
-  status,
-}: {
-  status: PrintRequestStatus;
-}): React.JSX.Element {
+function PrintStatusBadge({ status }: { status: PrintRequestStatus }) {
   const { t } = useTranslation();
   const label = t(`printing.status.${status}`);
   return (
@@ -407,12 +511,28 @@ function PrintStatusBadge({
   );
 }
 
+/** Shows the status placeholder while provider reconciliation is pending. */
+function PrintStatusSkeleton({ loadingLabel }: { loadingLabel: string }) {
+  return (
+    <span className="inline-flex items-center">
+      <Skeleton aria-hidden="true" className="h-6 w-24 rounded-full" />
+      <span className="sr-only">{loadingLabel}</span>
+    </span>
+  );
+}
+
+/** Shows the Estimated progress placeholder during provider reconciliation. */
+function PrintProgressSkeleton({ loadingLabel }: { loadingLabel: string }) {
+  return (
+    <span className="inline-flex items-center">
+      <Skeleton aria-hidden="true" className="h-4 w-28" />
+      <span className="sr-only">{loadingLabel}</span>
+    </span>
+  );
+}
+
 /** Renders Estimated progress without implying progress for nullable states. */
-function PrintProgress({
-  request,
-}: {
-  request: PrintRequestResponse;
-}): React.JSX.Element {
+function PrintProgress({ request }: { request: PrintRequestResponse }) {
   const { i18n, t } = useTranslation();
   const value = getEstimatedProgress(request);
   if (value === null) {
@@ -424,10 +544,7 @@ function PrintProgress({
     );
   }
 
-  const formatted = new Intl.NumberFormat(i18n.language, {
-    maximumFractionDigits: 0,
-    style: 'percent',
-  }).format(value / 100);
+  const formatted = formatEstimatedProgress(value, i18n.language);
   return (
     <div className="flex items-center gap-3">
       <span className="w-9 shrink-0 tabular-nums">{formatted}</span>
@@ -438,6 +555,14 @@ function PrintProgress({
       />
     </div>
   );
+}
+
+/** Formats an estimated-progress value for the active interface locale. */
+function formatEstimatedProgress(value: number, language: string): string {
+  return new Intl.NumberFormat(language, {
+    maximumFractionDigits: 0,
+    style: 'percent',
+  }).format(value / 100);
 }
 
 /** Resolves a badge variant for every generated print lifecycle value. */
@@ -514,37 +639,24 @@ function formatDateTime(value: string, language: string): string {
   }).format(new Date(value));
 }
 
+/** Formats an optional provider instant without inventing timing information. */
+function formatOptionalDateTime(
+  value: string | null,
+  language: string,
+  t: ReturnType<typeof useTranslation>['t'],
+): string {
+  return value === null
+    ? t('printing.details.unavailable')
+    : formatDateTime(value, language);
+}
+
 /** Creates a safe scan label without exposing the uploaded filename. */
 function formatScanName(scanId: string): string {
   return `SCN-${scanId.replace(/-/g, '').slice(-6).toUpperCase()}`;
 }
 
-/** Hides secondary print metadata at the compact Figma breakpoint. */
-function getResponsiveColumnClass(columnId: string): string | undefined {
-  if (columnId === 'reference') {
-    return 'w-[30.727%] md:w-1/5';
-  }
-  if (columnId === 'scan') {
-    return 'hidden md:table-cell md:w-[18.333%]';
-  }
-  if (columnId === 'status') {
-    return 'w-[30.727%] md:w-[18.333%]';
-  }
-  if (columnId === 'progress') {
-    return 'w-[38.546%] md:w-[23.334%]';
-  }
-  if (columnId === 'timing') {
-    return 'hidden md:table-cell md:w-1/5';
-  }
-  return undefined;
-}
-
 /** Renders initial print-request loading without provisional rows. */
-function PrintRequestsTableLoading({
-  loadingLabel,
-}: {
-  loadingLabel: string;
-}): React.JSX.Element {
+function PrintRequestsTableLoading({ loadingLabel }: { loadingLabel: string }) {
   return (
     <div
       aria-label={loadingLabel}

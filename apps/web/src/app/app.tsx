@@ -7,7 +7,7 @@ import { queryClient } from '@/shared/query/query-client';
  *
  * @returns The application providers and active neutral route.
  */
-export function App(): React.JSX.Element {
+export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <SessionBoundary />

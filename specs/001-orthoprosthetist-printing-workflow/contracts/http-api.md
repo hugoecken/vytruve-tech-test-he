@@ -345,14 +345,24 @@ Errors:
 ### GET `/api/patients/{patientId}/print-requests`
 
 - `operationId`: `listPatientPrintRequests`
-- Summary: List and reconcile a patient's print requests.
-- Description: Reconciles active requests only through their persisted reference and known provider identifier, then returns the last validated lifecycle projection.
+- Summary: List a patient's persisted print requests.
+- Description: Returns the bounded persisted lifecycle projection without contacting the printing provider, so provider latency cannot delay rows or pagination.
 - Query: `ServerPageQuery`
 - Success: `200 OK`, `PrintRequestPageResponse`
 
-Errors: `400 VALIDATION_FAILED`, `401 AUTHENTICATION_REQUIRED`, `404 PATIENT_NOT_FOUND`, `503 PRINTING_UNAVAILABLE` only when no safe last-known response can be produced, `500 INTERNAL_ERROR`.
+Errors: `400 VALIDATION_FAILED`, `401 AUTHENTICATION_REQUIRED`, `404 PATIENT_NOT_FOUND`, `500 INTERNAL_ERROR`.
 
-A transient reconciliation failure should normally return the last-known rows with unchanged `lastObservedAt`; the frontend identifies staleness through query failure only when the HTTP read itself cannot complete.
+### GET `/api/patients/{patientId}/print-requests/statuses`
+
+- `operationId`: `refreshPatientPrintRequests`
+- Summary: Refresh a patient's print-request statuses.
+- Description: Reads the same bounded persisted page, reconciles its active rows through their persisted reference and known provider identifier, persists validated observations, and returns the resulting lifecycle projection. Repeating the operation never submits a new print request.
+- Query: `ServerPageQuery`
+- Success: `200 OK`, `PrintRequestPageResponse`
+
+Errors: `400 VALIDATION_FAILED`, `401 AUTHENTICATION_REQUIRED`, `404 PATIENT_NOT_FOUND`, `503 PRINTING_UNAVAILABLE` when one or more non-terminal rows cannot be refreshed through the provider, `500 INTERNAL_ERROR`.
+
+A provider reconciliation failure rejects only the independent status-refresh request. TanStack Query retains the persisted or previously refreshed page and the frontend displays the refresh warning without blocking rows or pagination. A provider `404` for an unresolved stable reference is not an integration failure and leaves the durable `confirmation_pending` row unchanged.
 
 ## Stable Problem Codes
 

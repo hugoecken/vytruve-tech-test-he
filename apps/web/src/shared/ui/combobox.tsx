@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useRef, type ComponentPropsWithRef } from 'react';
 import { Combobox as ComboboxPrimitive } from '@base-ui/react';
 
 import { cn } from '@/shared/lib/utils';
@@ -216,7 +216,7 @@ function ComboboxSeparator({
 function ComboboxChips({
   className,
   ...props
-}: React.ComponentPropsWithRef<typeof ComboboxPrimitive.Chips> &
+}: ComponentPropsWithRef<typeof ComboboxPrimitive.Chips> &
   ComboboxPrimitive.Chips.Props) {
   return (
     <ComboboxPrimitive.Chips
@@ -274,8 +274,9 @@ function ComboboxChipsInput({
   );
 }
 
+/** Creates the stable DOM anchor required by Base UI positioning. */
 function useComboboxAnchor() {
-  return React.useRef<HTMLDivElement | null>(null);
+  return useRef<HTMLDivElement | null>(null);
 }
 
 export {

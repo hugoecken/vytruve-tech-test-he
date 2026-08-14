@@ -1,6 +1,7 @@
 {
   "common": {
     "actions": {
+      "close": "Close",
       "retry": "Try again",
       "refresh": "Refresh"
     },
@@ -66,10 +67,6 @@
       "title": "Unable to load {{collection}}",
       "description": "We couldn’t load this information. Check your connection and try again."
     },
-    "page": {
-      "title": "This page could not be loaded",
-      "description": "Your current page is unchanged. Try again."
-    },
     "refresh": {
       "title": "{{collection}} could not be refreshed",
       "description": "Showing the last information received. Try again to check for updates."
@@ -94,8 +91,6 @@
       "patient": "Patient",
       "age": "Age",
       "created": "Created",
-      "action": "Action",
-      "open": "Open",
       "openNamed": "Open {{name}}’s patient record"
     },
     "create": {
@@ -118,7 +113,7 @@
       "pending": "Adding patient…"
     },
     "workspace": {
-      "back": "Patients",
+      "back": "Back to patients",
       "identity": "{{age}} years · Record created {{date}}",
       "tabsLabel": "Patient workspace",
       "tabs": {
@@ -152,6 +147,27 @@
       "size": "Size",
       "uploaded": "Uploaded",
       "actions": "Actions"
+    },
+    "details": {
+      "action": "View details for {{scan}}",
+      "title": "3D scan details",
+      "description": "Review the validated metadata for this 3D scan.",
+      "fields": {
+        "format": "Format",
+        "encoding": "Encoding",
+        "size": "Size",
+        "added": "Added",
+        "printing": "Printing"
+      },
+      "printing": {
+        "available": "Available for a print request",
+        "unavailable": "A print request is already active"
+      }
+    },
+    "encoding": {
+      "ascii": "ASCII",
+      "binary_big_endian": "Binary, big-endian",
+      "binary_little_endian": "Binary, little-endian"
     },
     "upload": {
       "title": "Add a 3D scan",
@@ -194,6 +210,23 @@
       "status": "Status",
       "progress": "Estimated progress",
       "timing": "Production timing"
+    },
+    "details": {
+      "action": "View print request {{reference}}",
+      "title": "Print request details",
+      "titleNamed": "Request {{reference}}",
+      "description": "Review the latest known status and production timing for this request.",
+      "unavailable": "Not available",
+      "fields": {
+        "reference": "Reference",
+        "scan": "3D scan",
+        "status": "Status",
+        "progress": "Estimated progress",
+        "requested": "Requested",
+        "start": "Estimated start",
+        "end": "Estimated end",
+        "updated": "Last refreshed"
+      }
     },
     "empty": {
       "title": "No print requests yet",
@@ -244,10 +277,12 @@
       "requested": "Requested {{date}}"
     },
     "refresh": {
-      "action": "Refresh statuses"
+      "action": "Refresh statuses",
+      "loading": "Refreshing statuses"
     }
   },
   "shell": {
+    "home": "Go to home",
     "profile": {
       "open": "Open account menu",
       "account": "Account",

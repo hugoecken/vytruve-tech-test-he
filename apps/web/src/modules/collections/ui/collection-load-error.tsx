@@ -19,7 +19,7 @@ interface CollectionLoadErrorProps {
 }
 
 /**
- * Replaces a collection when no response has confirmed any rows.
+ * Replaces a collection when its current query has no data to display.
  *
  * @param props Localized failure content and retry action.
  * @returns A blocking, keyboard-accessible recovery state.
@@ -30,7 +30,7 @@ export function CollectionLoadError({
   pending = false,
   retryLabel,
   title,
-}: CollectionLoadErrorProps): React.JSX.Element {
+}: CollectionLoadErrorProps) {
   return (
     <Empty className="min-h-72 rounded-xl border bg-card" role="alert">
       <EmptyHeader>

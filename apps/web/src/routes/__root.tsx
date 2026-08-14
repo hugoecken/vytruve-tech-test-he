@@ -20,7 +20,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
  *
  * @returns The active file-route outlet.
  */
-function RootRouteComponent(): React.JSX.Element {
+function RootRouteComponent() {
   return <Outlet />;
 }
 
@@ -29,7 +29,7 @@ function RootRouteComponent(): React.JSX.Element {
  *
  * @returns The route fallback appropriate to the current session.
  */
-function RootNotFoundComponent(): React.JSX.Element {
+function RootNotFoundComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <NotFoundPage
@@ -44,6 +44,6 @@ function RootNotFoundComponent(): React.JSX.Element {
  * @param props TanStack Router recovery callback.
  * @returns The generic system fallback.
  */
-function RootErrorComponent({ reset }: ErrorComponentProps): React.JSX.Element {
+function RootErrorComponent({ reset }: ErrorComponentProps) {
   return <UnexpectedErrorPage onRetry={reset} />;
 }

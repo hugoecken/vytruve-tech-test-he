@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useId, useState, type ChangeEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   CircleAlertIcon,
@@ -63,15 +63,13 @@ type ScanFileFailure = 'size' | 'type';
  * @param props Parent patient identity used by the ownership-scoped API.
  * @returns A responsive Dialog or compact Drawer upload workflow.
  */
-export function ScanUploadOverlay({
-  patientId,
-}: ScanUploadOverlayProps): React.JSX.Element {
+export function ScanUploadOverlay({ patientId }: ScanUploadOverlayProps) {
   const { i18n, t } = useTranslation();
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const [file, setFile] = React.useState<File | null>(null);
-  const [open, setOpen] = React.useState(false);
+  const fileInputId = useId();
+  const [file, setFile] = useState<File | null>(null);
+  const [open, setOpen] = useState(false);
   const mutation = useCreatePatientScan();
   let fileFailure: ScanFileFailure | null = null;
   if (file !== null && !file.name.toLocaleLowerCase().endsWith('.ply')) {
@@ -83,9 +81,6 @@ export function ScanUploadOverlay({
   const resetSelection = () => {
     setFile(null);
     mutation.reset();
-    if (inputRef.current !== null) {
-      inputRef.current.value = '';
-    }
   };
 
   const setOverlayOpen = (nextOpen: boolean) => {
@@ -95,8 +90,9 @@ export function ScanUploadOverlay({
     }
   };
 
-  const selectFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const selectFile = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.currentTarget.files?.[0] ?? null;
+    event.currentTarget.value = '';
     mutation.reset();
     setFile(selectedFile);
   };
@@ -150,8 +146,8 @@ export function ScanUploadOverlay({
       <Input
         accept=".ply"
         hidden
+        id={fileInputId}
         onChange={selectFile}
-        ref={inputRef}
         type="file"
       />
       {file === null ? (
@@ -164,10 +160,9 @@ export function ScanUploadOverlay({
             {t('scans.upload.fileHint')}
           </p>
           <Button
-            className="max-sm:gap-2 max-sm:px-4"
-            onClick={() => inputRef.current?.click()}
+            nativeButton={false}
+            render={<label htmlFor={fileInputId} />}
             size="lg"
-            type="button"
             variant="outline"
           >
             <UploadIcon aria-hidden="true" data-icon="inline-start" />
@@ -214,7 +209,6 @@ export function ScanUploadOverlay({
   const footer = (
     <>
       <Button
-        className="min-w-[5.75rem]"
         disabled={mutation.isPending}
         onClick={() => setOverlayOpen(false)}
         size="lg"
@@ -224,7 +218,6 @@ export function ScanUploadOverlay({
         {t('scans.upload.cancel')}
       </Button>
       <Button
-        className="min-w-[8.75rem] max-sm:gap-2 max-sm:px-4"
         disabled={file === null || fileFailure !== null || mutation.isPending}
         onClick={() => void upload()}
         size="lg"
@@ -247,7 +240,7 @@ export function ScanUploadOverlay({
   return (
     <>
       <Button
-        className="w-full gap-2 px-4 has-data-[icon=inline-start]:pl-4 sm:w-auto sm:min-w-[8.75rem]"
+        className="w-full sm:w-auto"
         onClick={() => setOverlayOpen(true)}
         size="lg"
         type="button"

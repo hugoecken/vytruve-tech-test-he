@@ -2,7 +2,7 @@
 
 **Status**: Accepted
 
-**Feature**: `001-orthoprosthetist-printing-workflow` | **Date**: 2026-08-13 | **Accepted specification**: [`spec.md`](spec.md), based on repository state `1c267ffe681511ffc2af0d666b0697d34bedb07a`; immutable replacement binding pending integration
+**Feature**: `001-orthoprosthetist-printing-workflow` | **Date**: 2026-08-14 | **Accepted specification**: [`spec.md`](spec.md), based on repository state `1c267ffe681511ffc2af0d666b0697d34bedb07a`; immutable replacement binding pending integration
 
 **Visual authorities**: The canonical Figma UI Library and Product Design identified by [`figma-profile.md`](../../.agents/skills/vytruve-best-practices/overlays/figma-profile.md). Their current accepted components, tokens, and screen compositions are inspected in Figma rather than duplicated in this plan.
 
@@ -30,11 +30,11 @@ The architecture deliberately excludes CQRS, queues, workers, microservices, gen
 
 **Project Type**: Nx monorepo containing one React/Vite SPA, one NestJS REST API, database changelogs, and local infrastructure
 
-**Performance Goals**: Bounded 50-item collection reads; bounded 25 MiB upload parsing; streaming downloads; active print polling every five seconds only while visible and for at most five minutes
+**Performance Goals**: Bounded 50-item collection reads; bounded 25 MiB upload parsing; streaming downloads; fast persisted print-request pages followed by one independent provider-status refresh per opened page and explicit manual refreshes
 
-**Constraints**: HTTP-only 30-minute JWT session, strict owner isolation, no blind non-idempotent retry, no unbounded parsing or polling, no raw provider or generated validation message in the UI, no test implementation in feature delivery issues
+**Constraints**: HTTP-only 30-minute JWT session, strict owner isolation, no blind non-idempotent retry, no automatic print-request polling, no unbounded parsing, no raw provider or generated validation message in the UI, no test implementation in feature delivery issues
 
-**Scale/Scope**: Four user stories, three authenticated resource collections, twelve public operations, two locales, desktop and compact layouts, and one external printing provider
+**Scale/Scope**: Four user stories, three authenticated resource collections, thirteen public operations, two locales, desktop and compact layouts, and one external printing provider
 
 ## Constitution Check
 
@@ -43,7 +43,7 @@ The architecture deliberately excludes CQRS, queues, workers, microservices, gen
 | Gate | Result | Evidence |
 | --- | --- | --- |
 | Repository authority first | Pass | Root instructions and routed policies were loaded before planning. |
-| Accepted intent before architecture | Pass | The user explicitly accepted the exact FR-057 and SC-017 candidate on 2026-08-13; immutable Git integration remains a separate publication gate. |
+| Accepted intent before architecture | Pass | The user explicitly accepted the simplified FR-057 and SC-017 candidate on 2026-08-14; immutable Git integration remains a separate publication gate. |
 | Accepted visual authority | Pending | Existing Ready for Development evidence remains authoritative for the prior accepted specification; collection-recovery frames require update and explicit visual approval after candidate acceptance. |
 | GitHub execution authority | Pass | Issue #4 owns planning; no task or Git state is mutated by Spec Kit. |
 | Protected data | Pass | The plan contains no supplied credential, contact, scan content, real filename, or patient data. |
@@ -96,17 +96,19 @@ Each feature is organized by business capability and then by `api`, `application
 
 - File routes declare paths, route search, safe redirects, guards, and feature-view composition only.
 - Feature modules own forms, mutation workflows, tables, error translation, and view-specific mapping.
-- TanStack Query owns all server state. An initial collection failure exposes no table; an adjacent-page failure keeps the last confirmed rows and confirmed page; a background refresh failure keeps confirmed rows visibly last-known.
-- The visible page indicator derives from the successful response's `pageInfo.page`, never from the requested page. Paginated queries use `keepPreviousData`, so a failed adjacent-page request cannot be presented as a loaded page.
+- TanStack Query owns all server state. Initial and adjacent-page failures with no query data expose a localized blocking retry state; background refresh failures may keep TanStack-retained data visibly last-known. Print-request collection data and provider-refreshed status data use separate page-keyed queries so the persisted page renders without waiting for Vitruve.
+- Successful reads remain fresh until an explicit mutation invalidation, page change, retry, or manual refresh. Orval-generated query functions do not consume TanStack Query's abort signal, so short safe GET requests can settle into the cache across development remounts instead of being cancelled and immediately repeated.
+- The visible page indicator derives directly from `query.data.pageInfo.page`. Paginated queries include the requested page in the query key and use `keepPreviousData` only while the adjacent page is pending; no second client-side snapshot mirrors a prior response.
 - shadcn/ui source components under `shared/ui` are the only visual primitives. TanStack Table supplies column, row, and pagination state without rendering.
-- Two bounded shared recovery primitives are allowed: `CollectionLoadError` owns the no-data retry state, and `CollectionRecoveryAlert` owns page or refresh recovery when confirmed rows remain visible. Each feature owns its columns, query state classification, copy, and retry behavior.
+- Patient, scan, and print-request rows expose their primary open or consultation action through one shared keyboard-accessible table-row behavior. Scan and print-request consultation reuse one shared read-only overlay composition: a desktop Dialog and a compact bottom Drawer fed exclusively from the selected TanStack Table row. Scan consultation omits scan identifiers, while print-request consultation renders Estimated progress as percentage text without the table's progress bar. Nested scan download and print controls remain independent.
+- Two bounded shared recovery primitives are allowed: `CollectionLoadError` owns the no-data retry state, and `CollectionRecoveryAlert` owns background-refresh recovery when TanStack-retained rows remain visible. Each feature owns its columns, copy, and retry behavior.
 - One light table shell owns the surface, horizontal overflow, and Previous/Page/Next controls; patient, scan, and print tables keep separate column definitions and feature behavior.
 - No source is promoted to a shared package until at least two real consumers prove cross-feature ownership.
 
 Reference English recovery copy remains contextualized by collection:
 
 - Initial read: `Unable to load {collection}` and `We couldn’t load this information. Check your connection and try again.`
-- Adjacent page: `This page could not be loaded` and `Your current page is unchanged. Try again.`
+- Adjacent page: use the same blocking collection-load recovery as an initial read failure.
 - Background refresh: `{Collection} could not be refreshed` and `Showing the last information received. Try again to check for updates.`
 
 ## Security Model
@@ -170,7 +172,7 @@ Every public failure is `application/problem+json` with RFC 9457 members `type`,
 6. Later reads reconcile first by stable reference and then, when known, by provider identifier. They never use a global provider list.
 7. Map provider states exhaustively to the five public states. Unknown or malformed data remains non-successful and operationally visible.
 
-The web client polls active print requests every five seconds only when `document.visibilityState` is visible, for at most five minutes per active viewing window. It then exposes manual refresh. Poll failure preserves cached rows and their last-observed time.
+The web client loads the persisted print-request page when its tab becomes active, then enables one separate page-keyed provider-status query. During either automatic or manual status refresh, active requests use skeletons in their Status and Estimated progress cells while completed and failed values remain visible because the backend skips terminal reconciliation. The rest of the table remains available. The refresh button remains visually idle during the automatic refresh and indicates pending state only after explicit user activation. There is no automatic polling. A failed status refresh preserves the persisted or last-refreshed rows and their last-observed time.
 
 ## Validation And Test Ownership
 
@@ -276,10 +278,10 @@ Exact generated project names and target syntax must be verified after scaffoldi
 | FR-011–FR-016; SC-001, SC-011, SC-015 | Router layout/fallback, owner-scoped patient queries, concealed 404 mapping | #9 ownership logic evidence; #12 Router evidence; #14 manual navigation review |
 | FR-017–FR-021; SC-003 | Patient DTOs/entity/service, patient form and table | #9 patient logic evidence; #12 form/table evidence; #14 manual story review |
 | FR-022–FR-030; SC-004, SC-009 | Bounded PLY validator, MinIO adapter, scan metadata, stream response, upload drawer/dialog | #9 PLY/storage logic evidence; #12 upload-state evidence; #14 manual story review |
-| FR-031–FR-044; SC-005–SC-007 | Print reservation, active-slot constraint, provider adapter/reconciliation, polling and print table | #9 provider/state evidence; #12 Query/lifecycle evidence; #14 manual story review |
+| FR-031–FR-044; SC-005–SC-007 | Print reservation, active-slot constraint, provider adapter/reconciliation, manual status refresh and print table | #9 provider/state evidence; #12 Query/lifecycle evidence; #14 manual story review |
 | FR-045–FR-046; SC-012 | Server-page contract, TanStack paginated queries, headless tables and shadcn rendering | #9 pagination logic evidence; #12 responsive table/pagination evidence; #14 manual responsive review |
 | FR-047–FR-051; SC-008, SC-010 | Problem Details, typed Fetch error, localized feedback, mutation guards, stale-query preservation | #9 error logic evidence; #12 state/retry evidence; #14 manual degraded-state review |
-| FR-057; SC-017 | `CollectionLoadError`, `CollectionRecoveryAlert`, confirmed-response page derivation, and collection-specific retry behavior | #12 initial/page/refresh state evidence; #14 manual collection-recovery review |
+| FR-057; SC-017 | Direct TanStack Query state, `CollectionLoadError`, `CollectionRecoveryAlert`, and collection-specific retry behavior | #12 initial/page/refresh state evidence; #14 manual collection-recovery review |
 | FR-052–FR-053 | shadcn semantics, keyboard/focus/announcement behavior, 44 px compact targets | #12 accessibility evidence; #14 manual interaction review |
 | FR-054; SC-011 | Minimal schemas, private storage, logging denylist, synthetic evidence | #9 security review; #14 repository scans |
 | FR-055–FR-056; SC-015–SC-016 | Auth-aware not-found fallback and root route error boundary | #12 fallback evidence; #14 authenticated/public recovery review |
@@ -295,6 +297,6 @@ No constitution violation is present. PostgreSQL, MinIO, and the printing adapte
 
 ## Approval Gate
 
-The user explicitly accepted the original plan on 2026-08-12 and this exact FR-057/SC-017 reconciliation on
-2026-08-13. Runtime implementation remains gated by the replacement immutable bindings in the owning issues and every
+The user explicitly accepted the original plan on 2026-08-12 and this simplified FR-057/SC-017 reconciliation on
+2026-08-14. Runtime implementation remains gated by the replacement immutable bindings in the owning issues and every
 routed source gate. `tasks.md` remains derived and advisory; it never authorizes implementation by itself.

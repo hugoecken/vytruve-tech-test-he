@@ -1,12 +1,12 @@
-import * as React from 'react';
+import { useMemo, useState } from 'react';
 import { keepPreviousData } from '@tanstack/react-query';
-import { Link } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import {
   createColumnHelper,
   tableFeatures,
   useTable,
 } from '@tanstack/react-table';
-import { ArrowRightIcon, UsersIcon } from 'lucide-react';
+import { UsersIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { CollectionLoadError } from '@/modules/collections/ui/collection-load-error';
 import { CollectionRecoveryAlert } from '@/modules/collections/ui/collection-recovery-alert';
@@ -14,8 +14,6 @@ import { CollectionTableShell } from '@/modules/collections/ui/collection-table-
 import { PatientCreateOverlay } from '@/modules/patients/ui/patient-create-overlay';
 import { useListPatients } from '@/shared/api/generated/client/patients/patients';
 import type { PatientResponse } from '@/shared/api/generated/models/patientResponse';
-import type { PatientPageResponse } from '@/shared/api/generated/models/patientPageResponse';
-import { Button } from '@/shared/ui/button';
 import {
   Empty,
   EmptyDescription,
@@ -31,6 +29,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
+  InteractiveTableRow,
   TableRow,
 } from '@/shared/ui/table';
 
@@ -47,12 +46,10 @@ const patientColumnHelper = createColumnHelper<
  *
  * @returns The localized responsive patient directory.
  */
-export function PatientsPage(): React.JSX.Element {
+export function PatientsPage() {
   const { i18n, t } = useTranslation();
-  const [requestedPage, setRequestedPage] = React.useState(0);
-  const confirmedData = React.useRef<PatientPageResponse | undefined>(
-    undefined,
-  );
+  const navigate = useNavigate();
+  const [requestedPage, setRequestedPage] = useState(0);
   const query = useListPatients(
     { page: requestedPage, pageSize: PATIENT_PAGE_SIZE },
     {
@@ -62,22 +59,8 @@ export function PatientsPage(): React.JSX.Element {
       },
     },
   );
-  React.useEffect(() => {
-    if (
-      query.data !== undefined &&
-      !query.isPlaceholderData &&
-      !query.isError
-    ) {
-      confirmedData.current = query.data;
-    }
-  }, [query.data, query.isError, query.isPlaceholderData]);
-  const data = query.data ?? confirmedData.current;
-  const confirmedPage = data?.pageInfo.page ?? 0;
-  const pageFailed =
-    query.isError && data !== undefined && requestedPage !== confirmedPage;
-  const refreshFailed =
-    query.isError && data !== undefined && requestedPage === confirmedPage;
-  const columns = React.useMemo(
+  const data = query.data;
+  const columns = useMemo(
     () =>
       patientColumnHelper.columns([
         patientColumnHelper.accessor(
@@ -93,29 +76,6 @@ export function PatientsPage(): React.JSX.Element {
         patientColumnHelper.accessor('createdAt', {
           cell: ({ getValue }) => formatDate(getValue(), i18n.language),
           header: t('patients.table.created'),
-        }),
-        patientColumnHelper.display({
-          cell: ({ row }) => (
-            <Button
-              className="size-8"
-              nativeButton={false}
-              render={
-                <Link
-                  aria-label={t('patients.table.openNamed', {
-                    name: `${row.original.firstName} ${row.original.lastName}`,
-                  })}
-                  params={{ patientId: row.original.id }}
-                  to="/patients/$patientId"
-                />
-              }
-              size="icon"
-              variant="ghost"
-            >
-              <ArrowRightIcon aria-hidden="true" />
-            </Button>
-          ),
-          header: t('patients.table.action'),
-          id: 'actions',
         }),
       ]),
     [i18n.language, t],
@@ -172,16 +132,7 @@ export function PatientsPage(): React.JSX.Element {
 
       {data !== undefined && data.items.length > 0 && (
         <div className="flex flex-col gap-3">
-          {pageFailed && (
-            <CollectionRecoveryAlert
-              description={t('collections.page.description')}
-              onRetry={() => void query.refetch()}
-              pending={query.isFetching}
-              retryLabel={t('common.actions.refresh')}
-              title={t('collections.page.title')}
-            />
-          )}
-          {refreshFailed && (
+          {query.isError && (
             <CollectionRecoveryAlert
               description={t('collections.refresh.description')}
               onRetry={() => void query.refetch()}
@@ -195,16 +146,16 @@ export function PatientsPage(): React.JSX.Element {
           <CollectionTableShell
             hasNext={data.pageInfo.hasNext}
             nextLabel={t('collections.pagination.next')}
-            onNext={() => setRequestedPage(confirmedPage + 1)}
-            onPrevious={() => setRequestedPage(confirmedPage - 1)}
-            page={confirmedPage}
+            onNext={() => setRequestedPage(data.pageInfo.page + 1)}
+            onPrevious={() => setRequestedPage(data.pageInfo.page - 1)}
+            page={data.pageInfo.page}
             pageLabel={t('collections.pagination.page', {
-              page: confirmedPage + 1,
+              page: data.pageInfo.page + 1,
             })}
-            pending={query.isFetching || pageFailed}
+            pending={query.isFetching}
             previousLabel={t('collections.pagination.previous')}
           >
-            <Table className="table-fixed">
+            <Table>
               <TableCaption className="sr-only">
                 {t('patients.table.caption')}
               </TableCaption>
@@ -212,10 +163,7 @@ export function PatientsPage(): React.JSX.Element {
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow className="h-10" key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
-                      <TableHead
-                        className={getResponsiveColumnClass(header.column.id)}
-                        key={header.id}
-                      >
+                      <TableHead key={header.id}>
                         {header.isPlaceholder ? null : (
                           <table.FlexRender header={header} />
                         )}
@@ -226,16 +174,25 @@ export function PatientsPage(): React.JSX.Element {
               </TableHeader>
               <TableBody>
                 {table.getRowModel().rows.map((row) => (
-                  <TableRow className="h-12" key={row.id}>
+                  <InteractiveTableRow
+                    aria-label={t('patients.table.openNamed', {
+                      name: `${row.original.firstName} ${row.original.lastName}`,
+                    })}
+                    className="h-12"
+                    key={row.id}
+                    onActivate={() => {
+                      void navigate({
+                        params: { patientId: row.original.id },
+                        to: '/patients/$patientId',
+                      });
+                    }}
+                  >
                     {row.getAllCells().map((cell) => (
-                      <TableCell
-                        className={getResponsiveColumnClass(cell.column.id)}
-                        key={cell.id}
-                      >
+                      <TableCell key={cell.id}>
                         <table.FlexRender cell={cell} />
                       </TableCell>
                     ))}
-                  </TableRow>
+                  </InteractiveTableRow>
                 ))}
               </TableBody>
             </Table>
@@ -247,11 +204,7 @@ export function PatientsPage(): React.JSX.Element {
 }
 
 /** Renders the initial patient table skeleton without provisional rows. */
-function PatientsTableLoading({
-  loadingLabel,
-}: {
-  loadingLabel: string;
-}): React.JSX.Element {
+function PatientsTableLoading({ loadingLabel }: { loadingLabel: string }) {
   return (
     <div
       aria-label={loadingLabel}
@@ -276,21 +229,4 @@ function formatDate(value: string, language: string): string {
     month: 'short',
     year: 'numeric',
   }).format(new Date(value));
-}
-
-/** Matches the approved desktop and compact patient table proportions. */
-function getResponsiveColumnClass(columnId: string): string | undefined {
-  if (columnId === 'patient') {
-    return 'w-[47%] sm:w-1/2';
-  }
-  if (columnId === 'age') {
-    return 'w-[24%] sm:w-[13.333%]';
-  }
-  if (columnId === 'createdAt') {
-    return 'hidden sm:table-cell sm:w-[23.333%]';
-  }
-  if (columnId === 'actions') {
-    return 'w-[29%] sm:w-[13.333%]';
-  }
-  return undefined;
 }

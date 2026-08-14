@@ -1,6 +1,4 @@
-'use client';
-
-import * as React from 'react';
+import { createContext, useContext, useMemo, type ComponentProps } from 'react';
 import { Drawer as DrawerPrimitive } from '@base-ui/react/drawer';
 
 import { cn } from '@/shared/lib/utils';
@@ -12,10 +10,10 @@ type DrawerContextProps = {
   swipeDirection: NonNullable<DrawerPrimitive.Root.Props['swipeDirection']>;
 };
 
-const DrawerContext = React.createContext<DrawerContextProps | null>(null);
+const DrawerContext = createContext<DrawerContextProps | null>(null);
 
 function useDrawer() {
-  const context = React.useContext(DrawerContext);
+  const context = useContext(DrawerContext);
 
   if (!context) {
     throw new Error('useDrawer must be used within a Drawer.');
@@ -34,7 +32,7 @@ function Drawer({
   showSwipeHandle?: boolean;
 }) {
   const hasSnapPoints = snapPoints != null && snapPoints.length > 0;
-  const contextValue = React.useMemo(
+  const contextValue = useMemo(
     () => ({ hasSnapPoints, modal, showSwipeHandle, swipeDirection }),
     [hasSnapPoints, modal, showSwipeHandle, swipeDirection],
   );
@@ -80,10 +78,7 @@ function DrawerOverlay({
   );
 }
 
-function DrawerSwipeHandle({
-  className,
-  ...props
-}: React.ComponentProps<'div'>) {
+function DrawerSwipeHandle({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="drawer-swipe-handle"
@@ -164,12 +159,12 @@ function DrawerContent({
   );
 }
 
-function DrawerHeader({ className, ...props }: React.ComponentProps<'div'>) {
+function DrawerHeader({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="drawer-header"
       className={cn(
-        'flex shrink-0 flex-col gap-0.5 p-4 pb-0 text-left md:gap-0.5',
+        'flex shrink-0 flex-col gap-0.5 p-4 pb-0 group-data-[swipe-axis=y]/drawer-popup:text-center md:gap-0.5 md:text-left',
         className,
       )}
       {...props}
@@ -177,7 +172,7 @@ function DrawerHeader({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
-function DrawerFooter({ className, ...props }: React.ComponentProps<'div'>) {
+function DrawerFooter({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="drawer-footer"

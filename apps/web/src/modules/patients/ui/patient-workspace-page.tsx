@@ -1,7 +1,7 @@
-import * as React from 'react';
+import { useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { CircleAlertIcon } from 'lucide-react';
+import { ArrowLeftIcon, CircleAlertIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { clearAccountState } from '@/modules/auth/api/session-cache';
 import { CollectionLoadError } from '@/modules/collections/ui/collection-load-error';
@@ -14,7 +14,7 @@ import { getListPatientScansQueryKey } from '@/shared/api/generated/client/scans
 import type { PrintRequestResponse } from '@/shared/api/generated/models/printRequestResponse';
 import type { ScanResponse } from '@/shared/api/generated/models/scanResponse';
 import { ApiProblemError } from '@/shared/api/http/api-error';
-import { Button } from '@/shared/ui/button';
+import { Button, buttonVariants } from '@/shared/ui/button';
 import { Card, CardHeader } from '@/shared/ui/card';
 import {
   Empty,
@@ -37,22 +37,18 @@ interface PatientWorkspacePageProps {
  * @param props Patient identifier resolved by the typed route.
  * @returns The safe patient workspace or its local recovery state.
  */
-export function PatientWorkspacePage({
-  patientId,
-}: PatientWorkspacePageProps): React.JSX.Element {
+export function PatientWorkspacePage({ patientId }: PatientWorkspacePageProps) {
   const { i18n, t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = React.useState<'prints' | 'scans'>('scans');
-  const [selectedScan, setSelectedScan] = React.useState<ScanResponse | null>(
-    null,
-  );
+  const [activeTab, setActiveTab] = useState<'prints' | 'scans'>('scans');
+  const [selectedScan, setSelectedScan] = useState<ScanResponse | null>(null);
   const [acceptedRequest, setAcceptedRequest] =
-    React.useState<PrintRequestResponse | null>(null);
-  const [printNotice, setPrintNotice] = React.useState<
+    useState<PrintRequestResponse | null>(null);
+  const [printNotice, setPrintNotice] = useState<
     'conflict' | 'uncertain' | null
   >(null);
-  const [resourceUnavailable, setResourceUnavailable] = React.useState(false);
+  const [resourceUnavailable, setResourceUnavailable] = useState(false);
   const query = useGetPatient(patientId, {
     query: { select: (response) => response.data },
   });
@@ -62,7 +58,7 @@ export function PatientWorkspacePage({
     query.error.problem.code === 'PATIENT_NOT_FOUND';
 
   /** Removes account-scoped state after an authenticated print operation expires. */
-  const handleAuthenticationRequired = React.useCallback((): void => {
+  const handleAuthenticationRequired = useCallback((): void => {
     clearAccountState(queryClient);
     void navigate({
       replace: true,
@@ -72,13 +68,13 @@ export function PatientWorkspacePage({
   }, [navigate, patientId, queryClient]);
 
   /** Opens the confirmation workflow for one server-eligible scan. */
-  const requestPrint = React.useCallback((scan: ScanResponse): void => {
+  const requestPrint = useCallback((scan: ScanResponse): void => {
     setPrintNotice(null);
     setSelectedScan(scan);
   }, []);
 
   /** Surfaces a confirmed request immediately in the tracking collection. */
-  const acceptPrintRequest = React.useCallback(
+  const acceptPrintRequest = useCallback(
     (request: PrintRequestResponse): void => {
       setAcceptedRequest(request);
       setPrintNotice(null);
@@ -89,7 +85,7 @@ export function PatientWorkspacePage({
   );
 
   /** Switches to safe read reconciliation without repeating an uncertain POST. */
-  const reconcilePrintRequest = React.useCallback(
+  const reconcilePrintRequest = useCallback(
     (reason: 'conflict' | 'uncertain'): void => {
       setPrintNotice(reason);
       setSelectedScan(null);
@@ -99,7 +95,7 @@ export function PatientWorkspacePage({
   );
 
   /** Removes a stale scan selection and refreshes server-owned eligibility. */
-  const handleScanUnavailable = React.useCallback((): void => {
+  const handleScanUnavailable = useCallback((): void => {
     setSelectedScan(null);
     void queryClient.invalidateQueries({
       queryKey: getListPatientScansQueryKey(patientId),
@@ -107,13 +103,13 @@ export function PatientWorkspacePage({
   }, [patientId, queryClient]);
 
   /** Removes patient content once ownership or existence is no longer confirmed. */
-  const handlePatientUnavailable = React.useCallback((): void => {
+  const handlePatientUnavailable = useCallback((): void => {
     setSelectedScan(null);
     setResourceUnavailable(true);
   }, []);
 
   /** Applies only the two supported patient-workspace tab values. */
-  const changeTab = React.useCallback((value: string | number): void => {
+  const changeTab = useCallback((value: string | number): void => {
     if (value === 'prints' || value === 'scans') {
       setActiveTab(value);
       if (value === 'scans') {
@@ -153,14 +149,16 @@ export function PatientWorkspacePage({
       aria-labelledby="patient-workspace-title"
       className="flex flex-col"
     >
-      <h1
-        className="w-fit text-2xl leading-8 font-semibold"
-        id="patient-workspace-title"
+      <Link
+        className={buttonVariants({
+          className: 'h-11 w-fit',
+          variant: 'outline',
+        })}
+        to="/patients"
       >
-        <Link className="text-foreground no-underline" to="/patients">
-          {t('patients.workspace.back')}
-        </Link>
-      </h1>
+        <ArrowLeftIcon aria-hidden="true" data-icon="inline-start" />
+        {t('patients.workspace.back')}
+      </Link>
 
       {query.isError && (
         <div className="mt-4">
@@ -176,9 +174,12 @@ export function PatientWorkspacePage({
 
       <Card className="mt-5 h-30">
         <CardHeader>
-          <h2 className="text-lg leading-6 font-semibold">
+          <h1
+            className="text-lg leading-6 font-semibold"
+            id="patient-workspace-title"
+          >
             {patient.firstName} {patient.lastName}
-          </h2>
+          </h1>
           <p className="text-sm text-muted-foreground">
             {t('patients.workspace.identity', {
               age: patient.age,
@@ -204,6 +205,7 @@ export function PatientWorkspacePage({
         </div>
         <TabsContent keepMounted value="scans">
           <ScansPanel
+            active={activeTab === 'scans'}
             key={patientId}
             onRequestPrint={requestPrint}
             patientId={patientId}
@@ -239,7 +241,7 @@ export function PatientWorkspacePage({
 }
 
 /** Hides patient identity when ownership or existence is no longer confirmed. */
-function PatientUnavailable(): React.JSX.Element {
+function PatientUnavailable() {
   const { t } = useTranslation();
   return (
     <Empty className="min-h-80 rounded-xl border bg-card" role="alert">
@@ -260,11 +262,7 @@ function PatientUnavailable(): React.JSX.Element {
 }
 
 /** Renders identity placeholders without provisional patient data. */
-function PatientWorkspaceLoading({
-  loadingLabel,
-}: {
-  loadingLabel: string;
-}): React.JSX.Element {
+function PatientWorkspaceLoading({ loadingLabel }: { loadingLabel: string }) {
   return (
     <div
       aria-label={loadingLabel}

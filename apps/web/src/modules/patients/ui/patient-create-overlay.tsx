@@ -1,9 +1,10 @@
-import * as React from 'react';
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { CircleAlertIcon, CirclePlusIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import type { FieldError as FormFieldError } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
   getListPatientsQueryKey,
@@ -45,7 +46,7 @@ const CREATE_PATIENT_FORM_ID = 'create-patient-form';
  *
  * @returns The trigger and localized patient form.
  */
-export function PatientCreateOverlay(): React.JSX.Element {
+export function PatientCreateOverlay() {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -57,7 +58,7 @@ export function PatientCreateOverlay(): React.JSX.Element {
     reValidateMode: 'onChange',
     resolver: zodResolver(CreatePatientBody),
   });
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
   const setOverlayOpen = (nextOpen: boolean) => {
     setOpen(nextOpen);
@@ -112,27 +113,21 @@ export function PatientCreateOverlay(): React.JSX.Element {
     }
   });
 
-  const firstNameFieldError = form.formState.errors.firstName;
-  const firstNameError =
-    firstNameFieldError === undefined
-      ? undefined
-      : firstNameFieldError.type === 'server'
-        ? t(`errors.validation.${firstNameFieldError.message}`)
-        : t('patients.create.validation.name');
-  const lastNameFieldError = form.formState.errors.lastName;
-  const lastNameError =
-    lastNameFieldError === undefined
-      ? undefined
-      : lastNameFieldError.type === 'server'
-        ? t(`errors.validation.${lastNameFieldError.message}`)
-        : t('patients.create.validation.name');
-  const ageFieldError = form.formState.errors.age;
-  const ageError =
-    ageFieldError === undefined
-      ? undefined
-      : ageFieldError.type === 'server'
-        ? t(`errors.validation.${ageFieldError.message}`)
-        : t('patients.create.validation.age');
+  const firstNameError = getPatientFieldErrorMessage(
+    form.formState.errors.firstName,
+    t('patients.create.validation.name'),
+    t,
+  );
+  const lastNameError = getPatientFieldErrorMessage(
+    form.formState.errors.lastName,
+    t('patients.create.validation.name'),
+    t,
+  );
+  const ageError = getPatientFieldErrorMessage(
+    form.formState.errors.age,
+    t('patients.create.validation.age'),
+    t,
+  );
   const formContent = (
     <form
       className="pb-2"
@@ -199,7 +194,6 @@ export function PatientCreateOverlay(): React.JSX.Element {
   const footer = (
     <>
       <Button
-        className="min-w-[5.75rem]"
         disabled={mutation.isPending}
         onClick={() => setOverlayOpen(false)}
         size="lg"
@@ -209,7 +203,6 @@ export function PatientCreateOverlay(): React.JSX.Element {
         {t('patients.create.cancel')}
       </Button>
       <Button
-        className="min-w-[8.75rem] max-sm:gap-2 max-sm:px-4"
         disabled={mutation.isPending}
         form={CREATE_PATIENT_FORM_ID}
         size="lg"
@@ -230,7 +223,7 @@ export function PatientCreateOverlay(): React.JSX.Element {
   return (
     <>
       <Button
-        className="w-full gap-2 px-4 has-data-[icon=inline-start]:pl-4 sm:w-auto sm:min-w-[8.75rem]"
+        className="w-full sm:w-auto"
         onClick={() => setOverlayOpen(true)}
         size="lg"
         type="button"
@@ -283,4 +276,26 @@ export function PatientCreateOverlay(): React.JSX.Element {
 /** Normalizes patient names before generated-schema validation. */
 function trimTextValue(value: unknown): unknown {
   return typeof value === 'string' ? value.trim() : value;
+}
+
+/**
+ * Resolves a patient field error from local or server-side validation.
+ *
+ * @param error React Hook Form error for the field.
+ * @param fallbackMessage Localized message for client-side validation.
+ * @param t Active translator for stable server violation codes.
+ * @returns The localized error message, when the field is invalid.
+ */
+function getPatientFieldErrorMessage(
+  error: FormFieldError | undefined,
+  fallbackMessage: string,
+  t: ReturnType<typeof useTranslation>['t'],
+): string | undefined {
+  if (error === undefined) {
+    return undefined;
+  }
+  if (error.type === 'server') {
+    return t(`errors.validation.${error.message}`);
+  }
+  return fallbackMessage;
 }

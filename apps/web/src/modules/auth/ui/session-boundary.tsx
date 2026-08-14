@@ -18,7 +18,7 @@ import { Spinner } from '@/shared/ui/spinner';
  *
  * @returns The router with a resolved session, or a focused restoration state.
  */
-export function SessionBoundary(): React.JSX.Element {
+export function SessionBoundary() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const query = useGetSession({

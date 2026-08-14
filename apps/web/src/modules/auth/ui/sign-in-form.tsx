@@ -33,7 +33,7 @@ interface SignInFormProps {
  * @param props Safe destination restored after successful authentication.
  * @returns The localized sign-in form.
  */
-export function SignInForm({ redirect }: SignInFormProps): React.JSX.Element {
+export function SignInForm({ redirect }: SignInFormProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

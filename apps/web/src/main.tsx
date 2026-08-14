@@ -1,5 +1,5 @@
 import { StrictMode } from 'react';
-import * as ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import App from './app/app';
 import { initializeI18n } from './shared/i18n/i18n';
 import './styles.css';
@@ -8,9 +8,7 @@ import './styles.css';
 async function bootstrap(): Promise<void> {
   await initializeI18n();
 
-  const root = ReactDOM.createRoot(
-    document.getElementById('root') as HTMLElement,
-  );
+  const root = createRoot(document.getElementById('root') as HTMLElement);
   root.render(
     <StrictMode>
       <App />

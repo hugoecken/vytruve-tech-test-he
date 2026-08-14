@@ -11,6 +11,6 @@ export const Route = createFileRoute('/_authenticated/patients/')({
  *
  * @returns The patient collection page.
  */
-function PatientsRouteComponent(): React.JSX.Element {
+function PatientsRouteComponent() {
   return <PatientsPage />;
 }

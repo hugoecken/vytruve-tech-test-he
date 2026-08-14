@@ -162,13 +162,16 @@ Do not use or commit the supplied assessment scans outside their authorized loca
 4. Observe confirmation pending, queued, in-progress, completed, and failed projections through the controlled provider.
 5. Confirm ambiguous submission is reconciled without another POST.
 6. Confirm capacity rejection leaves no accepted request and allows a later deliberate attempt.
+7. Delay the provider-status read; confirm the persisted rows, pagination, and non-status cells appear first while active-request Status and Estimated progress cells show skeletons and completed or failed values remain visible.
+8. Confirm the automatic status refresh leaves the manual refresh icon visually idle, then activate the manual action and confirm only that user-triggered refresh shows its pending icon.
+9. Confirm opening a page triggers one status refresh and no polling or repeated provider-status read follows after it settles.
 
 ### 5. Collection recovery
 
 Repeat the following checks for the patient directory, the scan table, and the print-request table:
 
 1. Fail the initial collection read before any successful response; confirm no table or row is displayed, the failure is localized and announced, and Retry can be reached and activated by keyboard.
-2. Load a confirmed page, request an adjacent page, and fail that request; confirm the previous rows and response page remain visible, the requested page is not presented as loaded, and Retry repeats the intended safe read.
+2. Load a page, request an adjacent page, and fail that request; confirm the collection shows its localized blocking error without provisional or previous-page rows, and Retry repeats the intended safe read.
 3. Load confirmed rows and fail a background refresh; confirm the rows remain visible as last-known information with a non-blocking warning and Retry.
 4. Restore the collection service and activate Retry; confirm the successful response replaces the recovery state without duplicating rows or changing page position before confirmation.
 5. Repeat the three failures on a compact viewport; confirm the recovery action remains visible, has an accessible name, does not rely on color, and meets the required touch-target size.

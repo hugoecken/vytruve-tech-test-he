@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 /** Props shared by full-page system fallbacks. */
 interface SystemFallbackPageProps {
@@ -19,7 +19,7 @@ export function SystemFallbackPage({
   description,
   eyebrow,
   title,
-}: SystemFallbackPageProps): React.JSX.Element {
+}: SystemFallbackPageProps) {
   return (
     <main className="grid min-h-svh place-items-center bg-background px-6 py-24">
       <section className="flex w-full max-w-xl flex-col items-center gap-8 text-center">

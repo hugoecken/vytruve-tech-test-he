@@ -9,6 +9,7 @@ import { ProblemDetailsException } from '@api/http/problem-details.exception';
 import {
   createPage,
   createPageWindow,
+  type Page,
   type PageParameters,
 } from '@api/pagination/page';
 import { isUniqueViolation } from '@api/persistence/postgres-error';
@@ -134,12 +135,12 @@ export class PrintingService {
   }
 
   /**
-   * Lists one patient page and safely refreshes only its non-terminal rows.
+   * Lists one patient page from persisted state without contacting the provider.
    *
    * @param accountId Verified session owner.
    * @param patientId Requested patient identifier.
    * @param query Validated zero-based server page.
-   * @returns Last-known page after independent best-effort reconciliation.
+   * @returns Page containing the latest safely persisted observations.
    * @throws PATIENT_NOT_FOUND when the parent is missing or foreign-owned.
    */
   async list(
@@ -148,6 +149,45 @@ export class PrintingService {
     query: PageParameters,
   ): Promise<PrintRequestPageModel> {
     await this.patients.get(accountId, patientId);
+    return this.views.toPage(
+      this.persistence.toModelPage(await this.readPage(patientId, query)),
+      new Date(),
+    );
+  }
+
+  /**
+   * Refreshes active rows in one persisted patient page through the provider.
+   *
+   * @param accountId Verified session owner.
+   * @param patientId Requested patient identifier.
+   * @param query Validated zero-based server page.
+   * @returns Page containing newly reconciled or safely persisted observations.
+   * @throws PATIENT_NOT_FOUND when the parent is missing or foreign-owned.
+   * @throws PRINTING_UNAVAILABLE when the provider refresh cannot complete.
+   */
+  async refresh(
+    accountId: string,
+    patientId: string,
+    query: PageParameters,
+  ): Promise<PrintRequestPageModel> {
+    await this.patients.get(accountId, patientId);
+    const page = await this.readPage(patientId, query);
+    return this.views.toPage(
+      this.persistence.toModelPage({
+        ...page,
+        items: await Promise.all(
+          page.items.map((entity) => this.reconcile(entity)),
+        ),
+      }),
+      new Date(),
+    );
+  }
+
+  /** Reads one deterministic page with a single look-ahead row. */
+  private async readPage(
+    patientId: string,
+    query: PageParameters,
+  ): Promise<Page<PrintRequestEntity>> {
     const window = createPageWindow(query);
     const entities = await this.requests
       .createQueryBuilder('printRequest')
@@ -158,17 +198,7 @@ export class PrintingService {
       .skip(window.skip)
       .take(window.take)
       .getMany();
-    const page = createPage(entities, query);
-    const reconciled = await Promise.all(
-      page.items.map((entity) => this.reconcile(entity)),
-    );
-    const observedAt = new Date();
-    return {
-      ...page,
-      items: reconciled.map((entity) =>
-        this.views.toView(this.persistence.toModel(entity), observedAt),
-      ),
-    };
+    return createPage(entities, query);
   }
 
   /**
@@ -218,10 +248,12 @@ export class PrintingService {
   }
 
   /**
-   * Reconciles one active row by reference then identifier while preserving safe state.
+   * Reconciles one active row by reference then by its durable provider identifier.
    *
    * @param entity Last safely persisted request entity.
-   * @returns Updated entity or the unchanged last-known entity on provider degradation.
+   * @returns Updated entity or the unchanged entity when the reference is not known yet.
+   * @throws PRINTING_UNAVAILABLE when the provider refresh cannot complete.
+   * @throws INTERNAL_ERROR when a newly observed state cannot be persisted safely.
    */
   private async reconcile(
     entity: PrintRequestEntity,
@@ -231,12 +263,16 @@ export class PrintingService {
     }
 
     try {
-      const current = this.persistence.toModel(entity);
+      let current = this.persistence.toModel(entity);
       const providerId =
         current.providerId ??
         (await this.provider.findIdByReference(current.reference));
       if (providerId === null) {
         return entity;
+      }
+      if (current.providerId === null) {
+        await this.persistProviderId(entity.id, providerId, entity.reference);
+        current = { ...current, providerId };
       }
       const observation = await this.provider.getById(providerId);
       const observedAt = new Date();
@@ -251,17 +287,49 @@ export class PrintingService {
       } catch {
         this.logger.error({
           event: 'printing_reconciliation_persistence',
-          outcome: 'last_known_state_retained',
+          outcome: 'observation_not_persisted',
           reference: entity.reference,
           requestId: entity.id,
         });
-        return entity;
+        throw internalError();
       }
     } catch (error) {
       if (error instanceof PrintingProviderError) {
-        return entity;
+        throw printingUnavailable();
       }
       throw error;
+    }
+  }
+
+  /**
+   * Persists a newly resolved provider identity before the slower detail lookup.
+   *
+   * @param requestId Local print-request identifier.
+   * @param providerId Runtime-validated provider identifier.
+   * @param reference Safe application reference used for operational logging.
+   * @throws INTERNAL_ERROR when the identity cannot be stored exactly once.
+   */
+  private async persistProviderId(
+    requestId: string,
+    providerId: string,
+    reference: string,
+  ): Promise<void> {
+    try {
+      const result = await this.requests.update(
+        { id: requestId },
+        { providerId },
+      );
+      if (result.affected !== 1) {
+        throw new Error('Print provider identifier was not persisted');
+      }
+    } catch {
+      this.logger.error({
+        event: 'printing_reconciliation_persistence',
+        outcome: 'provider_identity_not_persisted',
+        reference,
+        requestId,
+      });
+      throw internalError();
     }
   }
 }

@@ -14,9 +14,7 @@ interface NotFoundPageProps {
  * @param props Whether the current browser session is authenticated.
  * @returns A localized page with one safe recovery action.
  */
-export function NotFoundPage({
-  authenticated,
-}: NotFoundPageProps): React.JSX.Element {
+export function NotFoundPage({ authenticated }: NotFoundPageProps) {
   const { t } = useTranslation();
   return (
     <SystemFallbackPage

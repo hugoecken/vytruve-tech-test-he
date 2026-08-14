@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { CircleAlertIcon, PrinterIcon, XIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +7,7 @@ import {
 } from '@/modules/printing/config/printing';
 import {
   getListPatientPrintRequestsQueryKey,
+  getRefreshPatientPrintRequestsQueryKey,
   type listPatientPrintRequestsResponseSuccess,
   useCreatePrintRequest,
 } from '@/shared/api/generated/client/printing/printing';
@@ -67,7 +67,7 @@ export function PrintRequestOverlay({
   onScanUnavailable,
   patientId,
   scan,
-}: PrintRequestOverlayProps): React.JSX.Element {
+}: PrintRequestOverlayProps) {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
@@ -84,6 +84,9 @@ export function PrintRequestOverlay({
   const invalidateCollections = (): void => {
     void queryClient.invalidateQueries({
       queryKey: getListPatientPrintRequestsQueryKey(patientId),
+    });
+    void queryClient.invalidateQueries({
+      queryKey: getRefreshPatientPrintRequestsQueryKey(patientId),
     });
     void queryClient.invalidateQueries({
       queryKey: getListPatientScansQueryKey(patientId),
@@ -219,7 +222,6 @@ export function PrintRequestOverlay({
   const footer = (
     <>
       <Button
-        className="min-w-[5.75rem]"
         disabled={mutation.isPending}
         onClick={onClose}
         size="lg"
@@ -229,7 +231,6 @@ export function PrintRequestOverlay({
         {t('printing.create.cancel')}
       </Button>
       <Button
-        className="min-w-[8.75rem]"
         disabled={scan === null || mutation.isPending}
         onClick={() => void submit()}
         size="lg"
@@ -273,7 +274,7 @@ export function PrintRequestOverlay({
           render={
             <Button
               aria-label={t('printing.create.cancel')}
-              className="absolute top-2 right-2 size-8"
+              className="absolute top-2 right-2"
               disabled={mutation.isPending}
               size="icon-sm"
               type="button"
