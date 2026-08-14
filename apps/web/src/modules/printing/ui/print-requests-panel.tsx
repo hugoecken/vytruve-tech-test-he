@@ -140,7 +140,7 @@ export function PrintRequestsPanel({
   const refetch = query.refetch;
   /** Performs the safe GET used by the bounded polling window. */
   const refreshAutomatically = React.useCallback((): void => {
-    void refetch();
+    void refetch({ cancelRefetch: false });
   }, [refetch]);
   const polling = usePrintRequestPolling({
     enabled:
