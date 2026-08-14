@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { type ComponentProps } from 'react';
 import {
   MessageScroller as MessageScrollerPrimitive,
   useMessageScroller,
@@ -11,7 +11,7 @@ import { Button } from '@/shared/ui/button';
 import { ArrowDownIcon } from 'lucide-react';
 
 function MessageScrollerProvider(
-  props: React.ComponentProps<typeof MessageScrollerPrimitive.Provider>,
+  props: ComponentProps<typeof MessageScrollerPrimitive.Provider>,
 ) {
   return <MessageScrollerPrimitive.Provider {...props} />;
 }
@@ -19,7 +19,7 @@ function MessageScrollerProvider(
 function MessageScroller({
   className,
   ...props
-}: React.ComponentProps<typeof MessageScrollerPrimitive.Root>) {
+}: ComponentProps<typeof MessageScrollerPrimitive.Root>) {
   return (
     <MessageScrollerPrimitive.Root
       data-slot="message-scroller"
@@ -35,7 +35,7 @@ function MessageScroller({
 function MessageScrollerViewport({
   className,
   ...props
-}: React.ComponentProps<typeof MessageScrollerPrimitive.Viewport>) {
+}: ComponentProps<typeof MessageScrollerPrimitive.Viewport>) {
   return (
     <MessageScrollerPrimitive.Viewport
       data-slot="message-scroller-viewport"
@@ -51,7 +51,7 @@ function MessageScrollerViewport({
 function MessageScrollerContent({
   className,
   ...props
-}: React.ComponentProps<typeof MessageScrollerPrimitive.Content>) {
+}: ComponentProps<typeof MessageScrollerPrimitive.Content>) {
   return (
     <MessageScrollerPrimitive.Content
       data-slot="message-scroller-content"
@@ -65,7 +65,7 @@ function MessageScrollerItem({
   className,
   scrollAnchor = false,
   ...props
-}: React.ComponentProps<typeof MessageScrollerPrimitive.Item>) {
+}: ComponentProps<typeof MessageScrollerPrimitive.Item>) {
   return (
     <MessageScrollerPrimitive.Item
       data-slot="message-scroller-item"
@@ -87,8 +87,8 @@ function MessageScrollerButton({
   variant = 'secondary',
   size = 'icon-sm',
   ...props
-}: React.ComponentProps<typeof MessageScrollerPrimitive.Button> &
-  Pick<React.ComponentProps<typeof Button>, 'variant' | 'size'>) {
+}: ComponentProps<typeof MessageScrollerPrimitive.Button> &
+  Pick<ComponentProps<typeof Button>, 'variant' | 'size'>) {
   return (
     <MessageScrollerPrimitive.Button
       data-slot="message-scroller-button"

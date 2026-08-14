@@ -1,6 +1,4 @@
-'use client';
-
-import * as React from 'react';
+import { type ComponentProps } from 'react';
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
 
 import { cn } from '@/shared/lib/utils';
@@ -65,7 +63,7 @@ function DialogContent({
             render={
               <Button
                 variant="ghost"
-                className="absolute top-2 right-2 size-8"
+                className="absolute top-2 right-2"
                 size="icon-sm"
               />
             }
@@ -79,7 +77,7 @@ function DialogContent({
   );
 }
 
-function DialogHeader({ className, ...props }: React.ComponentProps<'div'>) {
+function DialogHeader({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="dialog-header"
@@ -94,14 +92,14 @@ function DialogFooter({
   showCloseButton = false,
   children,
   ...props
-}: React.ComponentProps<'div'> & {
+}: ComponentProps<'div'> & {
   showCloseButton?: boolean;
 }) {
   return (
     <div
       data-slot="dialog-footer"
       className={cn(
-        '-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-background p-4 sm:flex-row sm:justify-end',
+        '-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:flex-row sm:justify-end',
         className,
       )}
       {...props}

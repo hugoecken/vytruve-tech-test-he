@@ -1,8 +1,8 @@
-import * as React from 'react';
+import { type ComponentProps } from 'react';
 
 import { cn } from '@/shared/lib/utils';
 
-function Table({ className, ...props }: React.ComponentProps<'table'>) {
+function Table({ className, ...props }: ComponentProps<'table'>) {
   return (
     <div
       data-slot="table-container"
@@ -17,7 +17,7 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
   );
 }
 
-function TableHeader({ className, ...props }: React.ComponentProps<'thead'>) {
+function TableHeader({ className, ...props }: ComponentProps<'thead'>) {
   return (
     <thead
       data-slot="table-header"
@@ -27,7 +27,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<'thead'>) {
   );
 }
 
-function TableBody({ className, ...props }: React.ComponentProps<'tbody'>) {
+function TableBody({ className, ...props }: ComponentProps<'tbody'>) {
   return (
     <tbody
       data-slot="table-body"
@@ -37,7 +37,7 @@ function TableBody({ className, ...props }: React.ComponentProps<'tbody'>) {
   );
 }
 
-function TableFooter({ className, ...props }: React.ComponentProps<'tfoot'>) {
+function TableFooter({ className, ...props }: ComponentProps<'tfoot'>) {
   return (
     <tfoot
       data-slot="table-footer"
@@ -50,7 +50,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<'tfoot'>) {
   );
 }
 
-function TableRow({ className, ...props }: React.ComponentProps<'tr'>) {
+function TableRow({ className, ...props }: ComponentProps<'tr'>) {
   return (
     <tr
       data-slot="table-row"
@@ -63,7 +63,44 @@ function TableRow({ className, ...props }: React.ComponentProps<'tr'>) {
   );
 }
 
-function TableHead({ className, ...props }: React.ComponentProps<'th'>) {
+/** Props for a table row activated through pointer or keyboard interaction. */
+interface InteractiveTableRowProps
+  extends Omit<
+    ComponentProps<typeof TableRow>,
+    'onClick' | 'onKeyDown' | 'tabIndex'
+  > {
+  onActivate: () => void;
+}
+
+/** Keeps row activation accessible without replacing native table semantics. */
+function InteractiveTableRow({
+  className,
+  onActivate,
+  ...props
+}: InteractiveTableRowProps) {
+  return (
+    <TableRow
+      {...props}
+      className={cn(
+        'cursor-pointer focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset focus-visible:outline-none',
+        className,
+      )}
+      onClick={onActivate}
+      onKeyDown={(event) => {
+        if (
+          event.target === event.currentTarget &&
+          (event.key === 'Enter' || event.key === ' ')
+        ) {
+          event.preventDefault();
+          onActivate();
+        }
+      }}
+      tabIndex={0}
+    />
+  );
+}
+
+function TableHead({ className, ...props }: ComponentProps<'th'>) {
   return (
     <th
       data-slot="table-head"
@@ -76,7 +113,7 @@ function TableHead({ className, ...props }: React.ComponentProps<'th'>) {
   );
 }
 
-function TableCell({ className, ...props }: React.ComponentProps<'td'>) {
+function TableCell({ className, ...props }: ComponentProps<'td'>) {
   return (
     <td
       data-slot="table-cell"
@@ -89,10 +126,7 @@ function TableCell({ className, ...props }: React.ComponentProps<'td'>) {
   );
 }
 
-function TableCaption({
-  className,
-  ...props
-}: React.ComponentProps<'caption'>) {
+function TableCaption({ className, ...props }: ComponentProps<'caption'>) {
   return (
     <caption
       data-slot="table-caption"
@@ -105,6 +139,7 @@ function TableCaption({
 export {
   Table,
   TableHeader,
+  InteractiveTableRow,
   TableBody,
   TableFooter,
   TableHead,
