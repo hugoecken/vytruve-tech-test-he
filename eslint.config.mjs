@@ -15,6 +15,7 @@ export default [
       '**/vite.config.*.timestamp*',
       '**/src/routeTree.gen.ts',
       '**/src/shared/api/generated/**',
+      '**/vitest.config.*.timestamp*',
     ],
   },
   {
