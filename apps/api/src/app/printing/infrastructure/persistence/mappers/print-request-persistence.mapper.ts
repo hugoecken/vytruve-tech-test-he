@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { Page } from '@api/pagination/page';
 import {
   PrintRequestStatus,
   type PrintRequestModel,
@@ -8,6 +9,14 @@ import { PrintRequestEntity } from '../print-request.entity';
 /** Maps print-request state across the application and TypeORM boundary. */
 @Injectable()
 export class PrintRequestPersistenceMapper {
+  /** Maps one persisted page into persistence-independent application state. */
+  toModelPage(page: Page<PrintRequestEntity>): Page<PrintRequestModel> {
+    return {
+      ...page,
+      items: page.items.map((entity) => this.toModel(entity)),
+    };
+  }
+
   /**
    * Builds the durable reservation required before non-idempotent submission.
    *

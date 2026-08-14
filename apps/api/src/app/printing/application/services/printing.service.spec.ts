@@ -36,8 +36,21 @@ const PATIENT: PatientModel = {
 
 /** Repository mutations relevant to printing orchestration. */
 interface RequestsRepositoryDouble {
+  createQueryBuilder: jest.Mock;
   delete: jest.Mock;
   save: jest.Mock;
+  update: jest.Mock;
+}
+
+/** Query-builder operations used by the paginated print-request read. */
+interface RequestsQueryBuilderDouble {
+  addOrderBy: jest.Mock;
+  getMany: jest.Mock;
+  innerJoin: jest.Mock;
+  orderBy: jest.Mock;
+  skip: jest.Mock;
+  take: jest.Mock;
+  where: jest.Mock;
 }
 
 /** Patient authorization operation required before printing. */
@@ -92,6 +105,7 @@ describe(PrintingService.name, () => {
   let events: string[];
   let patients: PatientsDouble;
   let provider: ProviderDouble;
+  let queryBuilder: RequestsQueryBuilderDouble;
   let repository: RequestsRepositoryDouble;
   let scans: ScansDouble;
   let service: PrintingService;
@@ -110,7 +124,23 @@ describe(PrintingService.name, () => {
         return providerObservation();
       }),
     };
+    queryBuilder = {
+      addOrderBy: jest.fn(),
+      getMany: jest.fn().mockResolvedValue([]),
+      innerJoin: jest.fn(),
+      orderBy: jest.fn(),
+      skip: jest.fn(),
+      take: jest.fn(),
+      where: jest.fn(),
+    };
+    queryBuilder.addOrderBy.mockReturnValue(queryBuilder);
+    queryBuilder.innerJoin.mockReturnValue(queryBuilder);
+    queryBuilder.orderBy.mockReturnValue(queryBuilder);
+    queryBuilder.skip.mockReturnValue(queryBuilder);
+    queryBuilder.take.mockReturnValue(queryBuilder);
+    queryBuilder.where.mockReturnValue(queryBuilder);
     repository = {
+      createQueryBuilder: jest.fn().mockReturnValue(queryBuilder),
       delete: jest.fn().mockResolvedValue({ affected: 1, raw: [] }),
       save: jest.fn(async (entity: PrintRequestEntity) => {
         if (entity.id === undefined) {
@@ -120,6 +150,7 @@ describe(PrintingService.name, () => {
         events.push('confirm');
         return entity;
       }),
+      update: jest.fn().mockResolvedValue({ affected: 1, raw: [] }),
     };
     scans = {
       readContent: jest.fn().mockResolvedValue({
@@ -217,5 +248,89 @@ describe(PrintingService.name, () => {
       ProblemCode.INTERNAL_ERROR,
       HttpStatus.INTERNAL_SERVER_ERROR,
     );
+  });
+
+  it('keeps an unresolved reference pending without treating it as provider failure', async () => {
+    queryBuilder.getMany.mockResolvedValue([pendingEntity()]);
+
+    const result = await service.refresh(ACCOUNT_ID, PATIENT_ID, {
+      page: 0,
+      pageSize: 10,
+    });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.status).toBe(
+      PrintRequestStatus.CONFIRMATION_PENDING,
+    );
+    expect(provider.findIdByReference).toHaveBeenCalledWith('ABCDEFGHJK23');
+    expect(provider.getById).not.toHaveBeenCalled();
+    expect(repository.update).not.toHaveBeenCalled();
+  });
+
+  it('lists persisted requests without contacting the provider', async () => {
+    queryBuilder.getMany.mockResolvedValue([pendingEntity()]);
+
+    const result = await service.list(ACCOUNT_ID, PATIENT_ID, {
+      page: 0,
+      pageSize: 10,
+    });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.status).toBe(
+      PrintRequestStatus.CONFIRMATION_PENDING,
+    );
+    expect(provider.findIdByReference).not.toHaveBeenCalled();
+    expect(provider.getById).not.toHaveBeenCalled();
+  });
+
+  it('reports provider degradation instead of returning a false refresh success', async () => {
+    queryBuilder.getMany.mockResolvedValue([pendingEntity()]);
+    provider.findIdByReference.mockRejectedValue(
+      new PrintingProviderError('unavailable'),
+    );
+
+    await expectProblemDetails(
+      service.refresh(ACCOUNT_ID, PATIENT_ID, { page: 0, pageSize: 10 }),
+      ProblemCode.PRINTING_UNAVAILABLE,
+      HttpStatus.SERVICE_UNAVAILABLE,
+    );
+
+    expect(repository.save).not.toHaveBeenCalled();
+  });
+
+  it('persists a resolved provider identifier before reading its job details', async () => {
+    queryBuilder.getMany.mockResolvedValue([pendingEntity()]);
+    provider.findIdByReference.mockResolvedValue(PROVIDER_ID);
+    provider.getById.mockRejectedValue(
+      new PrintingProviderError('unavailable'),
+    );
+
+    await expectProblemDetails(
+      service.refresh(ACCOUNT_ID, PATIENT_ID, { page: 0, pageSize: 10 }),
+      ProblemCode.PRINTING_UNAVAILABLE,
+      HttpStatus.SERVICE_UNAVAILABLE,
+    );
+
+    expect(repository.update).toHaveBeenCalledWith(
+      { id: REQUEST_ID },
+      { providerId: PROVIDER_ID },
+    );
+    expect(repository.update.mock.invocationCallOrder[0]).toBeLessThan(
+      provider.getById.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
+    );
+  });
+
+  it('reports an internal failure when a provider identity cannot be persisted', async () => {
+    queryBuilder.getMany.mockResolvedValue([pendingEntity()]);
+    provider.findIdByReference.mockResolvedValue(PROVIDER_ID);
+    repository.update.mockResolvedValue({ affected: 0, raw: [] });
+
+    await expectProblemDetails(
+      service.refresh(ACCOUNT_ID, PATIENT_ID, { page: 0, pageSize: 10 }),
+      ProblemCode.INTERNAL_ERROR,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+
+    expect(provider.getById).not.toHaveBeenCalled();
   });
 });
