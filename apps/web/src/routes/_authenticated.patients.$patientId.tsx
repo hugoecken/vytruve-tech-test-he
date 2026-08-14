@@ -13,5 +13,5 @@ export const Route = createFileRoute('/_authenticated/patients/$patientId')({
  */
 function PatientWorkspaceRouteComponent(): React.JSX.Element {
   const { patientId } = Route.useParams();
-  return <PatientWorkspacePage patientId={patientId} />;
+  return <PatientWorkspacePage key={patientId} patientId={patientId} />;
 }

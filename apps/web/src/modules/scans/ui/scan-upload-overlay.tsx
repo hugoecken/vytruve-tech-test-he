@@ -1,6 +1,12 @@
 import * as React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { CircleAlertIcon, FileBoxIcon, PlusIcon, XIcon } from 'lucide-react';
+import {
+  CircleAlertIcon,
+  CirclePlusIcon,
+  FileBoxIcon,
+  UploadIcon,
+  XIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   getListPatientScansQueryKey,
@@ -134,7 +140,7 @@ export function ScanUploadOverlay({
     });
   }
   const content = (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-w-0 flex-col gap-4">
       {uploadError !== undefined && (
         <Alert variant="destructive">
           <CircleAlertIcon aria-hidden="true" />
@@ -158,16 +164,21 @@ export function ScanUploadOverlay({
             {t('scans.upload.fileHint')}
           </p>
           <Button
-            className="h-9"
+            className="max-sm:gap-2 max-sm:px-4"
             onClick={() => inputRef.current?.click()}
+            size="lg"
             type="button"
             variant="outline"
           >
+            <UploadIcon aria-hidden="true" data-icon="inline-start" />
             {t('scans.upload.choose')}
           </Button>
         </div>
       ) : (
-        <Attachment className="w-full" state={attachmentState}>
+        <Attachment
+          className="w-full flex-nowrap overflow-hidden"
+          state={attachmentState}
+        >
           <AttachmentMedia>
             {mutation.isPending ? (
               <Spinner aria-hidden="true" />
@@ -203,21 +214,27 @@ export function ScanUploadOverlay({
   const footer = (
     <>
       <Button
-        className="h-9 w-[5.75rem]"
+        className="min-w-[5.75rem]"
         disabled={mutation.isPending}
         onClick={() => setOverlayOpen(false)}
+        size="lg"
         type="button"
         variant="outline"
       >
         {t('scans.upload.cancel')}
       </Button>
       <Button
-        className="h-9 w-[8.75rem]"
+        className="min-w-[8.75rem] max-sm:gap-2 max-sm:px-4"
         disabled={file === null || fileFailure !== null || mutation.isPending}
         onClick={() => void upload()}
+        size="lg"
         type="button"
       >
-        {mutation.isPending && <Spinner aria-hidden="true" />}
+        {mutation.isPending ? (
+          <Spinner aria-hidden="true" data-icon="inline-start" />
+        ) : (
+          <UploadIcon aria-hidden="true" data-icon="inline-start" />
+        )}
         {mutation.isPending
           ? t('scans.upload.pending')
           : mutation.isError
@@ -230,15 +247,21 @@ export function ScanUploadOverlay({
   return (
     <>
       <Button
-        className="h-9 w-full sm:w-[8.75rem]"
+        className="w-full gap-2 px-4 has-data-[icon=inline-start]:pl-4 sm:w-auto sm:min-w-[8.75rem]"
         onClick={() => setOverlayOpen(true)}
+        size="lg"
         type="button"
       >
-        <PlusIcon aria-hidden="true" data-icon="inline-start" />
+        <CirclePlusIcon aria-hidden="true" data-icon="inline-start" />
         {t('scans.add')}
       </Button>
       {isMobile ? (
-        <Drawer onOpenChange={setOverlayOpen} open={open} showSwipeHandle>
+        <Drawer
+          disablePointerDismissal
+          onOpenChange={setOverlayOpen}
+          open={open}
+          showSwipeHandle
+        >
           <DrawerContent>
             <DrawerHeader>
               <DrawerTitle>{t('scans.upload.title')}</DrawerTitle>
@@ -253,16 +276,20 @@ export function ScanUploadOverlay({
           </DrawerContent>
         </Drawer>
       ) : (
-        <Dialog onOpenChange={setOverlayOpen} open={open}>
+        <Dialog
+          disablePointerDismissal
+          onOpenChange={setOverlayOpen}
+          open={open}
+        >
           <DialogContent>
-            <DialogHeader>
+            <DialogHeader className="min-w-0">
               <DialogTitle>{t('scans.upload.title')}</DialogTitle>
               <DialogDescription>
                 {t('scans.upload.description')}
               </DialogDescription>
             </DialogHeader>
             {content}
-            <DialogFooter className="gap-3">{footer}</DialogFooter>
+            <DialogFooter className="min-w-0">{footer}</DialogFooter>
           </DialogContent>
         </Dialog>
       )}

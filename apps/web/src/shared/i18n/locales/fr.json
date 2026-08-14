@@ -133,10 +133,6 @@
         "title": "Dossier patient indisponible",
         "description": "Ce dossier patient est indisponible. Retournez à la liste des patients pour continuer.",
         "action": "Retourner aux patients"
-      },
-      "prints": {
-        "title": "Les demandes d’impression arrivent ensuite",
-        "description": "Le parcours de demande d’impression n’est pas encore disponible."
       }
     }
   },
@@ -181,7 +177,74 @@
       "errorDescription": "{{scan}} reste disponible dans la liste. Réessayez le téléchargement."
     },
     "printing": {
-      "unavailable": "Les demandes d’impression ne sont pas encore disponibles"
+      "request": "Demander l’impression",
+      "requestNamed": "Demander l’impression de {{scan}}",
+      "unavailable": "Une demande d’impression est déjà active pour ce scan",
+      "unavailableNamed": "L’impression de {{scan}} est indisponible tant qu’une autre demande est active"
+    }
+  },
+  "printing": {
+    "collection": "les demandes d’impression",
+    "title": "Demandes d’impression",
+    "description": "Suivez chaque emboîture auprès du centre d’impression, de la demande à la fin de production.",
+    "table": {
+      "caption": "Demandes d’impression de ce patient",
+      "reference": "Référence",
+      "scan": "Scan 3D",
+      "status": "Statut",
+      "progress": "Progression estimée",
+      "timing": "Calendrier de production"
+    },
+    "empty": {
+      "title": "Aucune demande d’impression",
+      "description": "Ouvrez les scans 3D pour ajouter un scan ou demander son impression.",
+      "action": "Voir les scans 3D"
+    },
+    "create": {
+      "title": "Demander l’impression",
+      "description": "Confirmez ce scan 3D avant d’envoyer une seule demande d’impression.",
+      "referenceGenerated": "La référence d’impression sera générée automatiquement.",
+      "cancel": "Annuler",
+      "submit": "Demander l’impression",
+      "pending": "Envoi de la demande…",
+      "accepted": "Demande d’impression {{reference}} acceptée.",
+      "failedTitle": "Impossible de demander l’impression",
+      "capacityTitle": "Centre d’impression à pleine capacité",
+      "capacityDescription": "Aucune demande n’a été acceptée. Réessayez plus tard.",
+      "unavailableTitle": "L’impression est temporairement indisponible",
+      "unavailableDescription": "Aucune demande n’a été acceptée. Réessayez plus tard."
+    },
+    "notice": {
+      "conflictTitle": "Une demande d’impression est déjà en cours",
+      "conflictDescription": "La demande existante est affichée ci-dessous. Elle n’a pas été envoyée une seconde fois.",
+      "uncertainTitle": "Vérification de l’envoi en cours",
+      "uncertainDescription": "Nous n’avons pas pu confirmer la réponse. Les demandes ont été actualisées avant tout nouvel envoi."
+    },
+    "status": {
+      "confirmation_pending": "Confirmation en attente",
+      "queued": "En file d’attente",
+      "in_progress": "En cours",
+      "completed": "Terminée",
+      "failed": "Échec"
+    },
+    "statusCompact": {
+      "confirmation_pending": "À confirmer",
+      "queued": "En attente",
+      "in_progress": "En cours",
+      "completed": "Terminée",
+      "failed": "Échec"
+    },
+    "progress": {
+      "label": "Progression estimée : {{progress}}",
+      "unavailable": "Aucune progression estimée"
+    },
+    "timing": {
+      "range": "{{start}} – {{end}}",
+      "updated": "Actualisée le {{date}}",
+      "requested": "Demandée le {{date}}"
+    },
+    "refresh": {
+      "action": "Actualiser les statuts"
     }
   },
   "shell": {
