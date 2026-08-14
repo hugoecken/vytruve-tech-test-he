@@ -17,10 +17,11 @@ export async function expectProblemDetails(
   try {
     await operation;
   } catch (error) {
-    expect(error).toBeInstanceOf(ProblemDetailsException);
-    const problem = error as ProblemDetailsException;
-    expect(problem.getProblemDetails()).toMatchObject({ code, status });
-    return problem;
+    if (!(error instanceof ProblemDetailsException)) {
+      throw error;
+    }
+    expect(error.getProblemDetails()).toMatchObject({ code, status });
+    return error;
   }
   throw new Error(`Expected operation to reject with ${code}`);
 }

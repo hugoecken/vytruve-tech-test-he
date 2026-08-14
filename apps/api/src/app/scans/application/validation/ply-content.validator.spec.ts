@@ -101,9 +101,9 @@ function expectProblem(
     operation();
     throw new Error('Expected validation to fail');
   } catch (error) {
-    expect(error).toBeInstanceOf(ProblemDetailsException);
-    expect(
-      (error as ProblemDetailsException).getProblemDetails(),
-    ).toMatchObject({ code, status });
+    if (!(error instanceof ProblemDetailsException)) {
+      throw error;
+    }
+    expect(error.getProblemDetails()).toMatchObject({ code, status });
   }
 }

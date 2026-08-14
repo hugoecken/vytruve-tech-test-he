@@ -8,7 +8,6 @@ import type { JwtSessionService } from '../../infrastructure/security/jwt-sessio
 import { AuthService } from './auth.service';
 
 const ACCOUNT: AccountModel = {
-  createdAt: new Date('2026-08-12T10:00:00.000Z'),
   email: 'clinician@example.test',
   id: '00000000-0000-4000-8000-000000000001',
   passwordHash: 'private-hash',

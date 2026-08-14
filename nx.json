@@ -1,16 +1,6 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "targetDefaults": {
-    "build": {
-      "cache": true
-    },
-    "lint": {
-      "cache": true
-    },
-    "typecheck": {
-      "cache": true
-    }
-  },
+  "defaultBase": "main",
   "plugins": [
     {
       "plugin": "@nx/js/typescript",
@@ -55,22 +45,5 @@
       }
     }
   ],
-  "generators": {
-    "@nx/react": {
-      "application": {
-        "compiler": "babel",
-        "style": "css",
-        "linter": "eslint",
-        "bundler": "vite"
-      },
-      "component": {
-        "style": "css"
-      },
-      "library": {
-        "style": "css",
-        "linter": "eslint"
-      }
-    }
-  },
-  "analytics": true
+  "analytics": false
 }

@@ -11,7 +11,6 @@ export class AccountPersistenceMapper {
   /** Maps a persisted account to the internal application representation. */
   toModel(entity: AccountEntity): AccountModel {
     return {
-      createdAt: entity.createdAt,
       email: entity.email,
       id: entity.id,
       passwordHash: entity.passwordHash,

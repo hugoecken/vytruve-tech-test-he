@@ -7,7 +7,6 @@ import { AccountPersistenceMapper } from '../../infrastructure/persistence/mappe
 import { AccountsService } from './accounts.service';
 
 const ACCOUNT_ID = '00000000-0000-4000-8000-000000000001';
-const CREATED_AT = new Date('2026-08-12T10:00:00.000Z');
 
 /** Repository methods exercised by account application behavior. */
 interface AccountsRepositoryDouble {
@@ -23,7 +22,7 @@ describe(AccountsService.name, () => {
     repository = {
       findOneBy: jest.fn(),
       save: jest.fn(async (entity: AccountEntity) =>
-        Object.assign(entity, { createdAt: CREATED_AT, id: ACCOUNT_ID }),
+        Object.assign(entity, { id: ACCOUNT_ID }),
       ),
     };
     service = new AccountsService(
