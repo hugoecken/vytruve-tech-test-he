@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-11
 
-**Last clarified**: 2026-08-13
+**Last clarified**: 2026-08-14
 
 **Status**: Accepted
 
@@ -21,9 +21,13 @@
 
 ## Clarifications
 
-### Session 2026-08-13
+### Session 2026-08-14
 
-- Q: How must collection reads recover when an initial load, adjacent-page request, or background refresh fails? → A: Show no table before any successful response; otherwise preserve only the last confirmed rows and page, distinguish stale refresh data, and offer an explicit safe retry.
+- Q: How must collection reads recover when an initial load, adjacent-page request, or background refresh fails? → A: Use TanStack Query's standard paginated-query state: initial and adjacent-page failures replace the collection with a localized retry state, while a failed background refresh may retain data already held by TanStack Query and marks it as last known.
+- Q: How are print-request statuses refreshed? → A: Load the persisted print-request page first, then run one independent background status refresh for that page when it opens. While that refresh is pending, show a skeleton in the Status and Estimated progress cells of active requests only; keep completed and failed values visible because terminal requests are not reconciled with the provider. Do not present the manual refresh action as pending during the automatic refresh, keep it explicitly available, and do not poll automatically.
+- Q: When are already-loaded reads fetched again? → A: Keep successful reads fresh in TanStack Query until an explicit mutation invalidation, page change, retry, or manual refresh. Do not refetch merely because a tab remounts, the window regains focus, or React performs development checks.
+- Q: How are patient, scan, and print-request rows opened or consulted? → A: Activate the row itself with pointer or keyboard. Patient rows open the workspace; scan and print-request rows open already-loaded safe metadata in a read-only desktop dialog or compact bottom drawer. Do not add a dedicated consultation icon or action column, and do not issue another request.
+- Q: Which identifiers and progress treatments belong in consultation overlays? → A: Keep the safe scan label in the scan table but omit scan identifiers from scan consultation. In print-request consultation, show Estimated progress as localized percentage text without a progress bar; the table may retain its compact progress indicator.
 
 ## Source Requirement Matrix
 
@@ -91,7 +95,7 @@ An authenticated orthoprosthetist uses the patient directory as the primary dest
 7. **US2-AS7** — **Given** already displayed patients, **When** a background refresh fails, **Then** the table remains visible with a non-blocking warning and an explicit retry action.
 8. **US2-AS8** — **Given** an identifier owned by another account or unknown to the current account, **When** it is requested, **Then** no patient information or existence signal is disclosed.
 9. **US2-AS9** — **Given** the patient directory has no previously confirmed collection response, **When** its initial read fails, **Then** no patient table or row is shown and a localized blocking state offers an explicit retry action.
-10. **US2-AS10** — **Given** a confirmed patient page is displayed, **When** an adjacent-page request fails, **Then** the confirmed rows and page indicator remain unchanged, the requested page is not presented as loaded, and an explicit retry action is available.
+10. **US2-AS10** — **Given** a patient page is displayed, **When** an adjacent-page request fails, **Then** no provisional or previous-page rows are presented as the requested page and a localized blocking state offers an explicit retry action.
 
 ---
 
@@ -118,8 +122,9 @@ Within one patient workspace, an orthoprosthetist reviews a paginated scan table
 11. **US3-AS11** — **Given** the scan upload context opens without a file, **When** it is displayed, **Then** its file-selection surface opens the system file chooser and its upload confirmation remains disabled.
 12. **US3-AS12** — **Given** one file has been selected, **When** it is reviewable, **Then** its name, size, validation state, and removal action are grouped together, and upload confirmation is enabled only while that selection is valid.
 13. **US3-AS13** — **Given** the patient workspace has no previously confirmed scan collection response, **When** the initial scan read fails, **Then** no scan table or row is shown and a localized blocking state offers an explicit retry action without removing patient identity.
-14. **US3-AS14** — **Given** a confirmed scan page is displayed, **When** an adjacent-page request fails, **Then** the confirmed rows and page indicator remain unchanged, the requested page is not presented as loaded, and an explicit retry action is available.
+14. **US3-AS14** — **Given** a scan page is displayed, **When** an adjacent-page request fails, **Then** no provisional or previous-page rows are presented as the requested page and a localized blocking state offers an explicit retry action without removing patient identity.
 15. **US3-AS15** — **Given** confirmed scan rows are displayed, **When** a background refresh fails, **Then** the rows remain visible as last-known information with a non-blocking warning and an explicit retry action.
+16. **US3-AS16** — **Given** a scan row is displayed, **When** the row itself is activated with pointer or keyboard, **Then** its safe metadata opens in a read-only desktop dialog or compact bottom drawer without leaving the patient workspace or issuing another request, no scan identifier is displayed in the consultation overlay, and no separate consultation icon is displayed.
 
 ---
 
@@ -138,15 +143,17 @@ Within the same patient workspace, an orthoprosthetist requests printing of an e
 3. **US4-AS3** — **Given** an ambiguous submission outcome, **When** confirmation is not received, **Then** the request remains confirmation pending, the application reconciles by its stable reference, and it does not blindly submit again.
 4. **US4-AS4** — **Given** a confirmed request scheduled for future production, **When** it is shown, **Then** its visible state is queued and Estimated progress is 0%.
 5. **US4-AS5** — **Given** the printing center has reached concurrent capacity, **When** a new request is rejected, **Then** no accepted job is implied and a localized retry-later state is shown.
-6. **US4-AS6** — **Given** production has started and has not ended, **When** timing information is refreshed, **Then** the state is in progress and Estimated progress is time-based and capped at 99%.
-7. **US4-AS7** — **Given** a successful provider outcome, **When** it is refreshed, **Then** the state is completed, Estimated progress is 100%, and reprinting the scan becomes available.
-8. **US4-AS8** — **Given** a failed provider outcome, **When** it is refreshed, **Then** the state is failed, no percentage implies progress toward success, and reprinting the scan becomes available.
-9. **US4-AS9** — **Given** already displayed print requests, **When** background refresh fails, **Then** the rows remain visible with their last known update and a non-blocking warning.
+6. **US4-AS6** — **Given** production has started and has not ended, **When** the user manually refreshes the print requests, **Then** the state is in progress and Estimated progress is time-based and capped at 99%.
+7. **US4-AS7** — **Given** a successful provider outcome, **When** the user manually refreshes the print requests, **Then** the state is completed, Estimated progress is 100%, and reprinting the scan becomes available.
+8. **US4-AS8** — **Given** a failed provider outcome, **When** the user manually refreshes the print requests, **Then** the state is failed, no percentage implies progress toward success, and reprinting the scan becomes available.
+9. **US4-AS9** — **Given** already displayed print requests, **When** manual refresh fails, **Then** the rows remain visible with their last known update and a non-blocking warning.
 10. **US4-AS10** — **Given** no eligible scan, **When** the printing region is reviewed, **Then** the unavailable action is explained and scan upload is offered in the same workspace.
 11. **US4-AS11** — **Given** multiple print-request pages, **When** Previous or Next is activated, **Then** the adjacent server page is shown without a fabricated total.
 12. **US4-AS12** — **Given** a print request is accepted from `TAB-PATIENT-SCANS`, **When** submission succeeds, **Then** `TAB-PATIENT-PRINTS` becomes selected and the accepted request is visible in `TBL-PRINTS` without leaving the patient workspace.
 13. **US4-AS13** — **Given** the patient workspace has no previously confirmed print-request collection response, **When** the initial print-request read fails, **Then** no print-request table or row is shown and a localized blocking state offers an explicit retry action without removing patient identity.
-14. **US4-AS14** — **Given** a confirmed print-request page is displayed, **When** an adjacent-page request fails, **Then** the confirmed rows and page indicator remain unchanged, the requested page is not presented as loaded, and an explicit retry action is available.
+14. **US4-AS14** — **Given** a print-request page is displayed, **When** an adjacent-page request fails, **Then** no provisional or previous-page rows are presented as the requested page and a localized blocking state offers an explicit retry action without removing patient identity.
+15. **US4-AS15** — **Given** a print-request row is displayed, **When** the row itself is activated with pointer or keyboard, **Then** its latest loaded lifecycle, scan, timing information, and Estimated progress as localized percentage text without a progress bar open in a read-only desktop dialog or compact bottom drawer without leaving the patient workspace or issuing another request, and no separate action column or consultation icon is displayed.
+16. **US4-AS16** — **Given** persisted print requests exist for the requested page, **When** that page first loads, **Then** its rows, pagination, and non-status information are displayed before provider reconciliation completes, each active request shows a skeleton in its Status and Estimated progress cells during one independent background refresh, completed and failed values remain visible, the manual refresh action does not present itself as manually pending, and the refreshed values replace the active-row skeletons when available without automatic polling.
 
 ### Edge Cases
 
@@ -206,11 +213,13 @@ The tabs do not create destinations, routes, or a sidebar. On compact screens bo
 
 | ID           | Collection             | Required columns or information                                              | Required row actions                    | Pagination                                                   |
 | ------------ | ---------------------- | ---------------------------------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------ |
-| TBL-PATIENTS | Owned patients         | Patient full name, Age, Added                                                | `ACT-PATIENT-OPEN`                      | Previous/Next using zero-based server pages; no total is invented. |
-| TBL-SCANS    | Patient 3D scans       | Safe identifier, Format, Size, Added                                         | `ACT-SCAN-DOWNLOAD`, `ACT-PRINT-CREATE` | Previous/Next using zero-based server pages; no total is invented. |
-| TBL-PRINTS   | Patient print requests | Reference, Associated scan, Status, Estimated progress, temporal information | No mandatory row action                 | Previous/Next using zero-based server pages; no total is invented. |
+| TBL-PATIENTS | Owned patients         | Patient full name, Age, Added                                                | Row: `ACT-PATIENT-OPEN`                                      | Previous/Next using zero-based server pages; no total is invented. |
+| TBL-SCANS    | Patient 3D scans       | Safe identifier, Format, Size, Added                                         | Row: `ACT-SCAN-OPEN`; Actions: `ACT-SCAN-DOWNLOAD`, `ACT-PRINT-CREATE` | Previous/Next using zero-based server pages; no total is invented. |
+| TBL-PRINTS   | Patient print requests | Reference, Associated scan, Status, Estimated progress, temporal information | Row: `ACT-PRINT-OPEN`                                        | Previous/Next using zero-based server pages; no total is invented. |
 
 Desktop and mobile retain a tabular representation. On compact screens, essential information and actions remain available. Figma may choose horizontal scrolling or reduce secondary information, but it may not replace these collections with unrelated card-based navigation or remove their pagination position.
+
+`ACT-PATIENT-OPEN`, `ACT-SCAN-OPEN`, and `ACT-PRINT-OPEN` are exposed by activating the row itself with pointer or keyboard and MUST NOT render a dedicated consultation control. `TBL-SCANS` retains an Actions column only for `ACT-SCAN-DOWNLOAD` and `ACT-PRINT-CREATE`; these nested controls MUST NOT activate the row.
 
 ### Print Lifecycle Derivation
 
@@ -233,10 +242,12 @@ Scheduled start and end information remains visibly estimated. A derived time po
 | ACT-AUTH-SIGN-UP    | Create account                                             | Available in the account-creation mode; pending prevents duplicate submission.                   |
 | ACT-AUTH-SIGN-OUT   | Sign out                                                   | Available from every authenticated destination without competing with the primary task.          |
 | ACT-PATIENT-CREATE  | Create patient                                             | Available from `DST-PATIENTS`.                                                                   |
-| ACT-PATIENT-OPEN    | Open patient                                               | Available for each row in `TBL-PATIENTS`.                                                        |
+| ACT-PATIENT-OPEN    | Open patient                                               | Available by activating each row in `TBL-PATIENTS`; no separate action-column control.           |
 | ACT-SCAN-UPLOAD     | Upload 3D scan                                             | Available in `DST-PATIENT-WORKSPACE`; confirmation is disabled until one valid file is selected. |
+| ACT-SCAN-OPEN       | Consult one 3D scan                                        | Available by activating each visible row in `TBL-SCANS`; no separate consultation control.       |
 | ACT-SCAN-DOWNLOAD   | Download 3D scan                                           | Available for retrievable rows in `TBL-SCANS`.                                                   |
 | ACT-PRINT-CREATE    | Request printing                                           | Available only for a valid scan without a non-terminal request.                                  |
+| ACT-PRINT-OPEN      | Consult one print request                                  | Available by activating each visible row in `TBL-PRINTS`; no separate action-column control.      |
 | ACT-PAGE-PREVIOUS   | Show previous page                                         | Enabled only when the current zero-based page index is greater than zero.                        |
 | ACT-PAGE-NEXT       | Show next page                                             | Enabled only when the current response reports that a following page exists.                     |
 | ACT-RETRY           | Retry a safe read or explicitly restart a failed operation | Never represents a blind retry of an ambiguous print submission.                                 |
@@ -248,9 +259,9 @@ Every identifier below must be traceable in future Figma evidence. Related state
 | Area              | State IDs                                                                                                                                                                            | Observable requirement                                                                                                                |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
 | Authentication    | AUTH-INITIAL, AUTH-PENDING, AUTH-VALIDATION, AUTH-ACCOUNT-EXISTS, AUTH-CREDENTIALS-INVALID, AUTH-RATE-LIMITED, AUTH-NETWORK-UNAVAILABLE, AUTH-RESTORING, AUTH-SESSION-EXPIRED        | Distinguish entry, field correction, safe account-level failures, session restoration, and reauthentication.                          |
-| Patients          | PATIENTS-LOADING, PATIENTS-LOAD-ERROR, PATIENTS-EMPTY, PATIENTS-LIST, PATIENTS-PAGINATING, PATIENTS-PAGE-ERROR, PATIENTS-REFRESH-DEGRADED, PATIENT-CREATE-PENDING, PATIENT-CREATE-SUCCESS, PATIENT-CREATE-ERROR | Distinguish an unconfirmed initial failure from page and refresh failures; creation success transitions to the new workspace. |
+| Patients          | PATIENTS-LOADING, PATIENTS-LOAD-ERROR, PATIENTS-EMPTY, PATIENTS-LIST, PATIENTS-PAGINATING, PATIENTS-PAGE-ERROR, PATIENTS-REFRESH-DEGRADED, PATIENT-CREATE-PENDING, PATIENT-CREATE-SUCCESS, PATIENT-CREATE-ERROR | Use a blocking retry state for initial or adjacent-page failures, preserve TanStack-retained data only for degraded refresh, and transition creation success to the new workspace. |
 | 3D scans          | SCANS-LOADING, SCANS-LOAD-ERROR, SCANS-EMPTY, SCANS-LIST, SCANS-PAGINATING, SCANS-PAGE-ERROR, SCANS-REFRESH-DEGRADED, SCAN-SELECTED, SCAN-UPLOADING, SCAN-CONTENT-INVALID, SCAN-TOO-LARGE, SCAN-UPLOAD-SUCCESS, SCAN-STORAGE-UNAVAILABLE, SCAN-DOWNLOAD-UNAVAILABLE | Preserve patient identity, distinguish collection recovery states, and keep upload or storage feedback in its owning context. |
-| Print requests    | PRINT-LOADING, PRINT-LOAD-ERROR, PRINT-NO-ELIGIBLE-SCAN, PRINT-LIST, PRINT-PAGINATING, PRINT-PAGE-ERROR, PRINT-REFRESH-DEGRADED, PRINT-SUBMITTING, PRINT-CONFIRMATION-PENDING, PRINT-CAPACITY-REACHED, PRINT-QUEUED, PRINT-IN-PROGRESS, PRINT-COMPLETED, PRINT-FAILED | Distinguish collection recovery states while preserving duplicate prevention, provider capacity, lifecycle, and progress safety. |
+| Print requests    | PRINT-LOADING, PRINT-LOAD-ERROR, PRINT-NO-ELIGIBLE-SCAN, PRINT-LIST, PRINT-PAGINATING, PRINT-PAGE-ERROR, PRINT-REFRESH-DEGRADED, PRINT-SELECTED, PRINT-SUBMITTING, PRINT-CONFIRMATION-PENDING, PRINT-CAPACITY-REACHED, PRINT-QUEUED, PRINT-IN-PROGRESS, PRINT-COMPLETED, PRINT-FAILED | Distinguish collection recovery and read-only consultation states while preserving duplicate prevention, provider capacity, lifecycle, and progress safety. |
 | System fallbacks  | SYS-NOT-FOUND, SYS-UNEXPECTED-ERROR                                                                                                                                                   | Provide safe recovery without exposing protected-resource existence or technical failure details.                                     |
 
 ## Requirements _(mandatory)_
@@ -280,7 +291,7 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - **FR-016**: Requests for unknown patients and patients owned by another account MUST be indistinguishable and MUST reveal no patient data.
 - **FR-017**: Patient creation MUST require a non-empty Unicode first name and last name, each limited to 100 characters after surrounding whitespace is removed.
 - **FR-018**: Patient creation MUST require an integer age between 0 and 150, inclusive.
-- **FR-019**: `TBL-PATIENTS` MUST show Patient full name, Age, Added, and `ACT-PATIENT-OPEN` for each visible row.
+- **FR-019**: `TBL-PATIENTS` MUST show Patient full name, Age, and Added; each visible row MUST expose `ACT-PATIENT-OPEN` through pointer and keyboard activation without a dedicated action column.
 - **FR-020**: Patient creation MUST prevent duplicate submission while pending and MUST open the single created patient's workspace after success.
 - **FR-021**: Patient editing and deletion MUST NOT be offered in this MVP.
 
@@ -292,7 +303,7 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - **FR-025**: A scan MUST be a PLY 1.0 file using ASCII, binary little-endian, or binary big-endian encoding.
 - **FR-026**: A scan MUST contain a structurally valid, non-empty mesh; a `.ply` filename alone MUST NOT establish validity.
 - **FR-027**: All three supplied sample scans MUST be accepted by the scan rules.
-- **FR-028**: `TBL-SCANS` MUST show a safe scan identifier, Format, Size, Added, `ACT-SCAN-DOWNLOAD`, and `ACT-PRINT-CREATE` for each visible row.
+- **FR-028**: `TBL-SCANS` MUST show a safe scan identifier, Format, Size, and Added; each visible row MUST expose `ACT-SCAN-OPEN` through pointer and keyboard activation without a dedicated consultation control; its Actions column MUST contain only `ACT-SCAN-DOWNLOAD` and `ACT-PRINT-CREATE`, which MUST NOT activate row consultation; consultation MUST use a read-only desktop dialog or compact bottom drawer with the row metadata already loaded by the collection query and MUST NOT display a scan identifier.
 - **FR-029**: A successful upload MUST add the scan once to `TBL-SCANS`; a failed upload MUST NOT imply that a usable scan exists.
 - **FR-030**: Scan download MUST preserve the current patient workspace and MUST distinguish unavailable storage from a successful download.
 
@@ -308,7 +319,7 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - **FR-038**: A failed request MUST NOT display a percentage that implies continued progress toward success.
 - **FR-039**: A printing-center capacity rejection MUST NOT create an accepted request and MUST explain that submission may be retried later.
 - **FR-040**: An ambiguous submission outcome MUST be reconciled by the stable reference and MUST NOT be blindly submitted again.
-- **FR-041**: `TBL-PRINTS` MUST show Reference, Associated scan, Status, Estimated progress, and available production dates or last-known timing information.
+- **FR-041**: `TBL-PRINTS` MUST show Reference, Associated scan, Status, Estimated progress, and available production dates or last-known timing information; each visible row MUST expose `ACT-PRINT-OPEN` through pointer and keyboard activation without a dedicated action column or consultation control; consultation MUST use a read-only desktop dialog or compact bottom drawer with the row information already loaded by the collection query and MUST render Estimated progress as localized percentage text without a progress bar; the persisted page MUST be available independently from provider reconciliation; one background status refresh MUST run when a page first opens and MUST replace only active-request Status and Estimated progress values with skeletons while pending because completed and failed requests remain terminal and are not reconciled; its manual refresh action MUST remain available whenever the print-request tab is displayed, MUST visually indicate pending state only for a user-triggered refresh, and the client MUST NOT poll automatically.
 - **FR-042**: A print request accepted by the product MUST appear immediately in `TBL-PRINTS`, initially as confirmation pending when provider confirmation is not yet known, and MUST select `TAB-PATIENT-PRINTS` so the accepted request is visible.
 - **FR-043**: Only one confirmation-pending, queued, or in-progress request MAY exist for a scan at one time.
 - **FR-044**: A new print request for the same scan MAY be created after its previous request is completed or failed.
@@ -327,7 +338,7 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - **FR-054**: The product MUST minimize displayed and retained personal data to the defined account and patient fields and MUST make no claim of GDPR, HDS, medical-device, or other formal certification.
 - **FR-055**: Unknown application paths and unavailable deep links MUST display `SYS-NOT-FOUND` with localized, non-disclosing language and one safe return action to `DST-PATIENTS` for an authenticated account or `DST-AUTH` otherwise.
 - **FR-056**: An unrecoverable application failure MUST display `SYS-UNEXPECTED-ERROR` with localized, non-technical language and one safe retry action, without exposing the underlying error or implementation detail.
-- **FR-057**: `TBL-PATIENTS`, `TBL-SCANS`, and `TBL-PRINTS` MUST distinguish three collection-read failures: an initial failure before any confirmed response MUST display no table or rows and MUST offer an explicit safe retry; an adjacent-page failure MUST preserve the last confirmed rows and page indicator, MUST NOT present the requested page as loaded, and MUST offer an explicit safe retry; a background-refresh failure MUST follow FR-050. Only rows and page information confirmed by a successful response MAY remain visible.
+- **FR-057**: `TBL-PATIENTS`, `TBL-SCANS`, and `TBL-PRINTS` MUST use the paginated query state directly: an initial or adjacent-page failure with no data for the requested query MUST display no table or provisional rows and MUST offer an explicit safe retry; a background-refresh failure MAY preserve data already retained by TanStack Query and MUST follow FR-050. For `TBL-PRINTS`, the persisted collection query and provider-status query MUST remain independent so provider latency or failure cannot block the initial collection response. No separate client-side snapshot of prior query data MAY be maintained.
 
 ### Key Entities
 
@@ -355,7 +366,7 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - **SC-005**: Repeated activation and ambiguous provider responses produce at most one non-terminal print request and one stable reference for the intended scan.
 - **SC-006**: Every tracked print request displays exactly one of the five canonical lifecycle states and presents Estimated progress according to the 0%, capped-99%, 100%, or no-percentage invariant.
 - **SC-007**: An accepted print request selects `TAB-PATIENT-PRINTS`, appears in tracking immediately, can be followed to completed or failed, and permits reprinting only after a terminal state.
-- **SC-008**: Every required validation, network, storage, capacity, session, and refresh-degradation state has localized feedback and a safe next action without losing already displayed data.
+- **SC-008**: Every required validation, network, storage, capacity, session, and refresh-degradation state has localized feedback and a safe next action, with already displayed data retained for background-refresh degradation.
 - **SC-009**: All three supplied sample scans are accepted; files over 25 MiB, empty meshes, structurally invalid meshes, and unsupported content are rejected before print eligibility.
 - **SC-010**: One hundred percent of background refresh failures preserve the last displayed table rows and visibly distinguish them from freshly confirmed data.
 - **SC-011**: Ownership and secret-exposure review finds zero cross-account disclosures and zero provider credentials or authentication material in user-visible or committed evidence.
@@ -364,7 +375,7 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - **SC-014**: A reviewer can set up and run the delivered repository, understand its choices and trade-offs, inspect meaningful Git history, and identify the declared AI-assisted workflow from the README and repository evidence.
 - **SC-015**: Every unknown path and unavailable deep link displays the localized `SYS-NOT-FOUND` state, reveals no protected-resource existence, and returns the user to the appropriate safe destination through one keyboard-accessible action.
 - **SC-016**: Every unrecoverable application failure displays the localized `SYS-UNEXPECTED-ERROR` state, exposes no technical error detail, and offers one keyboard-accessible retry action.
-- **SC-017**: One hundred percent of initial and adjacent-page collection-read failures across `TBL-PATIENTS`, `TBL-SCANS`, and `TBL-PRINTS` show localized recovery, invent no row or loaded page, and preserve only the last confirmed data when any exists.
+- **SC-017**: One hundred percent of initial and adjacent-page collection-read failures across `TBL-PATIENTS`, `TBL-SCANS`, and `TBL-PRINTS` show localized recovery and present neither provisional rows nor the failed requested page as loaded; background-refresh failures preserve only data retained by TanStack Query.
 
 ## Delivery Constraints
 
