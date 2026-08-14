@@ -16,6 +16,10 @@ import { useTranslation } from 'react-i18next';
 import { CollectionLoadError } from '@/modules/collections/ui/collection-load-error';
 import { CollectionRecoveryAlert } from '@/modules/collections/ui/collection-recovery-alert';
 import { CollectionTableShell } from '@/modules/collections/ui/collection-table-shell';
+import {
+  formatScanFileSize,
+  formatScanLabel,
+} from '@/modules/scans/lib/scan-formatters';
 import { ScanUploadOverlay } from '@/modules/scans/ui/scan-upload-overlay';
 import {
   downloadPatientScan,
@@ -132,7 +136,7 @@ export function ScansPanel({
   const columns = useMemo(
     () =>
       scanColumnHelper.columns([
-        scanColumnHelper.accessor((scan) => formatScanName(scan.id), {
+        scanColumnHelper.accessor((scan) => formatScanLabel(scan.id), {
           header: t('scans.table.scan'),
           id: 'scan',
         }),
@@ -141,7 +145,7 @@ export function ScansPanel({
           header: t('scans.table.format'),
         }),
         scanColumnHelper.accessor('sizeBytes', {
-          cell: ({ getValue }) => formatFileSize(getValue(), i18n.language),
+          cell: ({ getValue }) => formatScanFileSize(getValue(), i18n.language),
           header: t('scans.table.size'),
         }),
         scanColumnHelper.accessor('createdAt', {
@@ -156,7 +160,7 @@ export function ScansPanel({
                   render={
                     <Button
                       aria-label={t('scans.download.action', {
-                        scan: formatScanName(row.original.id),
+                        scan: formatScanLabel(row.original.id),
                       })}
                       disabled={downloadingId !== null}
                       onClick={(event) => {
@@ -187,10 +191,10 @@ export function ScansPanel({
                       aria-label={
                         row.original.printingAvailable
                           ? t('scans.printing.requestNamed', {
-                              scan: formatScanName(row.original.id),
+                              scan: formatScanLabel(row.original.id),
                             })
                           : t('scans.printing.unavailableNamed', {
-                              scan: formatScanName(row.original.id),
+                              scan: formatScanLabel(row.original.id),
                             })
                       }
                       disabled={!row.original.printingAvailable}
@@ -286,7 +290,7 @@ export function ScansPanel({
               <AlertTitle>{t('scans.download.errorTitle')}</AlertTitle>
               <AlertDescription>
                 {t('scans.download.errorDescription', {
-                  scan: formatScanName(downloadFailure.id),
+                  scan: formatScanLabel(downloadFailure.id),
                 })}
               </AlertDescription>
               <AlertAction>
@@ -343,7 +347,7 @@ export function ScansPanel({
                 {table.getRowModel().rows.map((row) => (
                   <InteractiveTableRow
                     aria-label={t('scans.details.action', {
-                      scan: formatScanName(row.original.id),
+                      scan: formatScanLabel(row.original.id),
                     })}
                     className="h-12"
                     key={row.id}
@@ -406,7 +410,7 @@ function ScanDetailsOverlay({ onOpenChange, scan }: ScanDetailsOverlayProps) {
             {t(`scans.encoding.${scan.encoding}`)}
           </DetailItem>
           <DetailItem label={t('scans.details.fields.size')}>
-            {formatFileSize(scan.sizeBytes, i18n.language)}
+            {formatScanFileSize(scan.sizeBytes, i18n.language)}
           </DetailItem>
           <DetailItem label={t('scans.details.fields.added')}>
             {formatDateTime(scan.createdAt, i18n.language)}
@@ -440,11 +444,6 @@ function ScansTableLoading({ loadingLabel }: { loadingLabel: string }) {
   );
 }
 
-/** Creates a synthetic scan label without relying on an original filename. */
-function formatScanName(scanId: string): string {
-  return `SCN-${scanId.replace(/-/g, '').slice(-6).toUpperCase()}`;
-}
-
 /** Formats an ISO date for the active product language. */
 function formatDate(value: string, language: string): string {
   return new Intl.DateTimeFormat(language, {
@@ -460,14 +459,4 @@ function formatDateTime(value: string, language: string): string {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(value));
-}
-
-/** Formats scan bytes as a compact binary size. */
-function formatFileSize(bytes: number, language: string): string {
-  if (bytes < 1024 * 1024) {
-    const kibibytes = bytes / 1024;
-    return `${new Intl.NumberFormat(language, { maximumFractionDigits: 1 }).format(kibibytes)} KiB`;
-  }
-  const mebibytes = bytes / (1024 * 1024);
-  return `${new Intl.NumberFormat(language, { maximumFractionDigits: 1 }).format(mebibytes)} MiB`;
 }

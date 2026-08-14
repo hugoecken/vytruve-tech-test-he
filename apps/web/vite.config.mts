@@ -5,17 +5,15 @@ import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-export default defineConfig(() => ({
+export default defineConfig({
   root: import.meta.dirname,
   envDir: '../..',
   cacheDir: '../../node_modules/.vite/apps/web',
   server: {
     port: 4200,
-    host: 'localhost',
   },
   preview: {
     port: 4200,
-    host: 'localhost',
   },
   plugins: [
     tanstackRouter({ target: 'react', autoCodeSplitting: true }),
@@ -28,7 +26,6 @@ export default defineConfig(() => ({
   build: {
     outDir: '../../dist/apps/web',
     emptyOutDir: true,
-    reportCompressedSize: true,
     commonjsOptions: {
       transformMixedEsModules: true,
     },
@@ -48,4 +45,4 @@ export default defineConfig(() => ({
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     setupFiles: ['src/test/setup.ts'],
   },
-}));
+});

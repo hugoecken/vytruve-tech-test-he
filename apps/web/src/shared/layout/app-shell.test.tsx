@@ -1,7 +1,7 @@
 import { HttpResponse, http } from 'msw';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { API_URL, accountSession, pageInfo } from '@/test/fixtures';
+import { API_URL, accountSession, pageInfo, problem } from '@/test/fixtures';
 import { renderRoute } from '@/test/render';
 import { server } from '@/test/server';
 
@@ -95,5 +95,28 @@ describe('application shell', () => {
     ).toBeVisible();
     expect(router.state.location.pathname).toBe('/sign-in');
     expect(queryClient.getQueryCache().getAll()).toHaveLength(0);
+  });
+
+  it('keeps logout recoverable when the request fails', async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get(`${API_URL}/patients`, () =>
+        HttpResponse.json({ items: [], pageInfo: pageInfo() }),
+      ),
+      http.delete(`${API_URL}/auth/session`, () =>
+        HttpResponse.json(problem('INTERNAL_ERROR', 500), { status: 500 }),
+      ),
+    );
+    renderRoute('/patients', { session: accountSession });
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Open account menu' }),
+    );
+    await user.click(await screen.findByRole('menuitem', { name: 'Sign out' }));
+
+    expect(
+      await screen.findByText('Sign out could not be completed. Try again.'),
+    ).toBeVisible();
+    expect(screen.getByRole('menuitem', { name: 'Sign out' })).toBeEnabled();
   });
 });

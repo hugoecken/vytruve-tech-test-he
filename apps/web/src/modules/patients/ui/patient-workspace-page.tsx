@@ -206,7 +206,6 @@ export function PatientWorkspacePage({ patientId }: PatientWorkspacePageProps) {
         <TabsContent keepMounted value="scans">
           <ScansPanel
             active={activeTab === 'scans'}
-            key={patientId}
             onRequestPrint={requestPrint}
             patientId={patientId}
           />
