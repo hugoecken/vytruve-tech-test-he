@@ -70,13 +70,7 @@ describe('3D scans', () => {
     expect(screen.getByRole('dialog')).toHaveTextContent(
       'Available for a print request',
     );
-    const closeActions = within(screen.getByRole('dialog')).getAllByRole(
-      'button',
-      { name: 'Close' },
-    );
-    await user.click(
-      closeActions[closeActions.length - 1] as HTMLButtonElement,
-    );
+    await user.keyboard('{Escape}');
 
     await user.click(
       screen.getByRole('button', { name: /Request printing for SCN-/ }),

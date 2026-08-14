@@ -1,5 +1,5 @@
 import { HttpResponse, http } from 'msw';
-import { act, screen, waitFor, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import { PrintRequestOverlay } from '@/modules/printing/ui/print-request-overlay';
@@ -182,7 +182,7 @@ describe('print requests', () => {
     expect(
       await screen.findByRole('button', { name: 'Requesting…' }),
     ).toBeDisabled();
-    await act(() => request.resolve());
+    request.resolve();
     await waitFor(() => expect(onAccepted).toHaveBeenCalledOnce());
     expect(onAccepted).toHaveBeenCalledWith(printRequest);
   });

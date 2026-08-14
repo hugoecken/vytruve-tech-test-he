@@ -44,6 +44,7 @@ afterEach(() => {
   queryClient.clear();
   localStorage.clear();
   sessionStorage.clear();
+  vi.clearAllMocks();
   vi.restoreAllMocks();
   vi.useRealTimers();
 });
