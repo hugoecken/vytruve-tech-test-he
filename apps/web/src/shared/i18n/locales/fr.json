@@ -1,11 +1,15 @@
 {
   "common": {
     "actions": {
-      "retry": "Réessayer"
+      "retry": "Réessayer",
+      "refresh": "Actualiser"
     },
     "languages": {
       "en": "Anglais",
       "fr": "Français"
+    },
+    "status": {
+      "loading": "Chargement"
     }
   },
   "auth": {
@@ -55,6 +59,129 @@
       "passwordInvalid": "Vérifiez votre mot de passe et réessayez.",
       "passwordLength": "Utilisez entre 12 et 128 caractères.",
       "passwordConfirmation": "Saisissez le même mot de passe dans les deux champs."
+    }
+  },
+  "collections": {
+    "load": {
+      "title": "Impossible de charger {{collection}}",
+      "description": "Nous n’avons pas pu charger ces informations. Vérifiez votre connexion et réessayez."
+    },
+    "page": {
+      "title": "Impossible de charger cette page",
+      "description": "La page actuelle reste inchangée. Réessayez."
+    },
+    "refresh": {
+      "title": "Impossible d’actualiser {{collection}}",
+      "description": "Les dernières informations reçues restent affichées. Réessayez pour rechercher des mises à jour."
+    },
+    "pagination": {
+      "previous": "Précédent",
+      "page": "Page {{page}}",
+      "next": "Suivant"
+    }
+  },
+  "patients": {
+    "collection": "les patients",
+    "title": "Patients",
+    "description": "Gérez les dossiers patients et accédez à leurs parcours cliniques.",
+    "add": "Ajouter un patient",
+    "empty": {
+      "title": "Aucun dossier patient",
+      "description": "Ajoutez un dossier patient pour commencer à gérer des scans 3D."
+    },
+    "table": {
+      "caption": "Dossiers patients",
+      "patient": "Patient",
+      "age": "Âge",
+      "created": "Créé le",
+      "action": "Action",
+      "open": "Ouvrir",
+      "openNamed": "Ouvrir le dossier patient de {{name}}"
+    },
+    "create": {
+      "title": "Ajouter un dossier patient",
+      "description": "Ajoutez les informations du patient avant ses scans 3D.",
+      "fields": {
+        "firstName": "Prénom",
+        "firstNamePlaceholder": "Saisissez le prénom",
+        "lastName": "Nom",
+        "lastNamePlaceholder": "Saisissez le nom",
+        "age": "Âge",
+        "agePlaceholder": "Saisissez l’âge"
+      },
+      "validation": {
+        "name": "Saisissez un nom de 1 à 100 caractères.",
+        "age": "Saisissez un âge entier entre 0 et 150."
+      },
+      "cancel": "Annuler",
+      "submit": "Ajouter le patient",
+      "pending": "Ajout du patient…"
+    },
+    "workspace": {
+      "back": "Patients",
+      "identity": "{{age}} ans · Dossier créé le {{date}}",
+      "tabsLabel": "Espace patient",
+      "tabs": {
+        "scans": "Scans 3D",
+        "prints": "Demandes d’impression"
+      },
+      "loadErrorTitle": "Impossible de charger ce dossier patient",
+      "loadErrorDescription": "Nous n’avons pas pu charger ce dossier patient. Vérifiez votre connexion et réessayez.",
+      "refreshErrorTitle": "Impossible d’actualiser le dossier patient",
+      "refreshErrorDescription": "Les dernières informations du patient restent affichées. Réessayez pour rechercher des mises à jour.",
+      "unavailable": {
+        "title": "Dossier patient indisponible",
+        "description": "Ce dossier patient est indisponible. Retournez à la liste des patients pour continuer.",
+        "action": "Retourner aux patients"
+      },
+      "prints": {
+        "title": "Les demandes d’impression arrivent ensuite",
+        "description": "Le parcours de demande d’impression n’est pas encore disponible."
+      }
+    }
+  },
+  "scans": {
+    "collection": "les scans 3D",
+    "title": "Scans 3D",
+    "description": "Consultez les scans PLY validés de ce dossier patient.",
+    "add": "Ajouter un scan",
+    "empty": {
+      "title": "Aucun scan 3D",
+      "description": "Ajoutez un scan PLY à ce dossier patient."
+    },
+    "table": {
+      "caption": "Scans 3D validés de ce patient",
+      "scan": "Scan 3D",
+      "format": "Format",
+      "size": "Taille",
+      "uploaded": "Ajouté le",
+      "actions": "Actions"
+    },
+    "upload": {
+      "title": "Ajouter un scan 3D",
+      "description": "Choisissez un scan PLY à vérifier avant de l’ajouter à ce dossier patient.",
+      "choose": "Choisir un fichier PLY",
+      "fileHint": "Un fichier .ply de 25 Mio maximum.",
+      "fileReady": "PLY · {{size}} · Prêt à être ajouté",
+      "review": "Vérifiez le scan sélectionné avant de l’ajouter à ce dossier patient.",
+      "failed": "Échec de l’ajout. Réessayez.",
+      "remove": "Retirer le scan sélectionné",
+      "cancel": "Annuler",
+      "submit": "Ajouter le scan",
+      "pending": "Ajout du scan…",
+      "validation": {
+        "type": "Choisissez un fichier avec l’extension .ply.",
+        "size": "Choisissez un fichier PLY de 25 Mio maximum."
+      }
+    },
+    "download": {
+      "label": "Télécharger le scan",
+      "action": "Télécharger {{scan}}",
+      "errorTitle": "Impossible de télécharger le scan 3D",
+      "errorDescription": "{{scan}} reste disponible dans la liste. Réessayez le téléchargement."
+    },
+    "printing": {
+      "unavailable": "Les demandes d’impression ne sont pas encore disponibles"
     }
   },
   "shell": {

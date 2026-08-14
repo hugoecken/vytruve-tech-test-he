@@ -57,7 +57,7 @@ export function AppHeader(): React.JSX.Element {
 
   return (
     <header className="border-b bg-background">
-      <div className="mx-auto flex h-20 w-full max-w-[1200px] items-center justify-between px-4 sm:px-6">
+      <div className="mx-auto flex h-20 w-full max-w-[1248px] items-center justify-between px-4 sm:px-6">
         <BrandLockup className="w-42" tone="on-light" />
 
         <DropdownMenu onOpenChange={setOpen} open={open}>

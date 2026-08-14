@@ -1,7 +1,10 @@
 import type { FieldError as ReactHookFormFieldError } from 'react-hook-form';
 import type { TFunction } from 'i18next';
-import type { AuthenticationFormFailure } from '@/modules/auth/forms/authentication-error.mapper';
 import { FieldViolationCode } from '@/shared/api/generated/models/fieldViolationCode';
+import {
+  ApiProblemError,
+  ApiTransportError,
+} from '@/shared/api/http/api-error';
 
 /**
  * Resolves a client validation error without displaying Zod's raw message.
@@ -65,18 +68,18 @@ export function getPasswordFieldMessage(
 /**
  * Resolves a safe form-level API failure to localized copy.
  *
- * @param failure Stable error codes produced by the API boundary.
+ * @param error Safe error produced by the API boundary.
  * @param t Active i18next translator.
  * @returns A localized message that never includes Backend detail text.
  */
 export function getAuthenticationFailureMessage(
-  failure: AuthenticationFormFailure,
+  error: unknown,
   t: TFunction,
 ): string {
-  if (failure.problemCode !== undefined) {
-    return t(`errors.problem.${failure.problemCode}`);
+  if (error instanceof ApiProblemError) {
+    return t(`errors.problem.${error.problem.code}`);
   }
-  if (failure.transportFailure) {
+  if (error instanceof ApiTransportError) {
     return t('errors.network');
   }
   return t('errors.unexpected');

@@ -1,11 +1,15 @@
 {
   "common": {
     "actions": {
-      "retry": "Try again"
+      "retry": "Try again",
+      "refresh": "Refresh"
     },
     "languages": {
       "en": "English",
       "fr": "French"
+    },
+    "status": {
+      "loading": "Loading"
     }
   },
   "auth": {
@@ -55,6 +59,129 @@
       "passwordInvalid": "Check your password and try again.",
       "passwordLength": "Use 12 to 128 characters.",
       "passwordConfirmation": "Enter the same password in both fields."
+    }
+  },
+  "collections": {
+    "load": {
+      "title": "Unable to load {{collection}}",
+      "description": "We couldn’t load this information. Check your connection and try again."
+    },
+    "page": {
+      "title": "This page could not be loaded",
+      "description": "Your current page is unchanged. Try again."
+    },
+    "refresh": {
+      "title": "{{collection}} could not be refreshed",
+      "description": "Showing the last information received. Try again to check for updates."
+    },
+    "pagination": {
+      "previous": "Previous",
+      "page": "Page {{page}}",
+      "next": "Next"
+    }
+  },
+  "patients": {
+    "collection": "Patients",
+    "title": "Patients",
+    "description": "Manage patient records and access their clinical workflows.",
+    "add": "Add patient",
+    "empty": {
+      "title": "No patient records yet",
+      "description": "Add a patient record to start managing 3D scans."
+    },
+    "table": {
+      "caption": "Patient records",
+      "patient": "Patient",
+      "age": "Age",
+      "created": "Created",
+      "action": "Action",
+      "open": "Open",
+      "openNamed": "Open {{name}}’s patient record"
+    },
+    "create": {
+      "title": "Add a patient record",
+      "description": "Add the patient’s details before adding 3D scans.",
+      "fields": {
+        "firstName": "First name",
+        "firstNamePlaceholder": "Enter the first name",
+        "lastName": "Last name",
+        "lastNamePlaceholder": "Enter the last name",
+        "age": "Age",
+        "agePlaceholder": "Enter the age"
+      },
+      "validation": {
+        "name": "Enter a name between 1 and 100 characters.",
+        "age": "Enter a whole age between 0 and 150."
+      },
+      "cancel": "Cancel",
+      "submit": "Add patient",
+      "pending": "Adding patient…"
+    },
+    "workspace": {
+      "back": "Patients",
+      "identity": "{{age}} years · Record created {{date}}",
+      "tabsLabel": "Patient workspace",
+      "tabs": {
+        "scans": "3D scans",
+        "prints": "Print requests"
+      },
+      "loadErrorTitle": "Unable to load this patient record",
+      "loadErrorDescription": "We couldn’t load this patient record. Check your connection and try again.",
+      "refreshErrorTitle": "Patient record could not be refreshed",
+      "refreshErrorDescription": "Showing the last patient information received. Try again to check for updates.",
+      "unavailable": {
+        "title": "Patient record unavailable",
+        "description": "This patient record is unavailable. Return to the patient list to continue.",
+        "action": "Return to patients"
+      },
+      "prints": {
+        "title": "Print requests are coming next",
+        "description": "The print request workflow is not available yet."
+      }
+    }
+  },
+  "scans": {
+    "collection": "3D scans",
+    "title": "3D scans",
+    "description": "Review validated PLY scans for this patient record.",
+    "add": "Add scan",
+    "empty": {
+      "title": "No 3D scans yet",
+      "description": "Add a PLY scan to this patient record."
+    },
+    "table": {
+      "caption": "Validated 3D scans for this patient",
+      "scan": "3D scan",
+      "format": "Format",
+      "size": "Size",
+      "uploaded": "Uploaded",
+      "actions": "Actions"
+    },
+    "upload": {
+      "title": "Add a 3D scan",
+      "description": "Choose one PLY scan to check before adding it to this patient record.",
+      "choose": "Choose a PLY file",
+      "fileHint": "One .ply file, up to 25 MiB.",
+      "fileReady": "PLY · {{size}} · Ready to add",
+      "review": "Review the selected scan before uploading it to this patient record.",
+      "failed": "Upload failed. Try again.",
+      "remove": "Remove selected scan",
+      "cancel": "Cancel",
+      "submit": "Add scan",
+      "pending": "Adding scan…",
+      "validation": {
+        "type": "Choose a file with the .ply extension.",
+        "size": "Choose a PLY file no larger than 25 MiB."
+      }
+    },
+    "download": {
+      "label": "Download scan",
+      "action": "Download {{scan}}",
+      "errorTitle": "3D scan could not be downloaded",
+      "errorDescription": "{{scan}} remains available in the list. Try the download again."
+    },
+    "printing": {
+      "unavailable": "Print requests are not available yet"
     }
   },
   "shell": {

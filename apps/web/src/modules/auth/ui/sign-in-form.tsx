@@ -10,12 +10,12 @@ import {
   getPasswordFieldMessage,
 } from '@/modules/auth/ui/authentication-form.helpers';
 import { cacheAccountSession } from '@/modules/auth/api/session-cache';
-import { toAuthenticationFormFailure } from '@/modules/auth/forms/authentication-error.mapper';
 import {
   SignInFormSchema,
   type SignInFormValues,
 } from '@/modules/auth/forms/authentication.schemas';
 import { useCreateSession } from '@/shared/api/generated/client/authentication/authentication';
+import { ApiProblemError } from '@/shared/api/http/api-error';
 import { Alert, AlertDescription } from '@/shared/ui/alert';
 import { Button } from '@/shared/ui/button';
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/shared/ui/field';
@@ -53,19 +53,23 @@ export function SignInForm({ redirect }: SignInFormProps): React.JSX.Element {
         cacheAccountSession(queryClient, response.data);
         await navigate({ href: redirect, replace: true });
       } catch (error) {
-        const failure = toAuthenticationFormFailure(error);
         let shouldFocus = true;
-        for (const { code, field } of failure.fieldViolations) {
-          form.setError(
-            field,
-            { message: code, type: 'server' },
-            { shouldFocus },
-          );
-          shouldFocus = false;
+        if (error instanceof ApiProblemError) {
+          for (const violation of error.problem.violations ?? []) {
+            if (violation.field !== 'email' && violation.field !== 'password') {
+              continue;
+            }
+            form.setError(
+              violation.field,
+              { message: violation.code, type: 'server' },
+              { shouldFocus },
+            );
+            shouldFocus = false;
+          }
         }
         if (shouldFocus) {
           form.setError('root', {
-            message: getAuthenticationFailureMessage(failure, t),
+            message: getAuthenticationFailureMessage(error, t),
             type: 'server',
           });
         }
