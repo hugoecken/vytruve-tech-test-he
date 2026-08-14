@@ -4,12 +4,9 @@ import {
   CreateDateColumn,
   Entity,
   Index,
-  JoinColumn,
-  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { PatientEntity } from '@api/app/patients/infrastructure/persistence/patient.entity';
 import { PrintRequestEntity } from '@api/app/printing/infrastructure/persistence/print-request.entity';
 import type { ScanEncoding } from '../../application/models/scan.model';
 
@@ -28,10 +25,6 @@ export class ScanEntity {
 
   @Column({ name: 'patient_id', type: 'uuid' })
   patientId!: string;
-
-  @ManyToOne(() => PatientEntity, { nullable: false, onDelete: 'RESTRICT' })
-  @JoinColumn({ name: 'patient_id' })
-  patient!: PatientEntity;
 
   @OneToMany(() => PrintRequestEntity, (printRequest) => printRequest.scan)
   printRequests!: PrintRequestEntity[];

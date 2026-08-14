@@ -1,6 +1,5 @@
 /** Account identity and password material available only inside the API. */
 export interface AccountModel {
-  createdAt: Date;
   email: string;
   id: string;
   passwordHash: string;
