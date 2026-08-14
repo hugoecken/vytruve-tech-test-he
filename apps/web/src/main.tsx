@@ -8,7 +8,12 @@ import './styles.css';
 async function bootstrap(): Promise<void> {
   await initializeI18n();
 
-  const root = createRoot(document.getElementById('root') as HTMLElement);
+  const rootElement = document.getElementById('root');
+  if (rootElement === null) {
+    throw new Error('Application root element was not found.');
+  }
+
+  const root = createRoot(rootElement);
   root.render(
     <StrictMode>
       <App />

@@ -13,6 +13,7 @@ import {
   isActivePrintRequestStatus,
   PRINT_REQUEST_PAGE_SIZE,
 } from '@/modules/printing/config/printing';
+import { formatScanLabel } from '@/modules/scans/lib/scan-formatters';
 import {
   useListPatientPrintRequests,
   useRefreshPatientPrintRequests,
@@ -20,6 +21,7 @@ import {
 import type { PrintRequestResponse } from '@/shared/api/generated/models/printRequestResponse';
 import type { PrintRequestStatus } from '@/shared/api/generated/models/printRequestStatus';
 import { ApiProblemError } from '@/shared/api/http/api-error';
+import { cn } from '@/shared/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
@@ -156,7 +158,7 @@ export function PrintRequestsPanel({
           header: t('printing.table.reference'),
         }),
         printColumnHelper.accessor(
-          (request) => formatScanName(request.scanId),
+          (request) => formatScanLabel(request.scanId),
           {
             header: t('printing.table.scan'),
             id: 'scan',
@@ -203,11 +205,42 @@ export function PrintRequestsPanel({
     data: items,
   });
   const tableContent = (
-    <PrintRequestsTable
-      caption={t('printing.table.caption')}
-      onRequestOpen={setSelectedRequestId}
-      table={table}
-    />
+    <Table>
+      <TableCaption className="sr-only">
+        {t('printing.table.caption')}
+      </TableCaption>
+      <TableHeader className="bg-muted/70">
+        {table.getHeaderGroups().map((headerGroup) => (
+          <TableRow className="h-10" key={headerGroup.id}>
+            {headerGroup.headers.map((header) => (
+              <TableHead key={header.id}>
+                {header.isPlaceholder ? null : (
+                  <table.FlexRender header={header} />
+                )}
+              </TableHead>
+            ))}
+          </TableRow>
+        ))}
+      </TableHeader>
+      <TableBody>
+        {table.getRowModel().rows.map((row) => (
+          <InteractiveTableRow
+            aria-label={t('printing.details.action', {
+              reference: row.original.reference,
+            })}
+            className="h-12"
+            key={row.id}
+            onActivate={() => setSelectedRequestId(row.original.id)}
+          >
+            {row.getAllCells().map((cell) => (
+              <TableCell key={cell.id}>
+                <table.FlexRender cell={cell} />
+              </TableCell>
+            ))}
+          </InteractiveTableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 
   return (
@@ -226,7 +259,7 @@ export function PrintRequestsPanel({
         >
           <RefreshCwIcon
             aria-hidden="true"
-            className={manualRefreshPending ? 'animate-spin' : undefined}
+            className={cn(manualRefreshPending && 'animate-spin')}
             data-icon="inline-start"
           />
           {t('printing.refresh.action')}
@@ -381,7 +414,7 @@ function PrintRequestDetailsOverlay({
             <span className="font-mono text-xs">{request.reference}</span>
           </DetailItem>
           <DetailItem label={t('printing.details.fields.scan')}>
-            {formatScanName(request.scanId)}
+            {formatScanLabel(request.scanId)}
           </DetailItem>
           <DetailItem label={t('printing.details.fields.status')}>
             <PrintStatusBadge status={request.status} />
@@ -441,61 +474,6 @@ function usePrintRequestAccessRecovery(
       onPatientUnavailable();
     }
   }, [error, onAuthenticationRequired, onPatientUnavailable]);
-}
-
-/** Props for the feature-owned TanStack print-request table. */
-interface PrintRequestsTableProps {
-  caption: string;
-  onRequestOpen: (requestId: string) => void;
-  table: ReturnType<
-    typeof useTable<typeof printTableFeatures, PrintRequestResponse>
-  >;
-}
-
-/** Renders print-request rows with horizontally scrollable responsive columns. */
-function PrintRequestsTable({
-  caption,
-  onRequestOpen,
-  table,
-}: PrintRequestsTableProps) {
-  const { t } = useTranslation();
-
-  return (
-    <Table>
-      <TableCaption className="sr-only">{caption}</TableCaption>
-      <TableHeader className="bg-muted/70">
-        {table.getHeaderGroups().map((headerGroup) => (
-          <TableRow className="h-10" key={headerGroup.id}>
-            {headerGroup.headers.map((header) => (
-              <TableHead key={header.id}>
-                {header.isPlaceholder ? null : (
-                  <table.FlexRender header={header} />
-                )}
-              </TableHead>
-            ))}
-          </TableRow>
-        ))}
-      </TableHeader>
-      <TableBody>
-        {table.getRowModel().rows.map((row) => (
-          <InteractiveTableRow
-            aria-label={t('printing.details.action', {
-              reference: row.original.reference,
-            })}
-            className="h-12"
-            key={row.id}
-            onActivate={() => onRequestOpen(row.original.id)}
-          >
-            {row.getAllCells().map((cell) => (
-              <TableCell key={cell.id}>
-                <table.FlexRender cell={cell} />
-              </TableCell>
-            ))}
-          </InteractiveTableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
 }
 
 /** Renders the canonical status with text and a visible shape marker. */
@@ -648,11 +626,6 @@ function formatOptionalDateTime(
   return value === null
     ? t('printing.details.unavailable')
     : formatDateTime(value, language);
-}
-
-/** Creates a safe scan label without exposing the uploaded filename. */
-function formatScanName(scanId: string): string {
-  return `SCN-${scanId.replace(/-/g, '').slice(-6).toUpperCase()}`;
 }
 
 /** Renders initial print-request loading without provisional rows. */

@@ -34,13 +34,11 @@ export function AppHeader() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [signOutFailed, setSignOutFailed] = useState(false);
   const mutation = useDeleteSession();
   const language = i18n.resolvedLanguage === 'fr' ? 'fr' : 'en';
 
   /** Ends the cookie session while keeping a recoverable menu failure visible. */
   const signOut = async (): Promise<void> => {
-    setSignOutFailed(false);
     try {
       await mutation.mutateAsync();
       clearAccountState(queryClient);
@@ -51,7 +49,7 @@ export function AppHeader() {
         to: '/sign-in',
       });
     } catch {
-      setSignOutFailed(true);
+      // The generated mutation retains the safe error for contextual rendering.
     }
   };
 
@@ -122,7 +120,7 @@ export function AppHeader() {
                 {t('shell.profile.signOut')}
               </DropdownMenuItem>
             </DropdownMenuGroup>
-            {signOutFailed && (
+            {mutation.isError && (
               <p
                 aria-live="polite"
                 className="px-1.5 py-1 text-xs text-destructive"

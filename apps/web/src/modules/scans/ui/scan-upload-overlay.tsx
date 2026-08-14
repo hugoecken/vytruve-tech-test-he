@@ -8,6 +8,7 @@ import {
   XIcon,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { formatScanFileSize } from '@/modules/scans/lib/scan-formatters';
 import {
   getListPatientScansQueryKey,
   useCreatePatientScan,
@@ -132,7 +133,7 @@ export function ScanUploadOverlay({ patientId }: ScanUploadOverlayProps) {
     attachmentDescription = t('scans.upload.failed');
   } else if (file !== null) {
     attachmentDescription = t('scans.upload.fileReady', {
-      size: formatFileSize(file.size, i18n.language),
+      size: formatScanFileSize(file.size, i18n.language),
     });
   }
   const content = (
@@ -301,14 +302,4 @@ function getScanUploadError(
   return error instanceof ApiTransportError
     ? t('errors.network')
     : t('errors.unexpected');
-}
-
-/** Formats scan bytes without retaining or exposing file content. */
-function formatFileSize(bytes: number, language: string): string {
-  if (bytes < 1024 * 1024) {
-    const kibibytes = bytes / 1024;
-    return `${new Intl.NumberFormat(language, { maximumFractionDigits: 1 }).format(kibibytes)} KiB`;
-  }
-  const mebibytes = bytes / (1024 * 1024);
-  return `${new Intl.NumberFormat(language, { maximumFractionDigits: 1 }).format(mebibytes)} MiB`;
 }

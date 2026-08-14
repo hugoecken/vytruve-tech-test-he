@@ -5,6 +5,7 @@ import {
   isActivePrintRequestStatus,
   PRINT_REQUEST_PAGE_SIZE,
 } from '@/modules/printing/config/printing';
+import { formatScanLabel } from '@/modules/scans/lib/scan-formatters';
 import {
   getListPatientPrintRequestsQueryKey,
   getRefreshPatientPrintRequestsQueryKey,
@@ -211,7 +212,7 @@ export function PrintRequestOverlay({
       {scan !== null && (
         <Alert>
           <PrinterIcon aria-hidden="true" />
-          <AlertTitle>{formatScanName(scan.id)}</AlertTitle>
+          <AlertTitle>{formatScanLabel(scan.id)}</AlertTitle>
           <AlertDescription>
             {t('printing.create.referenceGenerated')}
           </AlertDescription>
@@ -325,9 +326,4 @@ function getPrintRequestError(
     };
   }
   return null;
-}
-
-/** Creates a safe scan label without exposing the uploaded filename. */
-function formatScanName(scanId: string): string {
-  return `SCN-${scanId.replace(/-/g, '').slice(-6).toUpperCase()}`;
 }

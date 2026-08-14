@@ -1,4 +1,5 @@
 import { CircleAlertIcon, RefreshCwIcon } from 'lucide-react';
+import { cn } from '@/shared/lib/utils';
 import {
   Alert,
   AlertAction,
@@ -51,7 +52,7 @@ export function CollectionRecoveryAlert({
           >
             <RefreshCwIcon
               aria-hidden="true"
-              className={pending ? 'animate-spin' : undefined}
+              className={cn(pending && 'animate-spin')}
             />
           </TooltipTrigger>
           <TooltipContent>{retryLabel}</TooltipContent>
