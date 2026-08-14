@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { keepPreviousData } from '@tanstack/react-query';
 import {
   createColumnHelper,
@@ -22,7 +22,6 @@ import {
   useListPatientScans,
 } from '@/shared/api/generated/client/scans/scans';
 import type { ScanResponse } from '@/shared/api/generated/models/scanResponse';
-import type { ScanPageResponse } from '@/shared/api/generated/models/scanPageResponse';
 import {
   Alert,
   AlertAction,
@@ -39,12 +38,18 @@ import {
 } from '@/shared/ui/empty';
 import { Skeleton } from '@/shared/ui/skeleton';
 import {
+  DetailItem,
+  DetailList,
+  ResponsiveDetailsOverlay,
+} from '@/shared/ui/responsive-details-overlay';
+import {
   Table,
   TableBody,
   TableCaption,
   TableCell,
   TableHead,
   TableHeader,
+  InteractiveTableRow,
   TableRow,
 } from '@/shared/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip';
@@ -59,6 +64,7 @@ const scanColumnHelper = createColumnHelper<
 
 /** Props for the patient scan collection. */
 interface ScansPanelProps {
+  active: boolean;
   onRequestPrint: (scan: ScanResponse) => void;
   patientId: string;
 }
@@ -70,42 +76,31 @@ interface ScansPanelProps {
  * @returns The responsive 3D scan collection and workflows.
  */
 export function ScansPanel({
+  active,
   onRequestPrint,
   patientId,
-}: ScansPanelProps): React.JSX.Element {
+}: ScansPanelProps) {
   const { i18n, t } = useTranslation();
-  const [requestedPage, setRequestedPage] = React.useState(0);
-  const confirmedData = React.useRef<ScanPageResponse | undefined>(undefined);
-  const [downloadingId, setDownloadingId] = React.useState<string | null>(null);
-  const [downloadFailure, setDownloadFailure] =
-    React.useState<ScanResponse | null>(null);
+  const [requestedPage, setRequestedPage] = useState(0);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [downloadFailure, setDownloadFailure] = useState<ScanResponse | null>(
+    null,
+  );
+  const [selectedScanId, setSelectedScanId] = useState<string | null>(null);
   const query = useListPatientScans(
     patientId,
     { page: requestedPage, pageSize: SCAN_PAGE_SIZE },
     {
       query: {
+        enabled: active,
         placeholderData: keepPreviousData,
         select: (response) => response.data,
       },
     },
   );
-  React.useEffect(() => {
-    if (
-      query.data !== undefined &&
-      !query.isPlaceholderData &&
-      !query.isError
-    ) {
-      confirmedData.current = query.data;
-    }
-  }, [query.data, query.isError, query.isPlaceholderData]);
-  const data = query.data ?? confirmedData.current;
-  const confirmedPage = data?.pageInfo.page ?? 0;
-  const pageFailed =
-    query.isError && data !== undefined && requestedPage !== confirmedPage;
-  const refreshFailed =
-    query.isError && data !== undefined && requestedPage === confirmedPage;
+  const data = query.data;
 
-  const download = React.useCallback(
+  const download = useCallback(
     async (scan: ScanResponse) => {
       if (downloadingId !== null) {
         return;
@@ -134,7 +129,7 @@ export function ScansPanel({
     [downloadingId, patientId],
   );
 
-  const columns = React.useMemo(
+  const columns = useMemo(
     () =>
       scanColumnHelper.columns([
         scanColumnHelper.accessor((scan) => formatScanName(scan.id), {
@@ -163,10 +158,12 @@ export function ScansPanel({
                       aria-label={t('scans.download.action', {
                         scan: formatScanName(row.original.id),
                       })}
-                      className="size-8"
                       disabled={downloadingId !== null}
-                      onClick={() => void download(row.original)}
-                      size="icon-sm"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        void download(row.original);
+                      }}
+                      size="icon"
                       type="button"
                       variant="ghost"
                     />
@@ -196,10 +193,12 @@ export function ScansPanel({
                               scan: formatScanName(row.original.id),
                             })
                       }
-                      className="size-8"
                       disabled={!row.original.printingAvailable}
-                      onClick={() => onRequestPrint(row.original)}
-                      size="icon-sm"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onRequestPrint(row.original);
+                      }}
+                      size="icon"
                       type="button"
                       variant="ghost"
                     />
@@ -221,17 +220,16 @@ export function ScansPanel({
       ]),
     [download, downloadingId, i18n.language, onRequestPrint, t],
   );
+  const scans = data?.items ?? EMPTY_SCANS;
+  const selectedScan = scans.find((scan) => scan.id === selectedScanId) ?? null;
   const table = useTable({
     features: scanTableFeatures,
     columns,
-    data: data?.items ?? EMPTY_SCANS,
+    data: scans,
   });
 
   return (
-    <section
-      aria-label={t('scans.title')}
-      className="flex flex-col gap-6"
-    >
+    <section aria-label={t('scans.title')} className="flex flex-col gap-6">
       <div className="relative flex flex-col gap-2">
         <p className="text-sm leading-[25px] text-muted-foreground sm:max-w-[47.5rem]">
           {t('scans.description')}
@@ -257,7 +255,7 @@ export function ScansPanel({
         />
       )}
 
-      {data !== undefined && data.items.length === 0 && (
+      {data?.items.length === 0 && (
         <Empty className="min-h-64 rounded-xl border bg-card">
           <EmptyHeader>
             <EmptyMedia variant="icon">
@@ -271,16 +269,7 @@ export function ScansPanel({
 
       {data !== undefined && data.items.length > 0 && (
         <div className="flex flex-col gap-3">
-          {pageFailed && (
-            <CollectionRecoveryAlert
-              description={t('collections.page.description')}
-              onRetry={() => void query.refetch()}
-              pending={query.isFetching}
-              retryLabel={t('common.actions.refresh')}
-              title={t('collections.page.title')}
-            />
-          )}
-          {refreshFailed && (
+          {query.isError && (
             <CollectionRecoveryAlert
               description={t('collections.refresh.description')}
               onRetry={() => void query.refetch()}
@@ -306,7 +295,6 @@ export function ScansPanel({
                     render={
                       <Button
                         aria-label={t('common.actions.retry')}
-                        className="size-11 sm:size-9"
                         disabled={downloadingId !== null}
                         onClick={() => void download(downloadFailure)}
                         size="icon-lg"
@@ -325,16 +313,16 @@ export function ScansPanel({
           <CollectionTableShell
             hasNext={data.pageInfo.hasNext}
             nextLabel={t('collections.pagination.next')}
-            onNext={() => setRequestedPage(confirmedPage + 1)}
-            onPrevious={() => setRequestedPage(confirmedPage - 1)}
-            page={confirmedPage}
+            onNext={() => setRequestedPage(data.pageInfo.page + 1)}
+            onPrevious={() => setRequestedPage(data.pageInfo.page - 1)}
+            page={data.pageInfo.page}
             pageLabel={t('collections.pagination.page', {
-              page: confirmedPage + 1,
+              page: data.pageInfo.page + 1,
             })}
-            pending={query.isFetching || pageFailed}
+            pending={query.isFetching}
             previousLabel={t('collections.pagination.previous')}
           >
-            <Table className="table-fixed">
+            <Table>
               <TableCaption className="sr-only">
                 {t('scans.table.caption')}
               </TableCaption>
@@ -342,10 +330,7 @@ export function ScansPanel({
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow className="h-10" key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
-                      <TableHead
-                        className={getResponsiveColumnClass(header.column.id)}
-                        key={header.id}
-                      >
+                      <TableHead key={header.id}>
                         {header.isPlaceholder ? null : (
                           <table.FlexRender header={header} />
                         )}
@@ -356,32 +341,89 @@ export function ScansPanel({
               </TableHeader>
               <TableBody>
                 {table.getRowModel().rows.map((row) => (
-                  <TableRow className="h-12" key={row.id}>
+                  <InteractiveTableRow
+                    aria-label={t('scans.details.action', {
+                      scan: formatScanName(row.original.id),
+                    })}
+                    className="h-12"
+                    key={row.id}
+                    onActivate={() => setSelectedScanId(row.original.id)}
+                  >
                     {row.getAllCells().map((cell) => (
-                      <TableCell
-                        className={getResponsiveColumnClass(cell.column.id)}
-                        key={cell.id}
-                      >
+                      <TableCell key={cell.id}>
                         <table.FlexRender cell={cell} />
                       </TableCell>
                     ))}
-                  </TableRow>
+                  </InteractiveTableRow>
                 ))}
               </TableBody>
             </Table>
           </CollectionTableShell>
         </div>
       )}
+
+      <ScanDetailsOverlay
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedScanId(null);
+          }
+        }}
+        scan={selectedScan}
+      />
     </section>
   );
 }
 
+/** Props for the read-only scan consultation overlay. */
+interface ScanDetailsOverlayProps {
+  onOpenChange: (open: boolean) => void;
+  scan: ScanResponse | null;
+}
+
+/**
+ * Presents all safe scan metadata already available in the collection response.
+ *
+ * @param props Selected scan and controlled close action.
+ * @returns A responsive read-only scan consultation overlay.
+ */
+function ScanDetailsOverlay({ onOpenChange, scan }: ScanDetailsOverlayProps) {
+  const { i18n, t } = useTranslation();
+
+  return (
+    <ResponsiveDetailsOverlay
+      closeLabel={t('common.actions.close')}
+      description={t('scans.details.description')}
+      onOpenChange={onOpenChange}
+      open={scan !== null}
+      title={t('scans.details.title')}
+    >
+      {scan !== null && (
+        <DetailList>
+          <DetailItem label={t('scans.details.fields.format')}>
+            {scan.format.toUpperCase()}
+          </DetailItem>
+          <DetailItem label={t('scans.details.fields.encoding')}>
+            {t(`scans.encoding.${scan.encoding}`)}
+          </DetailItem>
+          <DetailItem label={t('scans.details.fields.size')}>
+            {formatFileSize(scan.sizeBytes, i18n.language)}
+          </DetailItem>
+          <DetailItem label={t('scans.details.fields.added')}>
+            {formatDateTime(scan.createdAt, i18n.language)}
+          </DetailItem>
+          <DetailItem label={t('scans.details.fields.printing')}>
+            {scan.printingAvailable
+              ? t('scans.details.printing.available')
+              : t('scans.details.printing.unavailable')}
+          </DetailItem>
+        </DetailList>
+      )}
+    </ResponsiveDetailsOverlay>
+  );
+}
+
 /** Renders initial scan loading without inventing collection rows. */
-function ScansTableLoading({
-  loadingLabel,
-}: {
-  loadingLabel: string;
-}): React.JSX.Element {
+function ScansTableLoading({ loadingLabel }: { loadingLabel: string }) {
   return (
     <div
       aria-label={loadingLabel}
@@ -412,6 +454,14 @@ function formatDate(value: string, language: string): string {
   }).format(new Date(value));
 }
 
+/** Formats an exact scan creation instant for consultation details. */
+function formatDateTime(value: string, language: string): string {
+  return new Intl.DateTimeFormat(language, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(value));
+}
+
 /** Formats scan bytes as a compact binary size. */
 function formatFileSize(bytes: number, language: string): string {
   if (bytes < 1024 * 1024) {
@@ -420,24 +470,4 @@ function formatFileSize(bytes: number, language: string): string {
   }
   const mebibytes = bytes / (1024 * 1024);
   return `${new Intl.NumberFormat(language, { maximumFractionDigits: 1 }).format(mebibytes)} MiB`;
-}
-
-/** Hides lower-priority scan metadata in compact table layouts. */
-function getResponsiveColumnClass(columnId: string): string | undefined {
-  if (columnId === 'scan') {
-    return 'w-[44%] md:w-[31.667%]';
-  }
-  if (columnId === 'format') {
-    return 'w-[24%] md:w-[11.667%]';
-  }
-  if (columnId === 'sizeBytes') {
-    return 'hidden md:table-cell md:w-[13.333%]';
-  }
-  if (columnId === 'createdAt') {
-    return 'hidden md:table-cell md:w-1/5';
-  }
-  if (columnId === 'actions') {
-    return 'w-[32%] md:w-[23.333%]';
-  }
-  return undefined;
 }

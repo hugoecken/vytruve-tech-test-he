@@ -15,10 +15,7 @@ interface BrandLockupProps {
  * @param props Brand tone and optional layout class.
  * @returns The official local brand asset for the selected background.
  */
-export function BrandLockup({
-  className,
-  tone,
-}: BrandLockupProps): React.JSX.Element {
+export function BrandLockup({ className, tone }: BrandLockupProps) {
   return (
     <img
       alt="Vytruve"

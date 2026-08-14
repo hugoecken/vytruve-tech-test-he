@@ -8,7 +8,7 @@ import {
 import { Button } from '@/shared/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip';
 
-/** Props for a collection failure that preserves confirmed rows. */
+/** Props for a failed refresh that preserves TanStack-retained rows. */
 interface CollectionRecoveryAlertProps {
   description: string;
   onRetry: () => void;
@@ -18,7 +18,7 @@ interface CollectionRecoveryAlertProps {
 }
 
 /**
- * Reports a pagination or refresh failure without removing confirmed rows.
+ * Reports a background refresh failure without removing retained rows.
  *
  * @param props Localized failure content and retry action.
  * @returns A destructive alert with an integrated icon-only refresh button.
@@ -29,7 +29,7 @@ export function CollectionRecoveryAlert({
   pending = false,
   retryLabel,
   title,
-}: CollectionRecoveryAlertProps): React.JSX.Element {
+}: CollectionRecoveryAlertProps) {
   return (
     <Alert className="min-h-14 pr-16 sm:pr-18" variant="destructive">
       <CircleAlertIcon aria-hidden="true" />
@@ -41,7 +41,6 @@ export function CollectionRecoveryAlert({
             render={
               <Button
                 aria-label={retryLabel}
-                className="size-11 sm:size-9"
                 disabled={pending}
                 onClick={onRetry}
                 size="icon-lg"

@@ -22,7 +22,7 @@ export const Route = createFileRoute('/_authenticated')({
  *
  * @returns The authenticated shell and active child route.
  */
-function AuthenticatedLayoutComponent(): React.JSX.Element {
+function AuthenticatedLayoutComponent() {
   return (
     <AppShell>
       <Outlet />

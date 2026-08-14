@@ -39,7 +39,7 @@ interface SignUpFormProps {
  * @param props Safe destination restored after successful registration.
  * @returns The localized account-creation form.
  */
-export function SignUpForm({ redirect }: SignUpFormProps): React.JSX.Element {
+export function SignUpForm({ redirect }: SignUpFormProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

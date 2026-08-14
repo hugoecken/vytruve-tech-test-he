@@ -1,6 +1,7 @@
 {
   "common": {
     "actions": {
+      "close": "Fermer",
       "retry": "Réessayer",
       "refresh": "Actualiser"
     },
@@ -66,10 +67,6 @@
       "title": "Impossible de charger {{collection}}",
       "description": "Nous n’avons pas pu charger ces informations. Vérifiez votre connexion et réessayez."
     },
-    "page": {
-      "title": "Impossible de charger cette page",
-      "description": "La page actuelle reste inchangée. Réessayez."
-    },
     "refresh": {
       "title": "Impossible d’actualiser {{collection}}",
       "description": "Les dernières informations reçues restent affichées. Réessayez pour rechercher des mises à jour."
@@ -94,8 +91,6 @@
       "patient": "Patient",
       "age": "Âge",
       "created": "Créé le",
-      "action": "Action",
-      "open": "Ouvrir",
       "openNamed": "Ouvrir le dossier patient de {{name}}"
     },
     "create": {
@@ -118,7 +113,7 @@
       "pending": "Ajout du patient…"
     },
     "workspace": {
-      "back": "Patients",
+      "back": "Retour aux patients",
       "identity": "{{age}} ans · Dossier créé le {{date}}",
       "tabsLabel": "Espace patient",
       "tabs": {
@@ -152,6 +147,27 @@
       "size": "Taille",
       "uploaded": "Ajouté le",
       "actions": "Actions"
+    },
+    "details": {
+      "action": "Consulter {{scan}}",
+      "title": "Détails du scan 3D",
+      "description": "Consultez les métadonnées validées de ce scan 3D.",
+      "fields": {
+        "format": "Format",
+        "encoding": "Encodage",
+        "size": "Taille",
+        "added": "Ajouté le",
+        "printing": "Impression"
+      },
+      "printing": {
+        "available": "Disponible pour une demande d’impression",
+        "unavailable": "Une demande d’impression est déjà active"
+      }
+    },
+    "encoding": {
+      "ascii": "ASCII",
+      "binary_big_endian": "Binaire, gros-boutiste",
+      "binary_little_endian": "Binaire, petit-boutiste"
     },
     "upload": {
       "title": "Ajouter un scan 3D",
@@ -194,6 +210,23 @@
       "status": "Statut",
       "progress": "Progression estimée",
       "timing": "Calendrier de production"
+    },
+    "details": {
+      "action": "Consulter la demande {{reference}}",
+      "title": "Détails de la demande d’impression",
+      "titleNamed": "Demande {{reference}}",
+      "description": "Consultez le dernier état connu et le calendrier de production de cette demande.",
+      "unavailable": "Non disponible",
+      "fields": {
+        "reference": "Référence",
+        "scan": "Scan 3D",
+        "status": "Statut",
+        "progress": "Progression estimée",
+        "requested": "Demandée le",
+        "start": "Début estimé",
+        "end": "Fin estimée",
+        "updated": "Dernière actualisation"
+      }
     },
     "empty": {
       "title": "Aucune demande d’impression",
@@ -244,10 +277,12 @@
       "requested": "Demandée le {{date}}"
     },
     "refresh": {
-      "action": "Actualiser les statuts"
+      "action": "Actualiser les statuts",
+      "loading": "Actualisation des statuts en cours"
     }
   },
   "shell": {
+    "home": "Revenir à l’accueil",
     "profile": {
       "open": "Ouvrir le menu du compte",
       "account": "Compte",

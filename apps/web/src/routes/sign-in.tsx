@@ -27,7 +27,7 @@ export const Route = createFileRoute('/sign-in')({
  *
  * @returns The public sign-in screen.
  */
-function SignInRouteComponent(): React.JSX.Element {
+function SignInRouteComponent() {
   const { redirect } = Route.useSearch();
   return (
     <AuthenticationLayout>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { LanguagesIcon, LogOutIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -29,7 +29,7 @@ import { Spinner } from '@/shared/ui/spinner';
  *
  * @returns The brand, language controls and sign-out action.
  */
-export function AppHeader(): React.JSX.Element {
+export function AppHeader() {
   const { i18n, t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -58,14 +58,21 @@ export function AppHeader(): React.JSX.Element {
   return (
     <header className="border-b bg-background">
       <div className="mx-auto flex h-20 w-full max-w-[1248px] items-center justify-between px-4 sm:px-6">
-        <BrandLockup className="w-42" tone="on-light" />
+        <Link
+          aria-label={t('shell.home')}
+          className="flex min-h-11 shrink-0 items-center rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          to="/patients"
+        >
+          <BrandLockup className="w-42" tone="on-light" />
+        </Link>
 
         <DropdownMenu onOpenChange={setOpen} open={open}>
           <DropdownMenuTrigger
             render={
               <Button
                 aria-label={t('shell.profile.open')}
-                className="size-12 rounded-full p-0"
+                className="size-12 rounded-full"
+                size="icon-lg"
                 variant="ghost"
               />
             }

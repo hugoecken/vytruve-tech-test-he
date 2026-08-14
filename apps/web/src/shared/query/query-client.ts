@@ -7,6 +7,7 @@ export const queryClient = new QueryClient({
     queries: {
       retry: (failureCount, error) =>
         failureCount < 1 && isRetryableApiError(error),
+      staleTime: Infinity,
     },
     mutations: {
       retry: false,

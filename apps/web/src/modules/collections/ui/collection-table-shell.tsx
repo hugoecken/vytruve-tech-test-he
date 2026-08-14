@@ -1,8 +1,9 @@
+import { type ReactNode } from 'react';
 import { Button } from '@/shared/ui/button';
 
 /** Props for the visual surface and controls around a feature-owned table. */
 interface CollectionTableShellProps {
-  children: React.ReactNode;
+  children: ReactNode;
   hasNext: boolean;
   nextLabel: string;
   onNext: () => void;
@@ -16,7 +17,7 @@ interface CollectionTableShellProps {
 /**
  * Provides only the shared table surface and server-page controls.
  *
- * @param props Feature-owned table content and confirmed pagination state.
+ * @param props Feature-owned table content and response-derived pagination.
  * @returns A bordered collection surface with Previous/Page/Next controls.
  */
 export function CollectionTableShell({
@@ -29,15 +30,15 @@ export function CollectionTableShell({
   pageLabel,
   pending = false,
   previousLabel,
-}: CollectionTableShellProps): React.JSX.Element {
+}: CollectionTableShellProps) {
   return (
     <div className="overflow-hidden rounded-xl border bg-card">
       {children}
       <div className="flex h-18 items-center justify-center gap-3 border-t px-2 sm:justify-end">
         <Button
-          className="h-9"
           disabled={page === 0 || pending}
           onClick={onPrevious}
+          size="lg"
           type="button"
           variant="outline"
         >
@@ -47,9 +48,9 @@ export function CollectionTableShell({
           {pageLabel}
         </span>
         <Button
-          className="h-9"
           disabled={!hasNext || pending}
           onClick={onNext}
+          size="lg"
           type="button"
           variant="outline"
         >
