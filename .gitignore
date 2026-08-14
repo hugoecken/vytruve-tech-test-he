@@ -31,3 +31,6 @@ uploads/
 .DS_Store
 .idea/
 .vscode/
+
+# Vitest
+vitest.config.*.timestamp*
