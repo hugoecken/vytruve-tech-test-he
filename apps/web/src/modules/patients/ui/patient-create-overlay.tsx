@@ -2,7 +2,7 @@ import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { CircleAlertIcon, PlusIcon } from 'lucide-react';
+import { CircleAlertIcon, CirclePlusIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
@@ -199,21 +199,27 @@ export function PatientCreateOverlay(): React.JSX.Element {
   const footer = (
     <>
       <Button
-        className="h-9 w-[5.75rem]"
+        className="min-w-[5.75rem]"
         disabled={mutation.isPending}
         onClick={() => setOverlayOpen(false)}
+        size="lg"
         type="button"
         variant="outline"
       >
         {t('patients.create.cancel')}
       </Button>
       <Button
-        className="h-9 w-[8.75rem]"
+        className="min-w-[8.75rem] max-sm:gap-2 max-sm:px-4"
         disabled={mutation.isPending}
         form={CREATE_PATIENT_FORM_ID}
+        size="lg"
         type="submit"
       >
-        {mutation.isPending && <Spinner aria-hidden="true" />}
+        {mutation.isPending ? (
+          <Spinner aria-hidden="true" data-icon="inline-start" />
+        ) : (
+          <CirclePlusIcon aria-hidden="true" data-icon="inline-start" />
+        )}
         {mutation.isPending
           ? t('patients.create.pending')
           : t('patients.create.submit')}
@@ -224,15 +230,21 @@ export function PatientCreateOverlay(): React.JSX.Element {
   return (
     <>
       <Button
-        className="h-9 w-full sm:w-[8.75rem]"
+        className="w-full gap-2 px-4 has-data-[icon=inline-start]:pl-4 sm:w-auto sm:min-w-[8.75rem]"
         onClick={() => setOverlayOpen(true)}
+        size="lg"
         type="button"
       >
-        <PlusIcon aria-hidden="true" data-icon="inline-start" />
+        <CirclePlusIcon aria-hidden="true" data-icon="inline-start" />
         {t('patients.add')}
       </Button>
       {isMobile ? (
-        <Drawer onOpenChange={setOverlayOpen} open={open} showSwipeHandle>
+        <Drawer
+          disablePointerDismissal
+          onOpenChange={setOverlayOpen}
+          open={open}
+          showSwipeHandle
+        >
           <DrawerContent>
             <DrawerHeader>
               <DrawerTitle>{t('patients.create.title')}</DrawerTitle>
@@ -247,7 +259,11 @@ export function PatientCreateOverlay(): React.JSX.Element {
           </DrawerContent>
         </Drawer>
       ) : (
-        <Dialog onOpenChange={setOverlayOpen} open={open}>
+        <Dialog
+          disablePointerDismissal
+          onOpenChange={setOverlayOpen}
+          open={open}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{t('patients.create.title')}</DialogTitle>
@@ -256,7 +272,7 @@ export function PatientCreateOverlay(): React.JSX.Element {
               </DialogDescription>
             </DialogHeader>
             {formContent}
-            <DialogFooter className="gap-3">{footer}</DialogFooter>
+            <DialogFooter>{footer}</DialogFooter>
           </DialogContent>
         </Dialog>
       )}

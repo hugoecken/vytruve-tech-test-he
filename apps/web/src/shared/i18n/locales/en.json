@@ -133,10 +133,6 @@
         "title": "Patient record unavailable",
         "description": "This patient record is unavailable. Return to the patient list to continue.",
         "action": "Return to patients"
-      },
-      "prints": {
-        "title": "Print requests are coming next",
-        "description": "The print request workflow is not available yet."
       }
     }
   },
@@ -181,7 +177,74 @@
       "errorDescription": "{{scan}} remains available in the list. Try the download again."
     },
     "printing": {
-      "unavailable": "Print requests are not available yet"
+      "request": "Request printing",
+      "requestNamed": "Request printing for {{scan}}",
+      "unavailable": "A print request is already active for this scan",
+      "unavailableNamed": "Printing is unavailable for {{scan}} while another request is active"
+    }
+  },
+  "printing": {
+    "collection": "Print requests",
+    "title": "Print requests",
+    "description": "Follow each socket through the printing center, from request to completion.",
+    "table": {
+      "caption": "Print requests for this patient",
+      "reference": "Reference",
+      "scan": "3D scan",
+      "status": "Status",
+      "progress": "Estimated progress",
+      "timing": "Production timing"
+    },
+    "empty": {
+      "title": "No print requests yet",
+      "description": "Open 3D scans to upload a scan or request printing.",
+      "action": "View 3D scans"
+    },
+    "create": {
+      "title": "Request printing",
+      "description": "Confirm this 3D scan before sending one print request.",
+      "referenceGenerated": "The printing reference will be generated automatically.",
+      "cancel": "Cancel",
+      "submit": "Request printing",
+      "pending": "Requesting…",
+      "accepted": "Print request {{reference}} accepted.",
+      "failedTitle": "Printing could not be requested",
+      "capacityTitle": "Printing center at capacity",
+      "capacityDescription": "No request was accepted. Try again later.",
+      "unavailableTitle": "Printing is temporarily unavailable",
+      "unavailableDescription": "No request was accepted. Try again later."
+    },
+    "notice": {
+      "conflictTitle": "A print request is already in progress",
+      "conflictDescription": "The existing request is shown below. It was not submitted again.",
+      "uncertainTitle": "Submission status is being checked",
+      "uncertainDescription": "We could not confirm the response. Print requests were refreshed before another submission can be made."
+    },
+    "status": {
+      "confirmation_pending": "Confirmation pending",
+      "queued": "Queued",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "statusCompact": {
+      "confirmation_pending": "Pending",
+      "queued": "Queued",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "progress": {
+      "label": "Estimated progress: {{progress}}",
+      "unavailable": "No estimated progress"
+    },
+    "timing": {
+      "range": "{{start}} – {{end}}",
+      "updated": "Updated {{date}}",
+      "requested": "Requested {{date}}"
+    },
+    "refresh": {
+      "action": "Refresh statuses"
     }
   },
   "shell": {

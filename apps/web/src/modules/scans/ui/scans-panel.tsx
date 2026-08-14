@@ -59,6 +59,7 @@ const scanColumnHelper = createColumnHelper<
 
 /** Props for the patient scan collection. */
 interface ScansPanelProps {
+  onRequestPrint: (scan: ScanResponse) => void;
   patientId: string;
 }
 
@@ -68,7 +69,10 @@ interface ScansPanelProps {
  * @param props Parent patient identity used by every generated scan request.
  * @returns The responsive 3D scan collection and workflows.
  */
-export function ScansPanel({ patientId }: ScansPanelProps): React.JSX.Element {
+export function ScansPanel({
+  onRequestPrint,
+  patientId,
+}: ScansPanelProps): React.JSX.Element {
   const { i18n, t } = useTranslation();
   const [requestedPage, setRequestedPage] = React.useState(0);
   const confirmedData = React.useRef<ScanPageResponse | undefined>(undefined);
@@ -183,9 +187,18 @@ export function ScansPanel({ patientId }: ScansPanelProps): React.JSX.Element {
                 <TooltipTrigger
                   render={
                     <Button
-                      aria-label={t('scans.printing.unavailable')}
+                      aria-label={
+                        row.original.printingAvailable
+                          ? t('scans.printing.requestNamed', {
+                              scan: formatScanName(row.original.id),
+                            })
+                          : t('scans.printing.unavailableNamed', {
+                              scan: formatScanName(row.original.id),
+                            })
+                      }
                       className="size-8"
-                      disabled
+                      disabled={!row.original.printingAvailable}
+                      onClick={() => onRequestPrint(row.original)}
                       size="icon-sm"
                       type="button"
                       variant="ghost"
@@ -195,7 +208,9 @@ export function ScansPanel({ patientId }: ScansPanelProps): React.JSX.Element {
                   <PrinterIcon aria-hidden="true" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  {t('scans.printing.unavailable')}
+                  {row.original.printingAvailable
+                    ? t('scans.printing.request')
+                    : t('scans.printing.unavailable')}
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -204,7 +219,7 @@ export function ScansPanel({ patientId }: ScansPanelProps): React.JSX.Element {
           id: 'actions',
         }),
       ]),
-    [download, downloadingId, i18n.language, t],
+    [download, downloadingId, i18n.language, onRequestPrint, t],
   );
   const table = useTable({
     features: scanTableFeatures,
@@ -215,13 +230,13 @@ export function ScansPanel({ patientId }: ScansPanelProps): React.JSX.Element {
   return (
     <section
       aria-label={t('scans.title')}
-      className="flex flex-col gap-6 sm:gap-8"
+      className="flex flex-col gap-6"
     >
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+      <div className="relative flex flex-col gap-2">
         <p className="text-sm leading-[25px] text-muted-foreground sm:max-w-[47.5rem]">
           {t('scans.description')}
         </p>
-        <div className="sm:-translate-y-1">
+        <div className="sm:absolute sm:-top-1 sm:right-0">
           <ScanUploadOverlay patientId={patientId} />
         </div>
       </div>
