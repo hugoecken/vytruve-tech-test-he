@@ -42,6 +42,7 @@ interface PatientsDouble {
 
 /** Private object-storage operations exercised by scan behavior. */
 interface StorageDouble {
+  checkReadiness: jest.MockedFunction<ScanStoragePort['checkReadiness']>;
   open: jest.MockedFunction<ScanStoragePort['open']>;
   remove: jest.MockedFunction<ScanStoragePort['remove']>;
   write: jest.MockedFunction<ScanStoragePort['write']>;
@@ -65,6 +66,7 @@ describe(ScansService.name, () => {
       ),
     };
     storage = {
+      checkReadiness: jest.fn().mockResolvedValue(undefined),
       open: jest.fn(),
       remove: jest.fn().mockResolvedValue(undefined),
       write: jest.fn().mockResolvedValue(undefined),

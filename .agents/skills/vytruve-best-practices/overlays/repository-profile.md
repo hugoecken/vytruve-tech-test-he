@@ -6,7 +6,8 @@ architecture decisions.
 ## Repository identity
 
 - Repository: `hugoecken/vytruve-tech-test-he`
-- Integration branch: `main`
+- Integration branch: `develop`
+- Production-promotion branch: `main`
 - Artifact language: English
 - User conversation language: French
 - Package manager reserved for the executable workspace: npm

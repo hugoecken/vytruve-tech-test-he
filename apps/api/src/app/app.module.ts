@@ -11,6 +11,7 @@ import { AuthModule } from '@api/app/auth/auth.module';
 import { PatientsModule } from '@api/app/patients/patients.module';
 import { PrintingModule } from '@api/app/printing/printing.module';
 import { ScansModule } from '@api/app/scans/scans.module';
+import { HealthModule } from '@api/app/health/health.module';
 
 /** Composes configuration, persistence, and the current backend product features. */
 @Module({
@@ -46,6 +47,7 @@ import { ScansModule } from '@api/app/scans/scans.module';
     PatientsModule,
     ScansModule,
     PrintingModule,
+    HealthModule,
   ],
 })
 export class AppModule {}

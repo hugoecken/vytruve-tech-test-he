@@ -237,3 +237,123 @@ Issuer, audience, signature, and expiry validation prevent accepting tokens outs
 The accepted user plan fixes the runtime, persistence, storage, session, routing, query, table, form-schema,
 transport, and deferred-test choices. Implementation may still pin compatible patch versions during scaffolding
 without changing these architectural decisions.
+
+## Verification And Promotion
+
+The delivery sources in this section were consulted on 2026-08-15.
+
+### One required verification job on Node.js 24
+
+**Decision**: Keep the four existing Nx projects and expose one readable GitHub Actions `verify` job. Install the lockfile with Node.js 24 and `npm ci`; resolve explicit base/head revisions with the official `nrwl/nx-set-shas` action, derive the deployable-project JSON once in `verify`, then use `nx format:check` and `nx affected` for project checks before running the existing contract-generation target, health/revision tests, and affected-graph conformance checks. Skip production before environment approval when the JSON result is empty. Pin every third-party action to the full commit of its current stable major release, disable persisted checkout credentials, and give each job a finite timeout.
+
+**Rationale**: The current workspace already resolves `api`, `web`, `database`, and `infrastructure` with direct targets for every repository gate. Nx affected uses Git revisions plus the project graph to select changed projects and their dependants; using that same graph for CI and release avoids a second ownership mechanism. The official SHA resolver bases push calculations on the last successful workflow, so changes from a failed run remain selected later. One stable protected-branch job remains easier to review than a matrix or reusable-workflow layer. [Nx affected](https://nx.dev/docs/features/ci-features/affected), [Nx GitHub Actions integration](https://nx.dev/docs/features/ci-features/github-integration), [Nx commands](https://nx.dev/docs/reference/nx-commands), [Nx `nx.json` reference](https://nx.dev/reference/nx-json), [`nrwl/nx-set-shas`](https://github.com/nrwl/nx-set-shas)
+
+**Alternatives considered**:
+
+- Nx Cloud, Agents, Replay, remote caching, and self-healing CI: rejected because issue #14 requires a minimal assessment pipeline and the repository has only four local projects.
+- One job per tool or project: rejected because it multiplies protected checks and service setup without improving this repository's evidence.
+- `nx run-many` across every project: rejected because it ignores the workspace graph's affected calculation and performs unrelated work.
+- A handwritten second-pass manifest comparison: rejected because Orval already cleans its configured outputs and the generated contracts are immediately consumed by type checking, tests, and production builds.
+
+### Permanent `develop` integration and reviewed `main` promotion
+
+**Decision**: Make `develop` the ordinary protected integration branch and `main` the protected production-promotion branch. The same workflow verifies pull requests to both branches and the exact pushed `main` revision. A workflow guard rejects a `main` pull request whose head is not `develop`; production jobs run only after the exact pushed `main` revision passes `verify`.
+
+**Rationale**: GitHub workflow branch filters can distinguish pull-request bases and push branches, while protected branches can require pull requests, reviews, conversation resolution, and named status checks. This directly represents the accepted two-stage review path without a custom release branch family. [GitHub workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax), [GitHub protected branches](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
+
+The current repository overlays still name `main` as ordinary integration. They must be updated first during implementation, before any branch or workflow mutation. Spec Kit planning does not create `develop` or change repository settings.
+
+**Alternatives considered**:
+
+- Deploy every merge to `develop`: rejected because `develop` is accepted as integration, not production authority.
+- Direct feature-to-`main` promotions: rejected because they bypass the accepted integrated revision.
+- A tag-driven release path: rejected because issue #14 explicitly assigns production promotion to reviewed `develop`-to-`main` pull requests.
+
+### Protected production environment and serialized releases
+
+**Decision**: Only production jobs reference the GitHub `production` environment. The environment owns the Dokploy credential and approval. A queued, non-cancelling concurrency group serializes production releases.
+
+**Rationale**: GitHub environment secrets become available only to jobs that reference the environment and only after configured protection rules pass. Workflow concurrency can prevent overlapping release state; the release path must queue rather than cancel because a cancelled migration or rollout would leave ambiguous external state. [GitHub deployment environments](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments), [GitHub workflow concurrency](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)
+
+**Alternatives considered**:
+
+- Repository-wide production secrets: rejected because pull-request verification must have no production authority.
+- `cancel-in-progress`: rejected because superseding an active migration or deployment is unsafe.
+- Parallel component deployment: rejected because migration-before-API-before-Web is an accepted failure boundary.
+
+## Images And Runtime Delivery
+
+### Three immutable public GHCR images
+
+**Decision**: Build one migration image, one API image, and one Web image only when selected. Use repository-owned multi-stage Dockerfiles for API and Web, the official Liquibase image for migration, full commit-SHA Action pins, source-revision labels, and the GitHub commit as the immutable human-readable tag. Capture the registry-returned `sha256` digest, then promote that digest to the component's mutable `production` pull pointer immediately before its ordered Dokploy stage. Make the three packages public through a documented one-time operation.
+
+**Rationale**: Docker multi-stage builds separate build tools from the final runtime. GitHub's documented container-publishing path uses `GITHUB_TOKEN`, supports GHCR, and exposes the pushed digest. The digest and SHA tag preserve immutable identity; the `production` tag exists only because Dokploy's Auto Deploy webhook deploys the image reference configured on the application. Revision-aware health prevents a successful webhook enqueue from being mistaken for successful rollout. [Docker multi-stage builds](https://docs.docker.com/build/building/multi-stage/), [GitHub publishing Docker images](https://docs.github.com/en/actions/tutorials/publish-packages/publish-docker-images)
+
+**Alternatives considered**:
+
+- Build from source on the VPS: rejected because it enlarges production authority and makes the deployed result less reproducible.
+- Mutable `latest` deployment without a recorded digest and revision check: rejected because rollback and audit cannot identify exact bytes.
+- One global application image or production Compose stack: rejected because migration, API, and Web have different lifecycle, health, and rollback semantics.
+- Private packages with long-lived registry credentials: rejected because the assessment accepts public artifacts and Dokploy needs only immutable pull access.
+
+### Nx affected as the sole change-selection authority
+
+**Decision**: Resolve the comparison base with `nrwl/nx-set-shas`, then query `nx show projects --affected --base=<last-successful> --head=<source> --withTarget=container --json` for production selection. Configure project-scoped named inputs and dependency-aware lockfile handling in Nx so root inputs affect only the projects that consume them. Do not add a custom path selector or duplicate file-glob map in GitHub Actions.
+
+**Rationale**: Nx documents `show projects --affected` as the current structured affected-project query and exposes base/head, file-fixture, target-filter, and JSON options. Named inputs express root-file ownership in the project model, while `projectsAffectedByDependencyUpdates: "auto"` maps lockfile changes back to projects whose resolved dependencies changed. Restricting the query to the `container` target naturally excludes retained infrastructure without a second selector. [Nx commands](https://nx.dev/docs/reference/nx-commands), [Nx inputs and named inputs](https://nx.dev/docs/reference/inputs), [Nx affected dependency updates](https://nx.dev/docs/features/ci-features/affected#marking-projects-affected-by-dependency-updates)
+
+**Alternatives considered**:
+
+- Deploy all three components after every promotion: rejected because issue #14 explicitly requires component-selective promotion.
+- GitHub path filters: rejected because they would duplicate project ownership outside Nx.
+- A dependency-free path-mapping helper: rejected because it would create a second change graph that could drift from Nx.
+- A fifth delivery project: rejected because the existing four projects already own the deployable and retained boundaries.
+
+### Dokploy Schedule Job and Auto Deploy webhooks
+
+**Decision**: Provision PostgreSQL as a retained Dokploy database, Liquibase as a manually triggered `dokploy-server` Schedule Job, API/Web as independent Docker applications with Auto Deploy enabled, and MinIO as the sole service in one independent Compose resource. Use the pinned official `@dokploy/cli` to await the migration job and the application webhooks plus revision-aware health routes for API/Web completion evidence.
+
+**Rationale**: Dokploy documents that a Server Job can invoke Docker through the Dokploy container's socket, while `schedule.runManually` awaits the command result. This makes Liquibase a real barrier. By contrast, the official Auto Deploy handler enqueues an application deployment and returns `200` before it finishes, so API/Web require a bounded check for the expected revision. These official primitives remove the need for a repository-owned API client or deployment polling state machine. [Dokploy Schedule Jobs](https://docs.dokploy.com/docs/core/schedule-jobs), [Dokploy Schedule API](https://docs.dokploy.com/docs/api/reference-schedule), [Dokploy Auto Deploy](https://docs.dokploy.com/docs/core/auto-deploy), [Dokploy CLI](https://docs.dokploy.com/docs/cli), [Auto Deploy handler at inspected revision](https://github.com/Dokploy/dokploy/blob/b976c7b4f74b09ac6434f128d808fd8fccc6cfaa/apps/dokploy/pages/api/deploy/%5BrefreshToken%5D.ts)
+
+**Alternatives considered**:
+
+- SSH commands or copied source: rejected because Dokploy already owns the target lifecycle and SSH would broaden secrets and host authority.
+- One production Compose stack: rejected because an application-only change must not recreate PostgreSQL or MinIO.
+- A custom `dokploy.mjs` client: rejected because the official CLI, webhook, and health contracts already cover the required boundaries.
+- Using the application webhook for Liquibase: rejected because webhook acceptance is asynchronous and cannot block later stages.
+
+### One-shot Liquibase migration before applications
+
+**Decision**: Run the official Liquibase `update` command directly in a one-shot migration image from a blocking Dokploy Server Schedule Job before any selected application. Retain Liquibase tracking tables in PostgreSQL. Do not add a shell wrapper, automatic rollback, forced unlock, or production `validate`/`status` stage.
+
+**Rationale**: Liquibase applies undeployed changes sequentially and records them in `DATABASECHANGELOG`; this is the required retained release ledger. The Nx migration target depends on changelog validation, so verification expresses `validate` before the ephemeral `update` without a workflow script or a redundant post-update status command. Production retains one auditable mutation command. [Liquibase `validate`](https://docs.liquibase.com/secure/reference-guide-5-2/database-inspection-change-tracking-and-utility-commands/validate), [Liquibase `update`](https://docs.liquibase.com/reference-guide/init-update-and-rollback-commands/update)
+
+**Alternatives considered**:
+
+- TypeORM schema synchronization or migrations: rejected because Liquibase is already the sole accepted schema authority.
+- Automatic database rollback: rejected because schema rollback is not reliably lossless and issue #14 permits only application-image rollback.
+- An always-running migration application: rejected because schema application is a bounded release step, not a runtime service.
+
+### MinIO-only retained Compose resource
+
+**Decision**: Keep MinIO private, retained, and outside routine selection. The production Compose file contains exactly the MinIO service, one named volume, the internal port, and the external Dokploy network. For this bounded prototype, the API uses the existing root credential variables and idempotently creates the fixed private bucket when absent.
+
+**Rationale**: MinIO's maintained JavaScript SDK supports bucket existence checks and creation from the API boundary. Isolating the service prevents routine API/Web changes from recreating object storage, while avoiding speculative bootstrap containers and policy automation. [MinIO JavaScript API](https://docs.min.io/aistor/developers/sdk/javascript/api/)
+
+**Alternatives considered**:
+
+- Put MinIO beside PostgreSQL/API/Web in one Compose stack: rejected because unrelated releases could affect retained scan storage.
+- Publish the console or S3 host port: rejected because neither is a product surface.
+- Automate scoped MinIO identity provisioning now: deferred because it adds a separate administrative boundary beyond the assessment; the root-credential prototype trade-off remains explicit.
+
+### Manual application-digest rollback only
+
+**Decision**: Provide a separate environment-approved workflow that accepts one component (`api` or `web`) and one prior digest, validates both, redeploys exactly that artifact, and repeats its health check. Routine failures stop forward delivery and never trigger rollback automatically.
+
+**Rationale**: Immutable per-component images make application recovery bounded and auditable. Database reversal is excluded, so every schema change paired with an API change must remain compatible with the immediately previous API image or return to planning before release.
+
+**Alternatives considered**:
+
+- Automatic rollback after a failed health check: rejected because it would make a second production mutation without reviewer approval and might be incompatible with an applied schema.
+- Rebuild a prior commit: rejected because a rebuild is not guaranteed to reproduce the original image bytes.
+- Database rollback: rejected because the accepted recovery contract explicitly excludes it.

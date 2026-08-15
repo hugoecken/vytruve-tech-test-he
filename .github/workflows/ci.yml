@@ -1,0 +1,209 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [main]
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      deployable-projects: ${{ steps.affected.outputs.projects }}
+    steps:
+      - name: Require develop as the main promotion source
+        if: github.event_name == 'pull_request' && github.base_ref == 'main' && (github.head_ref != 'develop' || github.event.pull_request.head.repo.full_name != github.repository)
+        run: exit 1
+
+      - name: Check out the exact revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve the affected range with Nx
+        uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+        with:
+          main-branch-name: ${{ github.base_ref || github.ref_name }}
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Prepare local environment
+        run: cp .env.example .env.local
+
+      - name: Select deployable projects with Nx
+        id: affected
+        env:
+          VITE_CONFIG_NATIVE_IGNORE_WARNING: true
+        run: |
+          projects=$(npm exec nx -- show projects --affected --base="$NX_BASE" --head="$NX_HEAD" --withTarget=container --json)
+          echo "Nx affected deployable projects: $projects"
+          jq -e 'all(.[]; . == "database" or . == "api" or . == "web")' <<< "$projects" > /dev/null
+          echo "projects=$(jq -c . <<< "$projects")" >> "$GITHUB_OUTPUT"
+
+      - name: Verify affected formatting
+        run: npm exec nx -- format:check --base="$NX_BASE" --head="$NX_HEAD"
+
+      - name: Start ephemeral retained dependencies
+        run: npm exec nx -- run infrastructure:up
+
+      - name: Verify affected Liquibase changes
+        run: npm exec nx -- affected -t migrate --base="$NX_BASE" --head="$NX_HEAD" --nxBail
+
+      - name: Generate contracts
+        run: npm exec nx -- run web:generate-api
+
+      - name: Verify affected source
+        run: npm exec nx -- affected -t lint typecheck test --base="$NX_BASE" --head="$NX_HEAD" --parallel=1 --nxBail
+
+      - name: Build affected applications
+        run: npm exec nx -- affected -t build --base="$NX_BASE" --head="$NX_HEAD" --nxBail
+
+      - name: Stop ephemeral retained dependencies
+        if: always()
+        run: npm exec nx -- run infrastructure:down
+
+  release:
+    name: release production
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.verify.outputs.deployable-projects != '[]'
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    environment: production
+    concurrency:
+      group: production
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: write
+    env:
+      AFFECTED_PROJECTS: ${{ needs.verify.outputs.deployable-projects }}
+      HEAD_SHA: ${{ github.sha }}
+      DOKPLOY_URL: ${{ vars.DOKPLOY_URL }}
+      DOKPLOY_MIGRATION_SCHEDULE_ID: ${{ vars.DOKPLOY_MIGRATION_SCHEDULE_ID }}
+      PRODUCTION_ORIGIN: ${{ vars.PRODUCTION_ORIGIN }}
+      CONTAINER_PLATFORM: ${{ vars.CONTAINER_PLATFORM }}
+    steps:
+      - name: Check out the verified revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Use Node.js 24
+        if: contains(fromJSON(env.AFFECTED_PROJECTS), 'database') || contains(fromJSON(env.AFFECTED_PROJECTS), 'web')
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked dependencies
+        if: contains(fromJSON(env.AFFECTED_PROJECTS), 'web')
+        run: npm ci
+
+      - name: Prepare generated Web inputs
+        if: contains(fromJSON(env.AFFECTED_PROJECTS), 'web')
+        run: |
+          cp .env.example .env.local
+          npm exec nx -- run infrastructure:up
+          npm exec nx -- run database:migrate
+          npm exec nx -- run web:generate-api
+
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+
+      - name: Publish immutable migration image
+        if: contains(fromJSON(env.AFFECTED_PROJECTS), 'database')
+        id: migration-image
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: database
+          file: database/Dockerfile
+          platforms: ${{ env.CONTAINER_PLATFORM }}
+          push: true
+          tags: ghcr.io/hugoecken/vytruve-migration:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+      - name: Publish immutable API image
+        if: contains(fromJSON(env.AFFECTED_PROJECTS), 'api')
+        id: api-image
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          platforms: ${{ env.CONTAINER_PLATFORM }}
+          push: true
+          tags: ghcr.io/hugoecken/vytruve-api:${{ github.sha }}
+          build-args: APP_REVISION=${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+      - name: Publish immutable Web image
+        if: contains(fromJSON(env.AFFECTED_PROJECTS), 'web')
+        id: web-image
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          platforms: ${{ env.CONTAINER_PLATFORM }}
+          push: true
+          tags: ghcr.io/hugoecken/vytruve-web:${{ github.sha }}
+          build-args: |
+            APP_REVISION=${{ github.sha }}
+            VITE_API_BASE_URL=${{ env.PRODUCTION_ORIGIN }}/api
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+      - name: Stop release build dependencies
+        if: always() && contains(fromJSON(env.AFFECTED_PROJECTS), 'web')
+        run: npm exec nx -- run infrastructure:down
+
+      - name: Run the blocking migration Schedule Job
+        if: contains(fromJSON(env.AFFECTED_PROJECTS), 'database')
+        env:
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+        run: |
+          docker buildx imagetools create --tag ghcr.io/hugoecken/vytruve-migration:production ghcr.io/hugoecken/vytruve-migration@${{ steps.migration-image.outputs.digest }}
+          npm exec --yes --package=@dokploy/cli@0.30.0 -- dokploy schedule run-manually --scheduleId "$DOKPLOY_MIGRATION_SCHEDULE_ID" --json | jq -e '.status == "done"' > /dev/null
+
+      - name: Deploy and verify API
+        if: contains(fromJSON(env.AFFECTED_PROJECTS), 'api')
+        env:
+          DOKPLOY_API_WEBHOOK_URL: ${{ secrets.DOKPLOY_API_WEBHOOK_URL }}
+        run: |
+          docker buildx imagetools create --tag ghcr.io/hugoecken/vytruve-api:production ghcr.io/hugoecken/vytruve-api@${{ steps.api-image.outputs.digest }}
+          curl --fail --silent --show-error --request POST --output /dev/null "$DOKPLOY_API_WEBHOOK_URL"
+          curl --fail --silent --show-error --retry 30 --retry-delay 5 --retry-all-errors "$PRODUCTION_ORIGIN/api/health/ready/$HEAD_SHA"
+
+      - name: Deploy and verify Web
+        if: contains(fromJSON(env.AFFECTED_PROJECTS), 'web')
+        env:
+          DOKPLOY_WEB_WEBHOOK_URL: ${{ secrets.DOKPLOY_WEB_WEBHOOK_URL }}
+        run: |
+          docker buildx imagetools create --tag ghcr.io/hugoecken/vytruve-web:production ghcr.io/hugoecken/vytruve-web@${{ steps.web-image.outputs.digest }}
+          curl --fail --silent --show-error --request POST --output /dev/null "$DOKPLOY_WEB_WEBHOOK_URL"
+          curl --fail --silent --show-error --retry 30 --retry-delay 5 --retry-all-errors "$PRODUCTION_ORIGIN/health/$HEAD_SHA"

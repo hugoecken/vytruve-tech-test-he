@@ -2,7 +2,7 @@
 
 **Status**: Accepted
 
-This guide defines the intended clean-reviewer workflow. Commands become executable authority only after the workspace is scaffolded and each Nx target is verified. Until then, they are planned interfaces.
+This guide defines the clean-reviewer workflow. Existing Nx runtime commands are resolved from the current workspace. Delivery commands remain local evidence until the separately authorized GitHub and Dokploy configuration is completed.
 
 ## Prerequisites
 
@@ -25,7 +25,7 @@ npm owns dependency installation and the lockfile. Workspace tasks use the repos
 npm exec nx -- show projects
 ```
 
-Expected projects include `api`, `web`, and `database`, plus an `infrastructure` project only when Compose targets are integrated into the Nx graph.
+Expected projects are exactly `api`, `web`, `database`, and `infrastructure`.
 
 ## Configure The Local Environment
 
@@ -176,7 +176,7 @@ Repeat the following checks for the patient directory, the scan table, and the p
 4. Restore the collection service and activate Retry; confirm the successful response replaces the recovery state without duplicating rows or changing page position before confirmation.
 5. Repeat the three failures on a compact viewport; confirm the recovery action remains visible, has an accessible name, does not rely on color, and meets the required touch-target size.
 
-## Planned Validation Targets
+## Repository Validation Targets
 
 The final workspace will expose focused Nx targets rather than undocumented shell recipes:
 
@@ -192,7 +192,111 @@ npm exec nx -- run api:test
 npm exec nx -- run web:test
 ```
 
-The exact target names are finalized by issue #14 after the relevant test projects exist. Issue #4 runs no runtime test because it changes documentation and guidance only.
+These target names resolve in the current workspace. Issue #14 composes them into one CI `verify` job and adds delivery-boundary tests without creating another Nx project.
+
+## CI-Equivalent Validation
+
+A clean reviewer environment runs the same ordered evidence as the protected `verify` check:
+
+```bash
+npm ci
+npm exec nx -- format:check --base=<base-revision> --head=<head-revision>
+npm exec nx -- affected -t lint typecheck test --base=<base-revision> --head=<head-revision>
+npm exec nx -- run infrastructure:up
+npm exec nx -- affected -t migrate --base=<base-revision> --head=<head-revision>
+npm exec nx -- run web:generate-api
+npm exec nx -- affected -t build --base=<base-revision> --head=<head-revision>
+```
+
+The migration target validates the changelog first through its Nx dependency, then applies the complete chain to the ephemeral database. The implemented workflow owns unconditional dependency shutdown even after an earlier command fails. The generation gate uses the existing Nx target to emit OpenAPI and both Orval outputs; Orval cleans its configured output directories before the generated contracts are consumed by type checking, tests, and production builds.
+
+## Nx Affected Validation
+
+Nx is the sole change-selection authority. Verification reads the deployable subset once and passes its JSON result directly to production:
+
+```bash
+npm exec nx -- show projects \
+  --affected \
+  --base=<last-successful-revision> \
+  --head=<source-revision> \
+  --withTarget=container \
+  --json
+```
+
+GitHub Actions resolves these immutable revisions with the official `nrwl/nx-set-shas` action. On a push, the base is the last successful workflow revision for the branch, so a failed verification or release cannot make still-unreleased changes disappear from the next affected calculation. An empty JSON result skips production before environment approval. No custom selector, changed-path parser, or GitHub path-filter table is permitted. Focused conformance commands invoke Nx itself with `--files` fixtures:
+
+```bash
+npm exec nx -- show projects --affected --files=database/db.changelog-master.xml --withTarget=container --json
+npm exec nx -- show projects --affected --files=apps/api/src/main.ts --withTarget=container --json
+npm exec nx -- show projects --affected --files=apps/web/src/main.tsx --withTarget=container --json
+npm exec nx -- show projects --affected --files=package.json --withTarget=container --json
+npm exec nx -- show projects --affected --files=.dockerignore --withTarget=container --json
+npm exec nx -- show projects --affected --files=README.md --withTarget=container --json
+npm exec nx -- show projects --affected --files=infrastructure/dokploy/minio.compose.yaml --withTarget=container --json
+npm exec nx -- show projects --affected --files=database/db.changelog-master.xml,apps/api/src/main.ts,apps/web/src/main.tsx --withTarget=container --json
+```
+
+They resolve respectively to:
+
+1. `database/db.changelog-master.xml` resolves only `database`;
+2. `apps/api/src/main.ts` resolves only `api`;
+3. `apps/web/src/main.tsx` resolves only `web`;
+4. `package.json` and `.dockerignore` resolve `api` and `web` through Nx dependency analysis and named inputs;
+5. specifications and documentation resolve no deployable project;
+6. the retained MinIO definition resolves only `infrastructure` before the `container` filter and no project after it;
+7. the combined fixture returns `database`, `api`, and `web`;
+8. invalid revisions, named inputs, or project configuration make the Nx command fail and block promotion.
+
+Nx intrinsically treats the root `tsconfig.base.json` as an input to every targetable project, so that fixture conservatively includes `database` in addition to both applications. The release workflow keeps this official Nx result; it does not hide the safe extra migration check with a custom exception.
+
+## Image Validation
+
+Selected images are built from the exact verified source revision. Local smoke checks may use synthetic tags and values only:
+
+```bash
+docker build --file apps/api/Dockerfile --tag vytruve-api:review .
+docker build --file apps/web/Dockerfile --tag vytruve-web:review .
+docker build --file database/Dockerfile --tag vytruve-migration:review database
+```
+
+Review evidence confirms:
+
+- API and Web final stages contain no build toolchain or development dependencies;
+- the API runs as a non-root user and exposes only internal port `3000`;
+- Nginx runs unprivileged on `8080`, serves `/health`, and falls back to the SPA without proxying secrets;
+- the migration image runs the official Liquibase `update` command directly;
+- source revision and OCI source labels are present;
+- the registry-returned digest and immutable SHA tag are recorded;
+- Docker promotes that digest to the mutable `production` pull pointer only immediately before its ordered stage;
+- revision-aware health proves that the expected immutable source revision is running.
+
+Image publication, package visibility changes, and registry access are external mutations and are not part of a local review command.
+
+## Production Evidence
+
+Production provisioning and releases require explicit user authorization and the protected `production` environment. Before any first release, inspect rather than recreate these independent resources:
+
+- retained `vytruve-postgres` database;
+- blocking `vytruve-migration` Dokploy Server Schedule Job;
+- `vytruve-api` application;
+- `vytruve-web` application;
+- retained MinIO-only Compose resource.
+
+For an authorized controlled release, verify the following sequence:
+
+1. the pushed `main` revision is the exact revision that passed `verify`;
+2. the Nx affected result names only expected deployable projects;
+3. each selected image is published under its immutable SHA tag and captured by digest;
+4. each digest is promoted to its component's `production` pull pointer only when its ordered stage begins;
+5. the migration Schedule Job returns `done`, then API and Web webhooks are accepted and their expected-revision health checks pass within the finite bound;
+6. API readiness verifies PostgreSQL and MinIO but not the printing provider;
+7. Web `/health` responds through the production HTTPS origin;
+8. unselected Dokploy resources retain their image, deployment, and storage state;
+9. logs contain no credential, header, environment value, connection string, or remote body.
+
+## Rollback Rehearsal
+
+Use only synthetic or previously approved immutable artifacts. The recovery workflow accepts one `api` or `web` component, one matching prior `sha256` digest, and its source revision; it derives the fixed GHCR repository from the component rather than accepting a repository from the caller. Prove that it rejects migration, tags, repository-qualified references, malformed digests, and multiple components. A successful rehearsal promotes exactly one prior digest to that component's `production` pointer, triggers its webhook, and repeats the revision-aware health check. It does not rebuild source, roll back Liquibase, mutate PostgreSQL, or restart MinIO.
 
 ## Stop Local Dependencies
 
