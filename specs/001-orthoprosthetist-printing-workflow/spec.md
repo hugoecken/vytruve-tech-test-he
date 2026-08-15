@@ -6,9 +6,11 @@
 
 **Last clarified**: 2026-08-14
 
+**Last updated**: 2026-08-15
+
 **Status**: Accepted
 
-**Input**: Define the observable MVP experience for orthoprosthetists who manage patients, handle 3D scans, and request socket printing through the supplied printing center.
+**Input**: Define the observable MVP experience for orthoprosthetists who manage patients, handle 3D scans, request socket printing through the supplied printing center, and receive the application through a bounded, verifiable delivery path.
 
 ## Authority And Scope
 
@@ -17,7 +19,7 @@
 - The three supplied sample scans provide acceptance evidence only. Their names, contents, and personal metadata are not reproduced here.
 - Once explicitly accepted, this specification owns the future observable product behavior and terminology.
 - Figma owns visual composition after acceptance. It may choose components, density, responsive composition, and layout, but may not add or remove behavior defined here.
-- A future technical plan may translate this specification into architecture. Except for the mandated React frontend and NestJS backend, this document does not select implementation technologies.
+- A reconciled technical plan may translate this specification into product and delivery architecture. Except for the mandated React frontend and NestJS backend, this document does not select implementation technologies or delivery providers.
 
 ## Clarifications
 
@@ -41,7 +43,7 @@
 | SR-006 | Allow an eligible uploaded scan to be submitted for printing and eventually reach a successful outcome.        | US4; FR-031–FR-040                    | SC-005, SC-007     |
 | SR-007 | List a patient's print requests with their references, associated scans, statuses, and progress.               | US4; FR-041–FR-044                    | SC-006, SC-007     |
 | SR-008 | Handle validation, errors, and printing center unavailability deliberately.                                    | US1–US4; FR-047–FR-052, FR-057        | SC-008, SC-010, SC-017 |
-| SR-009 | Document setup, execution, choices, and trade-offs for reviewers.                                              | DC-002                                | SC-014             |
+| SR-009 | Document setup, execution, choices, and trade-offs for reviewers.                                              | DC-002, DC-010                        | SC-014, SC-023     |
 | SR-010 | Maintain a meaningful Git history suitable for review.                                                         | DC-003                                | SC-014             |
 | SR-011 | Present clear architecture and code organization.                                                              | DC-004                                | SC-013             |
 | SR-012 | Disclose and explain AI-assisted work in the delivery documentation.                                           | DC-005                                | SC-014             |
@@ -155,6 +157,29 @@ Within the same patient workspace, an orthoprosthetist requests printing of an e
 15. **US4-AS15** — **Given** a print-request row is displayed, **When** the row itself is activated with pointer or keyboard, **Then** its latest loaded lifecycle, scan, timing information, and Estimated progress as localized percentage text without a progress bar open in a read-only desktop dialog or compact bottom drawer without leaving the patient workspace or issuing another request, and no separate action column or consultation icon is displayed.
 16. **US4-AS16** — **Given** persisted print requests exist for the requested page, **When** that page first loads, **Then** its rows, pagination, and non-status information are displayed before provider reconciliation completes, each active request shows a skeleton in its Status and Estimated progress cells during one independent background refresh, completed and failed values remain visible, the manual refresh action does not present itself as manually pending, and the refreshed values replace the active-row skeletons when available without automatic polling.
 
+---
+
+### User Story 5 - Verify And Promote A Release (Priority: P3)
+
+A maintainer verifies an exact repository revision, integrates ordinary work without changing production, and deliberately promotes a reviewed revision while changing only the affected runtime components and preserving retained data.
+
+**Why this priority**: The product journeys remain the assessment's primary outcome, but a reviewer also needs trustworthy evidence that the delivered revision can be verified, promoted, diagnosed, and recovered without avoidable production impact.
+
+**Independent Test**: Starting from the same verified revision, exercise documentation-only, database-only, backend-only, frontend-only, and combined change sets; prove the selected production subset, ordered execution, failure isolation, retained-state protection, and source traceability without using a production secret during change review.
+
+**Acceptance Scenarios**:
+
+1. **US5-AS1** — **Given** an ordinary proposed change, **When** repository verification succeeds and the change is integrated, **Then** production is not changed.
+2. **US5-AS2** — **Given** an integrated revision, **When** production promotion is requested, **Then** only a reviewed promotion of that exact verified revision can proceed.
+3. **US5-AS3** — **Given** a documentation-only or specification-only change, **When** its production impact is evaluated, **Then** no runtime component is built or deployed.
+4. **US5-AS4** — **Given** a change owned only by the database migration, backend application, or frontend application, **When** the revision is promoted, **Then** only that affected component is built, released, and verified.
+5. **US5-AS5** — **Given** a revision that affects several runtime components, **When** it is promoted, **Then** only the affected subset runs in database migration, backend application, and frontend application order.
+6. **US5-AS6** — **Given** a selected production stage fails or cannot prove health within its bounded wait, **When** the rollout resolves, **Then** later selected stages do not start and unchanged components continue running.
+7. **US5-AS7** — **Given** a routine application release, **When** selected components are deployed or recovered, **Then** retained database and scan-storage state is neither recreated nor discarded and unrelated components are not restarted.
+8. **US5-AS8** — **Given** a proposed change is being verified before integration, **When** all required checks run, **Then** no production credential or production mutation authority is available to that verification.
+9. **US5-AS9** — **Given** a released application component fails its production verification, **When** recovery is authorized, **Then** only that component can return to its previous known application revision without automatically reversing database changes or modifying retained infrastructure.
+10. **US5-AS10** — **Given** a production component is running, **When** a reviewer traces it, **Then** its immutable release artifact identifies the exact verified source revision from which it was produced.
+
 ### Edge Cases
 
 - Leading and trailing whitespace is removed from email and patient name input before validation; meaningful Unicode characters inside names are preserved.
@@ -168,6 +193,12 @@ Within the same patient workspace, an orthoprosthetist requests printing of an e
 - Localized dates, numbers, and sizes preserve the underlying value while adapting presentation to the selected language.
 - An unknown application path or unavailable deep link displays a localized not-found fallback without revealing whether a protected resource exists and offers a safe return to the appropriate authenticated or unauthenticated destination.
 - An unrecoverable application failure displays a localized generic fallback without technical details and offers a safe retry action.
+- A root-level dependency or build-input change that is consumed by both applications selects both applications rather than guessing one owner.
+- A change outside declared runtime inputs releases no component; a declared runtime input without an owner blocks promotion rather than guessing or deploying every component.
+- A failed database migration leaves the currently running applications and retained services untouched and prevents selected application rollout.
+- A successful database migration followed by an application failure is not automatically reversed; application recovery must remain compatible with the migrated schema.
+- A newer production request does not cancel a production rollout that is already mutating the environment.
+- A timeout, malformed remote response, or unavailable health signal resolves as a failed selected stage rather than an indefinite wait or assumed success.
 
 ## Experience Contract For Figma
 
@@ -340,12 +371,31 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - **FR-056**: An unrecoverable application failure MUST display `SYS-UNEXPECTED-ERROR` with localized, non-technical language and one safe retry action, without exposing the underlying error or implementation detail.
 - **FR-057**: `TBL-PATIENTS`, `TBL-SCANS`, and `TBL-PRINTS` MUST use the paginated query state directly: an initial or adjacent-page failure with no data for the requested query MUST display no table or provisional rows and MUST offer an explicit safe retry; a background-refresh failure MAY preserve data already retained by TanStack Query and MUST follow FR-050. For `TBL-PRINTS`, the persisted collection query and provider-status query MUST remain independent so provider latency or failure cannot block the initial collection response. No separate client-side snapshot of prior query data MAY be maintained.
 
+#### Verification And Production Delivery
+
+- **FR-058**: Every proposed revision MUST pass one deterministic repository verification path before integration, covering formatting, static analysis, type safety, focused automated tests, database-change validation, generated-contract synchronization, and production builds.
+- **FR-059**: Ordinary integrated changes MUST NOT mutate production; production MUST change only through a reviewed, explicit promotion of the exact integrated revision that passed repository verification.
+- **FR-060**: Pre-integration verification MUST NOT receive production credentials or production mutation authority, and production promotions MUST execute serially without cancelling an in-progress production mutation.
+- **FR-061**: Production promotion MUST derive an explicit affected-component set from the promoted change; database-only, backend-only, and frontend-only changes MUST select only their owning component, shared application inputs MUST select every consuming application, documentation-only or specification-only changes MUST select no runtime component, and a declared runtime input without an owner MUST block promotion.
+- **FR-062**: When multiple components are selected, production execution MUST run only the selected subset in database migration, backend application, and frontend application order.
+- **FR-063**: A failed selected stage MUST prevent every later selected stage from starting; unchanged applications, retained database state, and retained scan-storage state MUST continue without routine restart, recreation, or deletion.
+- **FR-064**: Every released component MUST use an immutable artifact produced from and traceable to the exact promoted source revision; production MUST consume that artifact without rebuilding repository source.
+- **FR-065**: A selected database migration MUST be blocking, MUST use its durable change and lock history, and MUST NOT trigger automatic database rollback, forced lock release, retained-data deletion, or storage recreation.
+- **FR-066**: Every selected application deployment MUST use a finite health-verification period; backend readiness MUST include the retained dependencies required to serve the product but MUST NOT depend on printing-center availability, and frontend health MUST prove that the application can be served.
+- **FR-067**: Recovery from a failed application deployment MUST affect only that application and MUST be able to restore its previous immutable application artifact without restarting unrelated applications or retained services.
+- **FR-068**: A database change released with an application change MUST remain compatible with the immediately previous application artifact whenever application rollback is an accepted recovery path.
+- **FR-069**: Production secrets MUST remain outside source, proposed-change verification, build inputs, immutable artifacts, caches, and logs; reviewer documentation MAY identify required configuration names but MUST NOT include their values.
+- **FR-070**: Verification and delivery cleanup MUST complete after success or failure so that ephemeral verification dependencies do not survive the run and a failed remote wait cannot continue indefinitely.
+
 ### Key Entities
 
 - **Account**: An orthoprosthetist's ownership boundary, identified by a normalized unique email and associated with an authenticated session and language preference.
 - **Patient**: A record owned by exactly one Account, with a Unicode first name, Unicode last name, integer age, and system-recorded date added.
 - **3D scan**: A PLY mesh owned through one Patient, with a safe identifier, PLY format, byte size, and system-recorded date added. Original content is never part of specification evidence.
 - **Print request**: A printing attempt for exactly one 3D scan, identified by a generated stable reference and carrying a visible lifecycle state, Estimated progress when meaningful, and available production or update times.
+- **Release candidate**: One exact integrated source revision that has passed repository verification and may be proposed for deliberate production promotion.
+- **Delivery component**: One independently selectable production boundary: database migration, backend application, or frontend application.
+- **Production rollout**: One serialized attempt to promote a Release candidate by executing and verifying only its affected Delivery components.
 
 ### Entity Relationships And Invariants
 
@@ -354,12 +404,15 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - One 3D scan has zero or more Print requests over time, but no more than one non-terminal Print request at a time.
 - Ownership checks apply transitively from Account to Patient, 3D scan, and Print request.
 - A Print request keeps its generated reference for its entire lifecycle.
+- A Release candidate identifies exactly one verified source revision and produces immutable artifacts traceable to that revision.
+- One Production rollout selects zero or more Delivery components from the promoted change and preserves their required execution order.
+- Retained database and scan-storage state outlive routine application rollouts and application rollback.
 
 ## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
-- **SC-001**: All four independently testable user stories can be completed from their stated starting condition without introducing a dashboard or leaving the required patient context.
+- **SC-001**: All four independently testable product user stories can be completed from their stated starting condition without introducing a dashboard or leaving the required patient context.
 - **SC-002**: Account creation, sign-in, restoration, expiry, and sign-out pass every US1 acceptance scenario in both French and English; authenticated language selection persists without adding a pre-authentication control.
 - **SC-003**: Patient creation accepts both boundary ages, rejects every invalid boundary class, creates exactly one record per valid submission, and exposes no cross-account patient information.
 - **SC-004**: A user can open one patient workspace with persistent patient identity, use the default `TAB-PATIENT-SCANS`, and upload and then download an accepted scan without navigating to a separate scan destination.
@@ -376,6 +429,13 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - **SC-015**: Every unknown path and unavailable deep link displays the localized `SYS-NOT-FOUND` state, reveals no protected-resource existence, and returns the user to the appropriate safe destination through one keyboard-accessible action.
 - **SC-016**: Every unrecoverable application failure displays the localized `SYS-UNEXPECTED-ERROR` state, exposes no technical error detail, and offers one keyboard-accessible retry action.
 - **SC-017**: One hundred percent of initial and adjacent-page collection-read failures across `TBL-PATIENTS`, `TBL-SCANS`, and `TBL-PRINTS` show localized recovery and present neither provisional rows nor the failed requested page as loaded; background-refresh failures preserve only data retained by TanStack Query.
+- **SC-018**: One hundred percent of ordinary integration changes complete without production mutation, and every production mutation is attributable to one reviewed promotion of the exact verified integrated revision.
+- **SC-019**: Deterministic change-selection evidence proves that database-only, backend-only, frontend-only, shared-application, and documentation-only examples select respectively only the database migration, only the backend, only the frontend, both applications, and no runtime component, while a declared but unowned runtime input blocks promotion.
+- **SC-020**: For every tested combined selection, only the selected components execute in database migration, backend application, and frontend application order, and an induced failure prevents one hundred percent of later selected stages from starting.
+- **SC-021**: Every released application and migration artifact identifies its exact source revision, remains immutable between verification and deployment, and is consumed by production without a source rebuild.
+- **SC-022**: One hundred percent of tested deployment failures and timeouts terminate within their documented finite bounds, preserve retained database and scan-storage state, leave unrelated components running, and expose a component-scoped recovery path where one is supported.
+- **SC-023**: Repository verification proves formatting, static analysis, type safety, focused tests, database changes, generated-contract synchronization, and production builds from a clean dependency installation, with ephemeral dependencies cleaned up after both success and induced failure.
+- **SC-024**: A protected-data review finds zero production credentials, secret values, retained runtime data, or production mutation authority in proposed-change verification, source, build inputs, immutable artifacts, caches, logs, or reviewer-facing evidence.
 
 ## Delivery Constraints
 
@@ -385,6 +445,10 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - **DC-004 — Maintainability evidence**: Architecture and code organization are reviewable against the brief's assessment criteria without adding product scope.
 - **DC-005 — AI disclosure**: The README explains material AI assistance and how the author reviewed and validated the result.
 - **DC-006 — Provider protection**: Printing-center authentication is handled outside user-visible behavior and committed evidence; no credential or protected provider detail enters this specification.
+- **DC-007 — Bounded continuous verification**: The delivery includes one readable automated verification path that proves the existing repository rather than introducing a second build or test control plane.
+- **DC-008 — Selective production promotion**: The delivery includes a reviewed non-production integration path and one deliberate production-promotion path that releases only changed runtime boundaries.
+- **DC-009 — Retained-state protection**: Routine release and application rollback preserve the database, private scan storage, their retained data, and unrelated running components.
+- **DC-010 — Operational handover**: Reviewer documentation identifies the verified local and delivery commands, configuration names, promotion boundary, component order, health evidence, failure behavior, and rollback limits without exposing protected values.
 
 ## Non-Goals
 
@@ -395,7 +459,9 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - Multi-factor authentication or external identity providers.
 - Administration, account management, or cross-account collaboration.
 - A dashboard, analytics, advanced search, sorting controls, or configurable page sizes.
-- Notifications, messaging, billing, payment, or deployment.
+- Notifications, messaging, billing, or payment.
+- Preview environments, multi-environment release management, canary or blue-green delivery, automatic database rollback, or a general-purpose deployment platform.
+- High-availability, zero-downtime, autoscaling, disaster-recovery, or formal service-level guarantees.
 - Clinical decision support, diagnostic claims, regulatory certification, or medical-device claims.
 - 3D visualization, mesh editing, or scan transformation.
 
@@ -407,6 +473,9 @@ Every identifier below must be traceable in future Figma evidence. Related state
 - The printing center may be delayed or temporarily unavailable, so the last confirmed state remains preferable to invented freshness.
 - The current page index and `hasNext`, rather than a total record count, are sufficient for the bounded Previous/Next navigation required by the MVP.
 - Figma will provide desktop and compact-screen evidence after this specification is accepted, using the stable identifiers defined here.
+- One bounded production environment and one serialized release operator are sufficient for this technical assessment.
+- Database and private scan-storage services are provisioned independently and retain state across routine application releases.
+- Runtime ownership can be determined from a small explicit change map; inputs outside its declared runtime scope safely select no production component.
 
 ## Repository Specification Constraints
 

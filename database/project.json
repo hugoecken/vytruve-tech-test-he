@@ -3,6 +3,9 @@
   "$schema": "../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "tags": [],
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*"]
+  },
   "targets": {
     "validate": {
       "cache": false,
@@ -13,6 +16,7 @@
     },
     "migrate": {
       "cache": false,
+      "dependsOn": ["validate"],
       "executor": "nx:run-commands",
       "options": {
         "command": "docker compose --env-file .env.local -f infrastructure/compose.yaml run --rm liquibase update"
@@ -30,6 +34,13 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "docker compose --env-file .env.local -f infrastructure/compose.yaml run --rm liquibase rollback-count --count=1"
+      }
+    },
+    "container": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker build --file database/Dockerfile --tag vytruve-migration:local database"
       }
     }
   }

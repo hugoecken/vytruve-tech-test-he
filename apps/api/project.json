@@ -4,9 +4,19 @@
   "sourceRoot": "apps/api/src",
   "projectType": "application",
   "tags": [],
+  "namedInputs": {
+    "default": [
+      "{projectRoot}/**/*",
+      "{workspaceRoot}/package.json",
+      "{workspaceRoot}/tsconfig.base.json",
+      "{workspaceRoot}/eslint.config.mjs",
+      "{workspaceRoot}/.dockerignore"
+    ]
+  },
   "targets": {
     "build": {
       "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/apps/api"],
       "options": {
         "command": "webpack-cli build",
         "env": {
@@ -71,6 +81,13 @@
       "outputs": ["{workspaceRoot}/generated/openapi.json"],
       "options": {
         "command": "node dist/apps/api/main.js --openapi"
+      }
+    },
+    "container": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker build --build-arg APP_REVISION=0000000000000000000000000000000000000000 --file apps/api/Dockerfile --tag vytruve-api:local ."
       }
     }
   }

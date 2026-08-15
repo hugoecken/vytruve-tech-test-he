@@ -1,6 +1,6 @@
 # Specification Quality Checklist: Orthoprosthetist Printing Workflow
 
-**Purpose**: Validate that the functional specification is complete, traceable, safe, and ready for human acceptance before Figma exploration or technical planning
+**Purpose**: Validate that the functional specification is complete, traceable, safe, and ready for human acceptance before design or technical planning
 
 **Created**: 2026-08-11
 
@@ -26,14 +26,14 @@
 
 ## Scenario And Requirement Completeness
 
-- [x] CHK011 The four user stories are prioritized, independently testable, and cover authentication, patients, scans, and printing. [Spec §User Scenarios & Testing]
-- [x] CHK012 Every acceptance scenario uses explicit Given/When/Then conditions and has a stable identifier. [Spec US1-AS1–US4-AS16, including US2-AS9–US2-AS10, US3-AS13–US3-AS15, US4-AS13–US4-AS16]
+- [x] CHK011 The five user stories are prioritized, independently testable, and cover authentication, patients, scans, printing, and verified delivery. [Spec §User Scenarios & Testing]
+- [x] CHK012 Every acceptance scenario uses explicit Given/When/Then conditions and has a stable identifier. [Spec US1-AS1–US5-AS10, including US2-AS9–US2-AS10, US3-AS13–US3-AS15, US4-AS13–US4-AS16]
 - [x] CHK013 No `[NEEDS CLARIFICATION]` marker or unresolved alternative remains. [Spec]
 - [x] CHK014 Every `FR-xxx` is atomic enough to test, uses a normative term, and identifies observable behavior or a source-mandated constraint. [Spec §Functional Requirements]
 - [x] CHK015 Every `SC-xxx` is measurable through acceptance evidence and avoids unsupported market or performance claims. [Spec §Measurable Outcomes]
 - [x] CHK016 Boundary conditions for password length, patient names, age, scan size, PLY validity, print reference length, and estimated progress are explicit. [Spec §Edge Cases, §Functional Requirements]
 - [x] CHK017 Entity ownership, relationships, cardinality, and print terminality invariants are internally consistent. [Spec §Key Entities, §Entity Relationships And Invariants]
-- [x] CHK018 The non-goals explicitly exclude editing, deletion, cancellation, recovery, MFA, administration, dashboard, advanced search, notifications, billing, deployment, and clinical or regulatory claims. [Spec §Non-Goals]
+- [x] CHK018 The non-goals explicitly exclude editing, deletion, cancellation, recovery, MFA, administration, dashboard, advanced search, notifications, billing, speculative delivery infrastructure, availability guarantees, and clinical or regulatory claims. [Spec §Non-Goals]
 
 ## Experience Readiness For Figma
 
@@ -73,10 +73,21 @@
 
 - [x] CHK036 The specification contains no contact details, provider credential, secret, supplied scan bytes, original sample filename, or real personal data. [Spec]
 - [x] CHK037 Data minimization is required without claiming GDPR, HDS, medical-device, or other formal certification. [Spec FR-054]
-- [x] CHK038 React and NestJS are the only application technologies fixed by the specification. [Spec DC-001]
-- [x] CHK039 README, reviewable Git history, maintainability, and AI disclosure remain delivery constraints rather than invented user features. [Spec DC-002–DC-005]
+- [x] CHK038 React and NestJS are the only application technologies fixed by the specification, and no delivery provider is selected. [Spec §Authority And Scope, DC-001]
+- [x] CHK039 README, reviewable Git history, maintainability, AI disclosure, and operational handover remain delivery constraints rather than invented product features. [Spec DC-002–DC-005, DC-010]
 - [x] CHK040 The status changed to `Accepted` only after explicit human approval, and the accepted artifact contains no plan, task list, implementation, or Figma artifact. [Spec header]
 - [x] CHK041 Requirements, scenarios, state definitions, entity invariants, non-goals, and success criteria contain no internal contradiction. [Spec]
+
+## Delivery Specification Quality
+
+- [x] CHK050 Delivery requirements describe verifiable outcomes and safety boundaries without selecting a workflow provider, registry, hosting product, container image, command, port, or secret value. [Spec US5, FR-058–FR-070]
+- [x] CHK051 Ordinary integration and reviewed production promotion are separate, and proposed-change verification has neither production credentials nor production mutation authority. [Spec US5-AS1–US5-AS2, US5-AS8, FR-059–FR-060]
+- [x] CHK052 Database-only, backend-only, frontend-only, shared-input, documentation-only, and declared-but-unowned runtime changes have deterministic selective-delivery outcomes without an all-components fallback. [Spec US5-AS3–US5-AS5, FR-061, SC-019]
+- [x] CHK053 Combined delivery preserves database migration, backend, and frontend order; failure stops downstream selected work while unchanged components remain running. [Spec US5-AS5–US5-AS7, FR-062–FR-063, SC-020]
+- [x] CHK054 Released artifacts are immutable and source-traceable, production performs no source rebuild, and remote health waits are finite. [Spec US5-AS6, US5-AS10, FR-064, FR-066, FR-070]
+- [x] CHK055 Database and scan-storage state survive routine delivery and application rollback; automatic database rollback, forced unlock, and retained-data deletion are forbidden. [Spec US5-AS7, US5-AS9, FR-063, FR-065, FR-067–FR-068]
+- [x] CHK056 Production secrets and mutation authority remain absent from proposed-change verification, source, build inputs, artifacts, caches, logs, and reviewer evidence. [Spec US5-AS8, FR-069, SC-024]
+- [x] CHK057 The delivery extension adds no product-screen, interaction, responsive-layout, or Figma-state requirement. [Spec US5, §Experience Contract For Figma]
 
 ## Notes
 
