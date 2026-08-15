@@ -1,5 +1,7 @@
 # Dokploy Production Handover
 
+[Back to the main README](../../README.md)
+
 This directory describes one bounded production environment. Routine releases never recreate PostgreSQL or MinIO and never build repository source on the VPS.
 
 ## Security prerequisite
@@ -16,7 +18,7 @@ Provision these independent resources in one Dokploy project and environment:
 4. `vytruve-web`, a Docker Application configured with `ghcr.io/hugoecken/vytruve-web:production`, internal port `8080`, and Auto Deploy enabled.
 5. `vytruve-migration`, a disabled-recurring Dokploy Server Schedule Job that is run manually by the release workflow.
 
-Make the three GHCR packages public once. Keep PostgreSQL, MinIO, and their volumes outside the API and Web application resources. Route the public origin to Web and `/api` to API without exposing PostgreSQL, MinIO, or a MinIO console port.
+The three GHCR packages are public so Dokploy and the migration job can pull them anonymously. Keep PostgreSQL, MinIO, and their volumes outside the API and Web application resources. Route the public origin to Web and `/api` to API without exposing PostgreSQL, MinIO, or a MinIO console port.
 
 ## Blocking migration job
 
@@ -61,7 +63,7 @@ Configure these non-secret variables:
 
 Dokploy owns all application runtime values. The API requires `APP_REVISION`, `NODE_ENV`, `API_PORT`, `WEB_ORIGIN`, JWT configuration, PostgreSQL configuration, scan limits, MinIO configuration, and printing-provider configuration. The workflow injects only the non-secret source revision at image build time. The Web build receives only its public API origin and source revision.
 
-Require review on the GitHub `production` environment. Protect `develop` and `main` with required pull requests, conversation resolution, and the `verify` check without an approval count for the solo-maintainer repository. The workflow additionally rejects a promotion pull request whose head is not `develop`.
+The GitHub `production` environment uses a custom branch policy limited to `main`, disallows administrator bypass, and requires no reviewer approval for the solo-maintainer repository. Protect `develop` and `main` with required pull requests, conversation resolution, and the `verify` check without an approval count. The workflow additionally rejects a promotion pull request whose head is not `develop`.
 
 The official Nx SHA resolver keeps changes from a failed run in the next affected set. An empty deployable-project result skips production before approval. All jobs and remote waits have finite bounds.
 
