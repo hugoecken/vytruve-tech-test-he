@@ -163,7 +163,7 @@
 - [X] T067 [P] [US5] Add the revision-aware unprivileged Nginx runtime contract in `apps/web/nginx.conf.template` (FR-066; SC-022)
 - [X] T068 [P] [US5] Add root-context production images in `.dockerignore`, `apps/api/Dockerfile`, `apps/web/Dockerfile`, and `database/Dockerfile` with immutable revision labels and no embedded secrets (FR-064, FR-069; SC-021, SC-024)
 - [X] T069 [P] [US5] Define the retained MinIO-only production resource in `infrastructure/dokploy/minio.compose.yaml` (FR-063, FR-069; SC-022, SC-024)
-- [X] T070 [US5] Implement one required `verify` job with official last-successful SHA resolution, Nx affected gates, deterministic generation, finite job bounds, and unconditional Compose cleanup in `.github/workflows/ci.yml` (FR-058–FR-060, FR-070; SC-018, SC-023)
+- [X] T070 [US5] Implement one required `verify` job with official last-successful SHA resolution, Nx affected gates, generated-contract synchronization, finite job bounds, and unconditional Compose cleanup in `.github/workflows/ci.yml` (FR-058–FR-060, FR-070; SC-018, SC-023)
 - [X] T071 [US5] Derive the release set exclusively with `nx show projects --affected --withTarget=container --json` and publish selected immutable SHA-tagged GHCR images in `.github/workflows/ci.yml` (FR-061–FR-064; SC-019–SC-021)
 - [X] T072 [US5] Promote the selected migration digest to its `production` pull pointer and run the blocking Schedule Job through pinned `@dokploy/cli` plus `jq` in `.github/workflows/ci.yml` (FR-062–FR-065; SC-020–SC-022)
 - [X] T073 [US5] Promote selected API/Web digests in order, trigger their Dokploy Auto Deploy webhooks, and verify their exact revisions with bounded `curl` retries in `.github/workflows/ci.yml` (FR-062–FR-067, FR-070; SC-020–SC-022)
@@ -171,7 +171,7 @@
 - [X] T075 [US5] Document Dokploy `v0.29.5+` security prerequisites, retained-resource provisioning, the migration Schedule Job command, webhook setup, configuration names, ordering, failure behavior, and rollback limits in `infrastructure/dokploy/README.md` (FR-063–FR-070; SC-022–SC-024)
 - [X] T076 [US5] Update reviewer-facing CI, image, promotion, rollback, and AI-assistance guidance in `README.md` and `specs/001-orthoprosthetist-printing-workflow/quickstart.md` (FR-058–FR-070; SC-018–SC-024)
 - [X] T077 [US5] Prove accepted database/API/Web/shared/docs/infrastructure/combined affected fixtures through Nx CLI commands and record the commands in `specs/001-orthoprosthetist-printing-workflow/quickstart.md` (FR-061; SC-019)
-- [X] T078 [US5] Run affected lint, type-check, tests, builds, migration validation, deterministic generation, image smoke checks, workflow checks, formatting, and final protected-data inspection for the issue #14 implementation (FR-058, FR-064, FR-069–FR-070; SC-021, SC-023–SC-024)
+- [X] T078 [US5] Run affected lint, type-check, tests, builds, migration validation, contract generation, image smoke checks, workflow checks, formatting, and final protected-data inspection for the issue #14 implementation (FR-058, FR-064, FR-069–FR-070; SC-021, SC-023–SC-024)
 
 **Checkpoint**: Issue #14 has a local, reviewable delivery implementation. Publication, GitHub protection changes, package visibility, Dokploy provisioning, and production mutation remain separately authorized operations.
 

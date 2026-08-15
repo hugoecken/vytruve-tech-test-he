@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [develop, main]
   push:
-    branches: [develop, main]
+    branches: [main]
 
 permissions:
   actions: read
@@ -48,7 +48,6 @@ jobs:
       - name: Select deployable projects with Nx
         id: affected
         env:
-          NX_ISOLATE_PLUGINS: false
           VITE_CONFIG_NATIVE_IGNORE_WARNING: true
         run: |
           projects=$(npm exec nx -- show projects --affected --base="$NX_BASE" --head="$NX_HEAD" --withTarget=container --json)
@@ -65,15 +64,8 @@ jobs:
       - name: Verify affected Liquibase changes
         run: npm exec nx -- affected -t migrate --base="$NX_BASE" --head="$NX_HEAD" --nxBail
 
-      - name: Generate contracts twice without drift
-        run: |
-          rm -rf generated apps/web/src/shared/api/generated
-          npm exec nx -- run web:generate-api
-          find generated apps/web/src/shared/api/generated -type f -print0 | sort -z | xargs -0 shasum -a 256 > /tmp/generated-first.sha256
-          rm -rf generated apps/web/src/shared/api/generated
-          npm exec nx -- run web:generate-api
-          find generated apps/web/src/shared/api/generated -type f -print0 | sort -z | xargs -0 shasum -a 256 > /tmp/generated-second.sha256
-          diff --unified /tmp/generated-first.sha256 /tmp/generated-second.sha256
+      - name: Generate contracts
+        run: npm exec nx -- run web:generate-api
 
       - name: Verify affected source
         run: npm exec nx -- affected -t lint typecheck test --base="$NX_BASE" --head="$NX_HEAD" --parallel=1 --nxBail

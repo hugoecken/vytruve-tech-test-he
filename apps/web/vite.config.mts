@@ -16,7 +16,11 @@ export default defineConfig({
     port: 4200,
   },
   plugins: [
-    tanstackRouter({ target: 'react', autoCodeSplitting: true }),
+    tanstackRouter({
+      target: 'react',
+      autoCodeSplitting: true,
+      disableLogging: true,
+    }),
     react(),
     tailwindcss(),
   ],

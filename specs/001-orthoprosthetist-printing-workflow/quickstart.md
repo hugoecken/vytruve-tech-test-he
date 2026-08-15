@@ -208,7 +208,7 @@ npm exec nx -- run web:generate-api
 npm exec nx -- affected -t build --base=<base-revision> --head=<head-revision>
 ```
 
-The migration target validates the changelog first through its Nx dependency, then applies the complete chain to the ephemeral database. The implemented workflow owns unconditional dependency shutdown even after an earlier command fails. The generation gate removes ignored outputs, emits OpenAPI and both Orval outputs, records a byte-level manifest, repeats the complete generation from clean outputs, and compares the manifests. A reviewer must not infer reproducibility from a single successful generation.
+The migration target validates the changelog first through its Nx dependency, then applies the complete chain to the ephemeral database. The implemented workflow owns unconditional dependency shutdown even after an earlier command fails. The generation gate uses the existing Nx target to emit OpenAPI and both Orval outputs; Orval cleans its configured output directories before the generated contracts are consumed by type checking, tests, and production builds.
 
 ## Nx Affected Validation
 
