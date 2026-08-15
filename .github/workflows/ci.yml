@@ -48,6 +48,7 @@ jobs:
       - name: Select deployable projects with Nx
         id: affected
         env:
+          NX_ISOLATE_PLUGINS: false
           VITE_CONFIG_NATIVE_IGNORE_WARNING: true
         run: |
           projects=$(npm exec nx -- show projects --affected --base="$NX_BASE" --head="$NX_HEAD" --withTarget=container --json)
@@ -57,9 +58,6 @@ jobs:
 
       - name: Verify affected formatting
         run: npm exec nx -- format:check --base="$NX_BASE" --head="$NX_HEAD"
-
-      - name: Verify affected source
-        run: npm exec nx -- affected -t lint typecheck test --base="$NX_BASE" --head="$NX_HEAD" --parallel=1 --nxBail
 
       - name: Start ephemeral retained dependencies
         run: npm exec nx -- run infrastructure:up
@@ -76,6 +74,9 @@ jobs:
           npm exec nx -- run web:generate-api
           find generated apps/web/src/shared/api/generated -type f -print0 | sort -z | xargs -0 shasum -a 256 > /tmp/generated-second.sha256
           diff --unified /tmp/generated-first.sha256 /tmp/generated-second.sha256
+
+      - name: Verify affected source
+        run: npm exec nx -- affected -t lint typecheck test --base="$NX_BASE" --head="$NX_HEAD" --parallel=1 --nxBail
 
       - name: Build affected applications
         run: npm exec nx -- affected -t build --base="$NX_BASE" --head="$NX_HEAD" --nxBail
