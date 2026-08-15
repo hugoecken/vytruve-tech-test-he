@@ -51,6 +51,7 @@ jobs:
           VITE_CONFIG_NATIVE_IGNORE_WARNING: true
         run: |
           projects=$(npm exec nx -- show projects --affected --base="$NX_BASE" --head="$NX_HEAD" --withTarget=container --json)
+          echo "Nx affected deployable projects: $projects"
           jq -e 'all(.[]; . == "database" or . == "api" or . == "web")' <<< "$projects" > /dev/null
           echo "projects=$(jq -c . <<< "$projects")" >> "$GITHUB_OUTPUT"
 
