@@ -1,27 +1,37 @@
 # Vytruve Technical Assessment
 
-Specification-driven React and NestJS implementation of the Vytruve technical assessment.
+A specification-driven React and NestJS application for orthoprosthetists to manage patients, store private 3D scans,
+and submit and follow socket-printing requests.
 
-## Current stage
+The delivered journey covers:
 
-The repository contains the accepted product specification, technical plan, executable foundation, and the complete
-backend product workflow. The canonical Figma files remain the sole visual authorities.
+1. account registration, sign-in, session restoration, language selection, and sign-out;
+2. owner-scoped patient creation, pagination, and patient workspaces;
+3. bounded PLY 1.0 upload, private MinIO storage, and authorized download; and
+4. duplicate-safe print submission, provider reconciliation, status tracking, and estimated progress.
 
-The current implementation provides:
+Patient editing or deletion, scan deletion, print cancellation, password recovery, MFA, notifications, billing, and
+clinical or regulatory claims are deliberately outside this assessment.
 
-- an Nx monorepo with React/Vite and NestJS applications;
-- strict TypeScript, ESLint, Prettier, type-check, and build targets;
-- PostgreSQL and private MinIO services through Docker Compose;
-- a Liquibase XML schema executed only in a disposable container;
-- cookie-based account registration and authentication; and
-- owner-scoped patient creation, retrieval, and server-side pagination;
-- content-validated PLY uploads stored in a private MinIO bucket; and
-- owner-authorized scan listing and byte-for-byte content streaming; and
-- duplicate-safe print submission, reconciliation, lifecycle tracking, and estimated progress;
-- a file-based React application shell with TanStack Router and Query; and
-- responsive patient records, scan upload/download workflows, and explicit collection recovery states; and
-- the public shadcn/ui Base UI catalog on Tailwind CSS 4; and
-- Nx-affected CI, immutable production images, and ordered Dokploy delivery definitions.
+## Documentation
+
+This README is the reviewer entry point. Detailed facts have one owner:
+
+- [Architecture](docs/architecture.md) — system boundaries, data ownership, backend structure, storage, printing, and
+  contract generation;
+- [Authentication and security](docs/authentication-and-security.md) — session lifecycle, authorization, validation,
+  Problem Details, configuration, and protected-data boundaries;
+- [Frontend](docs/frontend.md) — routes, server state, forms, localization, responsive behavior, accessibility, and
+  frontend tests;
+- [Decisions and trade-offs](docs/decisions-and-trade-offs.md) — consequential choices, limitations, deferred work,
+  and AI-assistance details; and
+- [Dokploy production handover](infrastructure/dokploy/README.md) — production resources, images, migration order,
+  health verification, failure behavior, and rollback.
+
+The accepted specification and plan remain the product and technical authorities under
+[`specs/001-orthoprosthetist-printing-workflow/`](specs/001-orthoprosthetist-printing-workflow/). `tasks.md` is a
+derived planning artifact rather than live delivery state; GitHub issues and pull requests own execution. The documents
+above explain the delivered implementation without replacing those authorities.
 
 ## Prerequisites
 
@@ -29,188 +39,138 @@ The current implementation provides:
 - npm 10
 - Docker with Docker Compose
 
-No global Nx, NestJS, Vite, Liquibase, PostgreSQL, or MinIO installation is required.
+No global Nx, NestJS, Vite, PostgreSQL, MinIO, or Liquibase installation is required.
 
-## Install
+## Quick start
 
-Install the locked dependencies from a clean checkout:
+Install the locked dependency graph from a clean checkout:
 
 ```bash
 npm ci
 ```
 
-npm owns dependency installation only. Nx owns workspace task execution through the repository-local binary.
-
-## Local configuration
-
-Create the ignored local environment file once:
+Create the ignored local configuration file. Its committed source contains synthetic development placeholders only:
 
 ```bash
 cp .env.example .env.local
 ```
 
-The root file is the single local configuration source consumed by the API, Web application, Docker Compose,
-Liquibase, and repository-level tools such as the licensed shadcn.design registry. The committed example contains
-development-only placeholders. Never reuse them outside local development or commit `.env.local`.
+The printing-provider URL and key placeholders allow the application to start, but real print submission requires the
+credential supplied separately with the assessment. Put it only in `.env.local`; never commit it.
 
-## Local infrastructure
-
-Start PostgreSQL and MinIO:
+Start retained local dependencies and apply the Liquibase changelog:
 
 ```bash
 npm exec nx -- run infrastructure:up
+npm exec nx -- run database:migrate
 ```
 
-Inspect their status or stop their containers without deleting development volumes:
+Start the API and Web development servers together through Nx:
 
 ```bash
-npm exec nx -- run infrastructure:status
+npm start
+```
+
+| Service       | Local address               |
+| ------------- | --------------------------- |
+| Web           | `http://localhost:4200`     |
+| API           | `http://localhost:3000/api` |
+| PostgreSQL    | `127.0.0.1:5432`            |
+| MinIO S3      | `http://127.0.0.1:9000`     |
+| MinIO console | `http://127.0.0.1:9001`     |
+
+Stop the two application processes with `Ctrl+C`, then stop local infrastructure without deleting its named volumes:
+
+```bash
 npm exec nx -- run infrastructure:down
 ```
 
-Docker Compose remains the native service orchestrator. The Nx targets provide one discoverable workspace interface
-without wrapping Compose through npm scripts.
+PostgreSQL and MinIO data survive normal stop/start cycles. No reset alias is provided because deleting reviewer data
+must remain an explicit Docker operation.
 
-| Service       | Local address           |
-| ------------- | ----------------------- |
-| Web           | `http://localhost:4200` |
-| API           | `http://localhost:3000` |
-| PostgreSQL    | `localhost:5432`        |
-| MinIO S3      | `http://localhost:9000` |
-| MinIO Console | `http://localhost:9001` |
+## Configuration ownership
 
-## Database migrations
+`.env.example` is the complete local variable inventory. The API validates required values before listening; the Web
+bundle receives only `VITE_API_BASE_URL`, which is safe for browser users.
 
-Liquibase is fully dockerized. Each command starts a disposable container, waits for PostgreSQL to become healthy,
-uses the read-only XML changelog mount, and exits when the operation completes.
+| Context                        | Configuration source                              | Rule                                                                                                              |
+| ------------------------------ | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Local                          | ignored `.env.local` copied from `.env.example`   | Development placeholders are allowed; real provider credentials remain local.                                     |
+| Pull-request verification      | synthetic `.env.local` copied from `.env.example` | No production secret or mutation authority is available.                                                          |
+| Production application runtime | Dokploy application environment                   | Database, MinIO, JWT, CORS, scan-limit, and provider values are injected at runtime.                              |
+| Production release             | GitHub `production` environment                   | Dokploy webhooks and API key are secrets; URLs, schedule identity, origin, and platform are non-secret variables. |
+| Image build                    | GitHub Actions build arguments                    | Only the source revision and public Web API origin enter images.                                                  |
+
+See [Authentication and security](docs/authentication-and-security.md#configuration-boundaries) and the
+[Dokploy handover](infrastructure/dokploy/README.md#github-production-environment) for the exact variable names. Never
+store a token in browser storage or expose a server secret through a `VITE_` variable.
+
+## Command reference
+
+Nx owns task selection, dependencies, parallelism, and caching. npm owns dependency installation and the single
+reviewer-facing `npm start` alias.
+
+### Infrastructure and database
 
 ```bash
+npm exec nx -- run infrastructure:up
+npm exec nx -- run infrastructure:status
+npm exec nx -- run infrastructure:down
+
 npm exec nx -- run database:validate
 npm exec nx -- run database:status
 npm exec nx -- run database:migrate
 npm exec nx -- run database:rollback
 ```
 
-`database/db.changelog-master.xml` is the schema authority. TypeORM maps the resulting tables at runtime with schema
-synchronization and TypeORM migrations disabled.
+Liquibase runs in a disposable container. It is the schema authority; TypeORM schema synchronization and TypeORM
+migrations are disabled. `database:rollback` reverts only the most recent local change set and is not a production
+rollback mechanism.
 
-## Applications
-
-Start the local API and Web processes in separate terminals:
-
-```bash
-npm exec nx -- serve api
-npm exec nx -- serve web
-```
-
-The API validates every required runtime setting before listening under `/api`. It exposes account session and
-owner-scoped patient, scan, and print-request endpoints. `MAX_SCAN_SIZE_BYTES` configures the upload boundary and
-defaults to the accepted 25 MiB product limit in `.env.example`. Scan uploads accept one structurally valid PLY 1.0
-mesh within that limit, ignore client filenames and MIME claims, and expose neither object keys nor MinIO details. The
-private bucket is created through the official MinIO client when the API starts.
-
-Printing uses the following required settings:
-
-| Variable                  | Purpose                                                    |
-| ------------------------- | ---------------------------------------------------------- |
-| `PRINTING_API_BASE_URL`   | Absolute HTTP(S) base URL of the printing-center API       |
-| `PRINTING_API_KEY`        | API credential supplied only at the provider HTTP boundary |
-| `PRINTING_API_TIMEOUT_MS` | Positive request timeout in milliseconds                   |
-
-The committed example uses a reserved `.invalid` URL and a local placeholder key. Replace them only in the ignored
-`.env.local` file. The integration persists a unique reference before submission, sends the scan with a single POST, and
-never retries that non-idempotent request automatically. If the result is ambiguous, the reservation remains in
-`confirmation_pending` and later reads reconcile it by stable reference before consulting the provider identifier.
-Terminal observations release the scan for a later print request. The Web application provides the authenticated
-patient directory and patient workspace. It creates patient records, validates and uploads one PLY scan at a time,
-downloads owner-authorized scan content with synthetic output names, and keeps failures within their owning context.
-
-Generate the code-first OpenAPI contract without serving a public Swagger interface:
+### Contracts and generated clients
 
 ```bash
 npm exec nx -- run api:openapi
-```
-
-The ignored output is written to `generated/openapi.json`. It is a generated contract and must not be edited by hand.
-Swagger remains pinned to the selected release; the targeted npm override keeps its transitive YAML parser on
-the patched compatible release validated by this generation command.
-
-Generate the ignored frontend Fetch hooks, OpenAPI types, and Zod Mini request schemas from that contract with:
-
-```bash
 npm exec nx -- run web:generate-api
 ```
 
-The target depends explicitly on `api:openapi`. Generation remains a deliberate operation so ordinary Web builds do
-not start PostgreSQL or regenerate contracts implicitly. Never edit files below
-`apps/web/src/shared/api/generated/`; update the NestJS OpenAPI contract or `orval.config.ts`, then regenerate.
+`web:generate-api` depends on `api:openapi` and emits ignored Orval Fetch/TanStack Query clients, types, and Zod Mini
+request schemas. Never edit `generated/openapi.json`, `apps/web/src/shared/api/generated/`, or
+`apps/web/src/routeTree.gen.ts` by hand.
 
-The browser transport uses `VITE_API_BASE_URL`, includes the session cookie, preserves multipart uploads and binary
-downloads, and converts RFC 9457 responses into safe typed errors. One bundled JSON catalog per supported language
-translates stable problem and validation codes; raw Backend or Zod messages are never user-facing. Additional i18next
-namespaces will be introduced only when a catalog becomes large or benefits from independent loading.
-
-## Frontend navigation and server state
-
-TanStack Router owns typed URLs, file routes, navigation, and route guards. TanStack Query is the only owner of remote
-server state. The single `QueryClient` is injected through the typed router context, and the cookie-backed session is
-restored before route guards mount. Successful authentication writes the returned session to its generated query key;
-sign-out and expiry clear all account-scoped cache state before navigation.
-
-Router intent preloading remains enabled, with its preload stale time set to zero so TanStack Query retains sole
-authority over data freshness. Components subscribe through generated Query hooks. TanStack Table is the headless
-rendering engine for patients and scans, while each feature owns its columns and behavior. The visible page always
-comes from the last confirmed API response: an initial failure replaces the collection, a pagination failure preserves
-the confirmed page, and a refresh failure preserves confirmed rows as potentially stale. The official recommended
-TanStack Query and Router ESLint configurations protect query dependencies, client stability, route parameter names,
-and route-property ordering.
-
-## Frontend component platform
-
-The repository contains the complete public shadcn/ui Base Nova catalog configured for Base UI, Tailwind CSS 4, CSS
-variables, and Lucide icons. Shared components live under `apps/web/src/shared/ui`; no global barrel or showcase is
-maintained.
-
-Inspect the resolved shadcn configuration or preview a catalog refresh without writing files:
-
-```bash
-npx shadcn info
-npx shadcn add --all --dry-run
-```
-
-Add or refresh a specific public component deliberately with `npx shadcn add <component>`.
-
-The licensed shadcn.design registry is configured separately from the public catalog. Keep the effective
-`SHADCNDESIGN_LICENSE_KEY` only in the ignored root `.env.local` file; never place it in `components.json`, committed
-environment files, command arguments, logs, screenshots, or generated output.
-
-After authenticated registry access has been verified, install the licensed Codex skills locally with:
-
-```bash
-npx shadcn@latest add @shadcndesign/skills-codex
-```
-
-The licensed skill payload is local input and is not committed. Repository guidance, accepted specifications, and
-owning GitHub issues take precedence over vendor instructions. The canonical visual system uses a published
-`Vytruve — UI Library` and a separate `Vytruve — Product Design`.
-
-## Quality commands
+### Quality and builds
 
 ```bash
 npm exec nx -- format:check
-npm exec nx -- run-many -t lint,typecheck,build --projects=api,web --nxBail
+npm exec nx -- run-many -t lint,typecheck,test,build --projects=api,web --parallel=1 --nxBail
 ```
 
-Run the focused Backend verification suites with:
+Focused suites remain independently runnable:
 
 ```bash
 npm exec nx -- test api --runInBand
+npm exec nx -- test web
 ```
 
-This command runs colocated unit and printing-provider contract tests with synthetic values. The provider contract
-tests use a controlled local HTTP server and never contact the real printing provider.
+Build all production image definitions locally with synthetic revision inputs:
 
-Use Nx to inspect the resolved workspace rather than relying only on partial project files:
+```bash
+npm exec nx -- run web:generate-api
+npm exec nx -- run-many -t container --projects=database,api,web --parallel=1 --nxBail
+```
+
+Smoke-check the self-contained Web image and its revision-aware health endpoint:
+
+```bash
+docker run --rm --detach --name vytruve-web-smoke --publish 127.0.0.1:8080:8080 vytruve-web:local
+curl --fail http://127.0.0.1:8080/health/0000000000000000000000000000000000000000
+docker stop vytruve-web-smoke
+```
+
+The API image depends on PostgreSQL and MinIO, so its production smoke check belongs to the ordered Dokploy release
+rather than a second local orchestration path.
+
+Inspect the resolved workspace rather than relying on partial project files:
 
 ```bash
 npm exec nx -- show projects --json
@@ -218,32 +178,28 @@ npm exec nx -- show project api --json
 npm exec nx -- show project web --json
 ```
 
-## Production delivery
+The GitHub `verify` job applies the affected equivalents of formatting, Liquibase migration, contract generation,
+linting, type-checking, tests, and builds. It uses the official Nx SHA resolver and always stops its temporary Compose
+dependencies.
 
-The required `verify` job uses the official Nx SHA resolver and `nx affected`. It passes the deployable-project JSON
-directly to production, so documentation-only changes stop before production approval. A reviewed
-`develop`-to-`main` promotion publishes immutable selected images, then runs migration, API, and Web in order. Dokploy
-webhooks are completed by bounded revision-aware health checks; application rollback restores one prior digest and
-never reverses Liquibase or restarts retained services. See
-[`infrastructure/dokploy/README.md`](infrastructure/dokploy/README.md) for production configuration and recovery.
+## Delivery snapshot
+
+`develop` is the ordinary integration branch and cannot deploy. A reviewed `develop` to `main` promotion verifies the
+exact revision and releases only projects selected by `nx affected` that expose a `container` target. Selected stages
+run in migration, API, then Web order. GHCR images are public for anonymous Dokploy pulls, while production secrets
+remain in GitHub and Dokploy stores rather than image layers.
+
+The Git history follows bounded issue branches and pull requests so a reviewer can trace specification, design,
+implementation, verification, and delivery decisions without retrospective placeholder commits.
+
+The deployed topology intentionally keeps PostgreSQL and MinIO independent from application releases. Revision-aware
+health checks prove the exact API and Web artifact after each webhook. Application rollback restores one previous
+image digest and never reverses Liquibase or recreates retained services. Operational detail belongs to the
+[Dokploy production handover](infrastructure/dokploy/README.md).
 
 ## AI assistance
 
-AI assistance was used for bounded design and implementation work. The author remains responsible for every diff,
-validation result, and GitHub or production mutation; protected data and generated output remain excluded.
-
-## Workflow
-
-1. Establish repository and Spec Kit governance.
-2. Specify and clarify the complete MVP.
-3. Explore and approve the responsive product design.
-4. Translate accepted intent into a decision-complete technical plan.
-5. Implement and verify each approved delivery issue.
-
-The project uses GitHub issues and pull requests for execution state. Spec Kit artifacts describe accepted intent,
-technical translation, and derived tasks without creating a competing roadmap.
-
-## Deferred work
-
-- GitHub branch protection, environment approval, package visibility, and Dokploy provisioning until separately authorized
-- Formal high-availability, zero-downtime, or automatic database rollback guarantees
+AI assistance supported specification analysis, implementation, tests, documentation, and bounded delivery work. The
+author retained decision and mutation authority, reviewed every delivered diff, ran the stated verification, and kept
+credentials, supplied scans, generated output, and personal source material outside Git. See
+[Decisions and trade-offs](docs/decisions-and-trade-offs.md#ai-assisted-workflow) for the review boundary.
