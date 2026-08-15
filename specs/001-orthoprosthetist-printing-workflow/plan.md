@@ -118,7 +118,7 @@ feature branch ──reviewed PR──► develop ──reviewed promotion PR─
 
 `.github/workflows/ci.yml` is the single verification and routine-promotion workflow:
 
-- trigger on pull requests targeting `develop` or `main` and pushes to either branch;
+- trigger on pull requests targeting `develop` or `main` and pushes to `main`;
 - expose one required `verify` job name for both protected branches;
 - use `pull_request`, never `pull_request_target`, so untrusted change verification cannot access production authority;
 - fail a `main` pull request whose head is not `develop` before running the repository checks;
@@ -132,7 +132,7 @@ feature branch ──reviewed PR──► develop ──reviewed promotion PR─
 
 Branch protection and environment configuration are one-time GitHub settings documented for the reviewer:
 
-- `develop`: require a pull request, one approval, conversation resolution, and the `verify` check;
+- `develop`: require a pull request, conversation resolution, and the `verify` check without an approval count for the solo-maintainer repository;
 - `main`: apply the same protections, reject direct pushes, and rely on the workflow guard to allow only `develop` as the pull-request head;
 - `production`: require approval, allow only protected `main`, disallow protection bypass where the repository plan supports it, and own the sole deployment secret.
 
@@ -145,7 +145,7 @@ The `verify` job uses Node.js 24 and `npm ci`, then runs one readable sequence:
 3. run lint, strict type checks, and the existing Jest and Vitest suites through one `nx affected` boundary;
 4. start the minimum ephemeral PostgreSQL and MinIO dependencies;
 5. run the affected `database:migrate` target, whose Nx dependency validates the changelog before applying it to the ephemeral database;
-6. emit OpenAPI and generate both Orval outputs from a clean generated directory, record a deterministic manifest, repeat the complete generation, and fail on any byte-level manifest difference;
+6. emit OpenAPI and generate both Orval outputs through the existing Nx target, relying on Orval's configured output cleanup before type checking, tests, and production builds consume them;
 7. build affected applications through `npm exec nx -- affected -t build --base=<base> --head=<head>`;
 8. stop ephemeral Compose dependencies in an unconditional final step.
 

@@ -61,7 +61,7 @@ Configure these non-secret variables:
 
 Dokploy owns all application runtime values. The API requires `APP_REVISION`, `NODE_ENV`, `API_PORT`, `WEB_ORIGIN`, JWT configuration, PostgreSQL configuration, scan limits, MinIO configuration, and printing-provider configuration. The workflow injects only the non-secret source revision at image build time. The Web build receives only its public API origin and source revision.
 
-Require review on the GitHub `production` environment. Protect `develop` with the `verify` check and review rules. Protect `main` with the same rules; the workflow additionally rejects a promotion pull request whose head is not `develop`.
+Require review on the GitHub `production` environment. Protect `develop` and `main` with required pull requests, conversation resolution, and the `verify` check without an approval count for the solo-maintainer repository. The workflow additionally rejects a promotion pull request whose head is not `develop`.
 
 The official Nx SHA resolver keeps changes from a failed run in the next affected set. An empty deployable-project result skips production before approval. All jobs and remote waits have finite bounds.
 
