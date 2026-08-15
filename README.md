@@ -20,9 +20,8 @@ The current implementation provides:
 - duplicate-safe print submission, reconciliation, lifecycle tracking, and estimated progress;
 - a file-based React application shell with TanStack Router and Query; and
 - responsive patient records, scan upload/download workflows, and explicit collection recovery states; and
-- the public shadcn/ui Base UI catalog on Tailwind CSS 4.
-
-The print-request runtime UI remains intentionally deferred to its dedicated delivery issue.
+- the public shadcn/ui Base UI catalog on Tailwind CSS 4; and
+- Nx-affected CI, immutable production images, and ordered Dokploy delivery definitions.
 
 ## Prerequisites
 
@@ -219,6 +218,20 @@ npm exec nx -- show project api --json
 npm exec nx -- show project web --json
 ```
 
+## Production delivery
+
+The required `verify` job uses the official Nx SHA resolver and `nx affected`. It passes the deployable-project JSON
+directly to production, so documentation-only changes stop before production approval. A reviewed
+`develop`-to-`main` promotion publishes immutable selected images, then runs migration, API, and Web in order. Dokploy
+webhooks are completed by bounded revision-aware health checks; application rollback restores one prior digest and
+never reverses Liquibase or restarts retained services. See
+[`infrastructure/dokploy/README.md`](infrastructure/dokploy/README.md) for production configuration and recovery.
+
+## AI assistance
+
+AI assistance was used for bounded design and implementation work. The author remains responsible for every diff,
+validation result, and GitHub or production mutation; protected data and generated output remain excluded.
+
 ## Workflow
 
 1. Establish repository and Spec Kit governance.
@@ -232,6 +245,5 @@ technical translation, and derived tasks without creating a competing roadmap.
 
 ## Deferred work
 
-- Print-request runtime screens and interactions
-- Frontend component and feature tests
-- GitHub Actions and deployment
+- GitHub branch protection, environment approval, package visibility, and Dokploy provisioning until separately authorized
+- Formal high-availability, zero-downtime, or automatic database rollback guarantees

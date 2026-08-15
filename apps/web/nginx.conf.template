@@ -1,0 +1,22 @@
+server {
+  listen 8080;
+  server_name _;
+  root /usr/share/nginx/html;
+
+  location = /health {
+    add_header Content-Type application/json always;
+    return 200 '{"status":"live","revision":"${APP_REVISION}"}';
+  }
+
+  location ~ "^/health/(?<expected_revision>[0-9a-f]{40})$" {
+    add_header Content-Type application/json always;
+    if ($expected_revision != "${APP_REVISION}") {
+      return 503 '{"status":"unavailable","revision":"${APP_REVISION}"}';
+    }
+    return 200 '{"status":"ready","revision":"${APP_REVISION}"}';
+  }
+
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+}

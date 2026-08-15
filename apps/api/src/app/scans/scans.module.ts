@@ -21,7 +21,7 @@ import { MinioScanStorageAdapter } from './infrastructure/storage/minio-scan-sto
 /** Composes owner-scoped scan HTTP, validation, persistence, and storage. */
 @Module({
   controllers: [ScansController],
-  exports: [ScansService],
+  exports: [SCAN_STORAGE, ScansService],
   imports: [
     MulterModule.registerAsync({
       inject: [ConfigService],

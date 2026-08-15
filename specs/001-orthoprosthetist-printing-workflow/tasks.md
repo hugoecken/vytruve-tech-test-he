@@ -12,8 +12,7 @@
 - Every task names its intended repository path. Create only directories required by the task being executed.
 - `[P]` means the task may run in parallel with other `[P]` tasks in the same phase because it owns different files.
 - `[USx]` identifies the independently testable user story supported by the task.
-- No test implementation belongs to this checklist. Backend tests are owned by issue #9, frontend tests by issue #12,
-  and CI quality gates by issue #14.
+- Product-behavior tests remain owned by issues #9 and #12. Issue #14 owns only delivery-boundary tests and CI evidence.
 - Generated OpenAPI, Orval, Zod, and TanStack Router outputs remain ignored and must never be edited manually.
 
 ## Phase 1: Workspace Setup
@@ -152,6 +151,32 @@
 
 ---
 
+## Phase 8: User Story 5 — Verify And Promote A Revision Safely (Priority: P1)
+
+**Goal**: Verify one exact revision and promote only its Nx-affected migration, API, and Web components through blocking, retained-state-safe stages.
+
+**Independent acceptance**: Representative file fixtures resolve through Nx to the exact accepted component sets; a selected release publishes immutable images before production mutation, runs Liquibase as a blocking Dokploy Schedule Job, then triggers and verifies only the selected API/Web webhooks in order.
+
+- [X] T064 [US5] Reconcile the accepted `develop` integration and `main` promotion model in `.agents/skills/vytruve-best-practices/overlays/repository-profile.md` and `.agents/skills/vytruve-best-practices/overlays/git-profile.md` without mutating Git branches or settings (FR-059–FR-060; SC-018)
+- [X] T065 [US5] Configure dependency-aware lockfile handling, project-scoped root inputs, and `container` targets in `nx.json`, `apps/api/project.json`, `apps/web/project.json`, and `database/project.json` (FR-061–FR-062; SC-019–SC-020)
+- [X] T066 [P] [US5] Implement API liveness, dependency readiness, and expected-revision behavior with focused tests under `apps/api/src/app/health/` and register it in `apps/api/src/app/app.module.ts` (FR-066, FR-069; SC-022, SC-024)
+- [X] T067 [P] [US5] Add the revision-aware unprivileged Nginx runtime contract in `apps/web/nginx.conf.template` (FR-066; SC-022)
+- [X] T068 [P] [US5] Add root-context production images in `.dockerignore`, `apps/api/Dockerfile`, `apps/web/Dockerfile`, and `database/Dockerfile` with immutable revision labels and no embedded secrets (FR-064, FR-069; SC-021, SC-024)
+- [X] T069 [P] [US5] Define the retained MinIO-only production resource in `infrastructure/dokploy/minio.compose.yaml` (FR-063, FR-069; SC-022, SC-024)
+- [X] T070 [US5] Implement one required `verify` job with official last-successful SHA resolution, Nx affected gates, deterministic generation, finite job bounds, and unconditional Compose cleanup in `.github/workflows/ci.yml` (FR-058–FR-060, FR-070; SC-018, SC-023)
+- [X] T071 [US5] Derive the release set exclusively with `nx show projects --affected --withTarget=container --json` and publish selected immutable SHA-tagged GHCR images in `.github/workflows/ci.yml` (FR-061–FR-064; SC-019–SC-021)
+- [X] T072 [US5] Promote the selected migration digest to its `production` pull pointer and run the blocking Schedule Job through pinned `@dokploy/cli` plus `jq` in `.github/workflows/ci.yml` (FR-062–FR-065; SC-020–SC-022)
+- [X] T073 [US5] Promote selected API/Web digests in order, trigger their Dokploy Auto Deploy webhooks, and verify their exact revisions with bounded `curl` retries in `.github/workflows/ci.yml` (FR-062–FR-067, FR-070; SC-020–SC-022)
+- [X] T074 [US5] Add environment-approved component rollback by prior digest and source revision in `.github/workflows/rollback.yml`, excluding migration and retained services (FR-067–FR-068; SC-022)
+- [X] T075 [US5] Document Dokploy `v0.29.5+` security prerequisites, retained-resource provisioning, the migration Schedule Job command, webhook setup, configuration names, ordering, failure behavior, and rollback limits in `infrastructure/dokploy/README.md` (FR-063–FR-070; SC-022–SC-024)
+- [X] T076 [US5] Update reviewer-facing CI, image, promotion, rollback, and AI-assistance guidance in `README.md` and `specs/001-orthoprosthetist-printing-workflow/quickstart.md` (FR-058–FR-070; SC-018–SC-024)
+- [X] T077 [US5] Prove accepted database/API/Web/shared/docs/infrastructure/combined affected fixtures through Nx CLI commands and record the commands in `specs/001-orthoprosthetist-printing-workflow/quickstart.md` (FR-061; SC-019)
+- [X] T078 [US5] Run affected lint, type-check, tests, builds, migration validation, deterministic generation, image smoke checks, workflow checks, formatting, and final protected-data inspection for the issue #14 implementation (FR-058, FR-064, FR-069–FR-070; SC-021, SC-023–SC-024)
+
+**Checkpoint**: Issue #14 has a local, reviewable delivery implementation. Publication, GitHub protection changes, package visibility, Dokploy provisioning, and production mutation remain separately authorized operations.
+
+---
+
 ## Requirement Coverage
 
 | Requirement range | Primary implementation tasks |
@@ -167,6 +192,10 @@
 | FR-055 | T058 |
 | FR-056 | T058 |
 | FR-057 | T033, T036, T044, T046, T054, T056–T060, T063 |
+| FR-058–FR-060 | T064, T070, T076, T078 |
+| FR-061–FR-063 | T065, T069–T073, T075, T077 |
+| FR-064–FR-066 | T066–T068, T071–T073, T078 |
+| FR-067–FR-070 | T066–T076, T078 |
 | SC-001–SC-004 | T019–T046 |
 | SC-005–SC-007 | T047–T057 |
 | SC-008–SC-012 | T010–T018, T024–T027, T031–T036, T039–T046, T049–T060 |
@@ -174,6 +203,7 @@
 | SC-015 | T058 |
 | SC-016 | T058 |
 | SC-017 | T033, T036, T044, T046, T054, T056–T060, T063 |
+| SC-018–SC-024 | T064–T078 |
 
 ## Dependencies and Delivery Order
 
@@ -184,6 +214,7 @@
 5. US3 depends on US2 and provides the eligible scan required by US4.
 6. US4 depends on US3.
 7. Phase 7 follows the selected MVP stories and introduces no new domain capability.
+8. US5 depends on the existing executable workspace and owns only issue #14 delivery behavior; migration, API, and Web execute in that order when selected.
 
 Within a phase, `[P]` tasks may proceed concurrently only when their listed files do not overlap. Database changelog
 edits sharing `001-accounts-patients.xml` remain sequential even when their domain responsibilities differ.
@@ -192,6 +223,6 @@ edits sharing `001-accounts-patients.xml` remain sequential even when their doma
 
 - Issue #9 adds Jest unit tests and controlled printing-provider adapter contract tests.
 - Issue #12 adds Vitest, Testing Library, Router, Query, Table, React Hook Form/Zod, i18n, and accessibility tests.
-- Issue #14 adds format, lint, typecheck, build, focused test, OpenAPI, and Orval CI gates.
+- Issue #14 tasks T064–T078 add format, lint, typecheck, build, focused health test, OpenAPI, Orval, image, and delivery gates.
 
-No task in this file may pre-empt those owners by adding test code or CI configuration.
+No task in this file may pre-empt product-test owners by adding unrelated test behavior.

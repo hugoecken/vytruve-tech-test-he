@@ -3,6 +3,7 @@ const MINIMUM_SECRET_LENGTH = 32;
 
 /** Validated environment consumed by the API composition root. */
 export interface ApiEnvironment {
+  APP_REVISION: string;
   API_PORT: number;
   DATABASE_HOST: string;
   DATABASE_PORT: number;
@@ -88,6 +89,7 @@ export function validateEnvironment(
 
   return {
     ...environment,
+    APP_REVISION: parseRevision(environment, nodeEnvironment),
     API_PORT: parsePort(environment, 'API_PORT'),
     DATABASE_HOST: requireString(environment, 'DATABASE_HOST'),
     DATABASE_PORT: parsePort(environment, 'DATABASE_PORT'),
@@ -116,6 +118,31 @@ export function validateEnvironment(
     ),
     WEB_ORIGIN: webOrigin.origin,
   };
+}
+
+/**
+ * Validates the immutable source revision exposed by operational health routes.
+ *
+ * @param environment Raw environment values loaded by Nest.
+ * @param nodeEnvironment Validated runtime environment name.
+ * @returns A full Git revision in production or a safe local marker otherwise.
+ * @throws When production does not identify an immutable source revision.
+ */
+function parseRevision(
+  environment: Record<string, unknown>,
+  nodeEnvironment: string,
+): string {
+  const value = environment.APP_REVISION;
+  if (
+    nodeEnvironment !== 'production' &&
+    (value === undefined || value === 'development')
+  ) {
+    return 'development';
+  }
+  if (typeof value !== 'string' || !/^[0-9a-f]{40}$/.test(value)) {
+    throw new Error('APP_REVISION must be a full lowercase Git commit SHA');
+  }
+  return value;
 }
 
 /**

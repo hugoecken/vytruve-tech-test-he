@@ -59,6 +59,21 @@ export class MinioScanStorageAdapter implements ScanStoragePort, OnModuleInit {
   }
 
   /**
+   * Verifies that the application-owned private bucket remains reachable.
+   *
+   * @throws ScanStorageError when MinIO is unavailable or the bucket is absent.
+   */
+  async checkReadiness(): Promise<void> {
+    try {
+      if (!(await this.client.bucketExists(this.bucket))) {
+        throw new ScanStorageError('unavailable');
+      }
+    } catch (error) {
+      throw translateStorageError(error);
+    }
+  }
+
+  /**
    * Stores one bounded scan under a flat opaque key.
    *
    * @param storageKey Application-generated UUID key.

@@ -4,6 +4,16 @@
   "sourceRoot": "apps/web/src",
   "projectType": "application",
   "tags": [],
+  "namedInputs": {
+    "default": [
+      "{projectRoot}/**/*",
+      "{workspaceRoot}/package.json",
+      "{workspaceRoot}/tsconfig.base.json",
+      "{workspaceRoot}/eslint.config.mjs",
+      "{workspaceRoot}/orval.config.ts",
+      "{workspaceRoot}/.dockerignore"
+    ]
+  },
   "targets": {
     "generate-api": {
       "executor": "nx:run-commands",
@@ -17,6 +27,13 @@
       "options": {
         "command": "orval --config orval.config.ts",
         "cwd": "."
+      }
+    },
+    "container": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker build --build-arg APP_REVISION=0000000000000000000000000000000000000000 --build-arg VITE_API_BASE_URL=http://localhost:3000/api --file apps/web/Dockerfile --tag vytruve-web:local ."
       }
     }
   }

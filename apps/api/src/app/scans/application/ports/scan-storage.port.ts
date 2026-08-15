@@ -21,6 +21,9 @@ export class ScanStorageError extends Error {
 
 /** Operations currently required to store and stream private patient scans. */
 export interface ScanStoragePort {
+  /** Verifies that the configured private bucket is reachable. */
+  checkReadiness(): Promise<void>;
+
   /**
    * Stores one bounded PLY object under an opaque application key.
    *

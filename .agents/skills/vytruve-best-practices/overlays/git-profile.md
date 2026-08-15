@@ -2,7 +2,9 @@
 
 ## Integration model
 
-- Use `main` as the protected integration branch.
+- Use `develop` as the protected ordinary integration branch.
+- Use `main` as the protected production-promotion branch.
+- Permit production delivery only from a reviewed `develop`-to-`main` pull request and the exact verified `main` revision.
 - Track execution through the repository's GitHub issues and pull requests.
 - Use one reviewable branch and pull request per issue unless an accepted plan deliberately combines a tightly
   coupled delivery.

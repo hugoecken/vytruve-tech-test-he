@@ -8,7 +8,7 @@
 
 ## Working sequence
 
-1. Start from an up-to-date `main` when authorized.
+1. Start from the up-to-date integration branch selected by the repository overlay when authorized.
 2. Create a short branch for the current delivery unit.
 3. Make focused changes and validate them before staging.
 4. Stage only intended files and inspect the staged diff.
