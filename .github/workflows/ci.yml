@@ -42,8 +42,13 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
+      - name: Prepare local environment
+        run: cp .env.example .env.local
+
       - name: Select deployable projects with Nx
         id: affected
+        env:
+          VITE_CONFIG_NATIVE_IGNORE_WARNING: true
         run: |
           projects=$(npm exec nx -- show projects --affected --base="$NX_BASE" --head="$NX_HEAD" --withTarget=container --json)
           jq -e 'all(.[]; . == "database" or . == "api" or . == "web")' <<< "$projects" > /dev/null
@@ -56,9 +61,7 @@ jobs:
         run: npm exec nx -- affected -t lint typecheck test --base="$NX_BASE" --head="$NX_HEAD" --parallel=1 --nxBail
 
       - name: Start ephemeral retained dependencies
-        run: |
-          cp .env.example .env.local
-          npm exec nx -- run infrastructure:up
+        run: npm exec nx -- run infrastructure:up
 
       - name: Verify affected Liquibase changes
         run: npm exec nx -- affected -t migrate --base="$NX_BASE" --head="$NX_HEAD" --nxBail
