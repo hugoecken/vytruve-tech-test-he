@@ -1,6 +1,6 @@
 # Quickstart: Interactive Scan Preview Review
 
-**Status**: Accepted as part of plan snapshot `048c933c94548625fea3a269e38e65e84a6f47f4`
+**Status**: Accepted with the automatic-loading plan reconciliation approved on 2026-08-16
 
 This guide defines the implementation evidence for issue #53. Use synthetic PLY data in automated tests. Keep the three supplied review samples outside Git, Figma, screenshots, and logs.
 
@@ -24,8 +24,7 @@ npm exec nx -- build web
 
 The focused suite must prove:
 
-- opening details produces no content request;
-- Preview produces exactly one request and announces preparation;
+- opening details produces exactly one content request and announces preparation;
 - ready content preserves metadata and wires all five commands;
 - Retry is explicit and produces exactly one new request;
 - closing aborts or discards query content and disposes renderer resources;
@@ -55,10 +54,10 @@ Review each supplied local sample without copying its name or bytes into evidenc
 
 ### Desktop — 1440 × 900
 
-1. Open scan details and verify metadata appears before any content request.
-2. Activate Preview and observe one announced preparation state.
-3. Verify the complete centered mesh, vertex colors or neutral fallback, pointer rotation, wheel/pinch zoom, all five toolbar controls, reset, and keyboard focus.
-4. Close during preparing and ready states, then reopen and verify Idle with a fitted initial view.
+1. Open scan details and verify metadata appears while exactly one preparation request starts automatically.
+2. Verify the complete centered mesh, vertex colors or neutral fallback, pointer rotation, wheel/pinch zoom, all five icon-only toolbar controls on one row, reset, and keyboard focus.
+3. Confirm preparing and ready states contain no privacy badge or public/storage-URL explanation.
+4. Close during preparing and ready states, then reopen and verify one new request with a fitted initial view.
 
 ### Compact — 390 × 900
 

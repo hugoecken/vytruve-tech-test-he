@@ -1,6 +1,6 @@
 # Data Model: Interactive Scan Preview
 
-**Status**: Accepted as part of plan snapshot `048c933c94548625fea3a269e38e65e84a6f47f4`
+**Status**: Accepted with the automatic-loading plan reconciliation approved on 2026-08-16
 
 The feature adds no persisted entity, API model, database column, object-storage key, cookie, or browser-storage entry. The existing `ScanResponse` remains the only metadata model. The structures below exist only for one mounted details overlay.
 
@@ -10,8 +10,7 @@ The feature adds no persisted entity, API model, database column, object-storage
 | --- | --- | --- | --- |
 | `patientId` | string | Existing route context | Open overlay |
 | `scanId` | string | Existing selected `ScanResponse` | Open overlay |
-| `requested` | boolean | Preview action | Open overlay |
-| `attempt` | positive integer | Preview or Retry action | Open overlay |
+| `attempt` | positive integer | Overlay opening or Retry action | Open overlay |
 | `content` | Blob, query-owned | Authenticated content response | Active query observer |
 | `renderer` | `ScanPreviewRenderer` | Successful local preparation | Mounted viewer node |
 
@@ -21,12 +20,10 @@ The feature adds no persisted entity, API model, database column, object-storage
 
 ```mermaid
 stateDiagram-v2
-  [*] --> Idle
-  Idle --> Preparing: Preview
+  [*] --> Preparing: Open details
   Preparing --> Ready: Query, conversion, and renderer succeed
   Preparing --> Unavailable: Retrieval or preparation fails
   Unavailable --> Preparing: Retry
-  Idle --> [*]: Close
   Preparing --> [*]: Close and abort
   Ready --> [*]: Close and dispose
   Unavailable --> [*]: Close
@@ -34,7 +31,6 @@ stateDiagram-v2
 
 | State | Derivation | Allowed preview action |
 | --- | --- | --- |
-| `Idle` | Preview not requested | Preview |
 | `Preparing` | Lazy module, query, conversion, or renderer initialization pending | None |
 | `Ready` | Renderer handle exists for the current attempt | Five view controls |
 | `Unavailable` | Current attempt has a query or preparation failure | Retry |
@@ -60,8 +56,8 @@ The handle contains no serializable state. Its initial camera position and contr
 
 - One open scan-details overlay owns at most one active preview attempt and one renderer.
 - `patientId` and `scanId` always come from the already authorized route and selected metadata contexts.
-- Preview content is requested only after `requested` becomes true.
+- Opening scan details starts attempt 1 and exactly one network request.
 - Retry increments `attempt` and starts exactly one new network request only when no request is active.
 - A renderer is ready only for a non-empty geometry with finite bounds.
-- Closing the overlay unmounts the entire Preview Session; reopening creates a new Idle session.
+- Closing the overlay unmounts the entire Preview Session; reopening creates a new Preparing session.
 - Download owns its existing short-lived Blob URL separately. Preview never owns one.
