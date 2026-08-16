@@ -150,8 +150,8 @@
     },
     "details": {
       "action": "Consulter {{scan}}",
-      "title": "Détails du scan 3D",
-      "description": "Consultez les métadonnées validées de ce scan 3D.",
+      "title": "Aperçu du scan 3D",
+      "description": "Examinez le scan en 3D.",
       "fields": {
         "format": "Format",
         "encoding": "Encodage",
@@ -162,6 +162,21 @@
       "printing": {
         "available": "Disponible pour une demande d’impression",
         "unavailable": "Une demande d’impression est déjà active"
+      },
+      "preview": {
+        "preparing": "Préparation de l’aperçu 3D…",
+        "preparingDescription": "Récupération et validation du scan.",
+        "viewport": "Aperçu interactif du scan 3D",
+        "controls": "Contrôles de l’aperçu 3D",
+        "interactionHint": "Faites glisser pour tourner · Faites défiler ou pincez pour zoomer",
+        "rotateLeft": "Tourner vers la gauche",
+        "rotateRight": "Tourner vers la droite",
+        "zoomIn": "Zoomer",
+        "zoomOut": "Dézoomer",
+        "reset": "Réinitialiser la vue",
+        "unavailableTitle": "Aperçu 3D indisponible",
+        "unavailableDescription": "L’aperçu 3D n’a pas pu être préparé. Les détails du scan restent disponibles.",
+        "retry": "Réessayer"
       }
     },
     "encoding": {

@@ -24,7 +24,7 @@ export default defineConfig({
         },
         query: {
           useInfinite: false,
-          signal: false,
+          signal: true,
           version: 5,
         },
       },

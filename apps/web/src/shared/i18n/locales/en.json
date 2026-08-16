@@ -150,8 +150,8 @@
     },
     "details": {
       "action": "View details for {{scan}}",
-      "title": "3D scan details",
-      "description": "Review the validated metadata for this 3D scan.",
+      "title": "3D scan preview",
+      "description": "Review the scan in 3D.",
       "fields": {
         "format": "Format",
         "encoding": "Encoding",
@@ -162,6 +162,21 @@
       "printing": {
         "available": "Available for a print request",
         "unavailable": "A print request is already active"
+      },
+      "preview": {
+        "preparing": "Preparing 3D preview…",
+        "preparingDescription": "Retrieving and validating the scan.",
+        "viewport": "Interactive 3D scan preview",
+        "controls": "3D preview controls",
+        "interactionHint": "Drag to rotate · Scroll or pinch to zoom",
+        "rotateLeft": "Rotate left",
+        "rotateRight": "Rotate right",
+        "zoomIn": "Zoom in",
+        "zoomOut": "Zoom out",
+        "reset": "Reset view",
+        "unavailableTitle": "3D preview unavailable",
+        "unavailableDescription": "The 3D preview could not be prepared. Scan details remain available.",
+        "retry": "Retry"
       }
     },
     "encoding": {
