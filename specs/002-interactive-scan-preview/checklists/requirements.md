@@ -28,10 +28,10 @@
 
 ## Experience Readiness
 
-- [x] CHK013 Idle, preparing, ready, and unavailable states have stable identifiers and complete observable outcomes. [Spec §Preview States]
-- [x] CHK014 Preview, retry, rotation, zoom, and reset actions have stable identifiers and explicit availability. [Spec §Actions]
-- [x] CHK015 Metadata-only opening, explicit retrieval, visible controls, gestures, colors, neutral fallback, retry, and close behavior each have acceptance coverage. [Spec US1, US2, FR-001–FR-010]
-- [x] CHK016 Desktop, compact, keyboard, pointer, touch, focus, accessible names, announcements, English, and French requirements are unambiguous while visual composition remains delegated to Figma. [Spec FR-011, SC-005, SC-008]
+- [x] CHK013 Preparing, ready, and unavailable states have stable identifiers and complete observable outcomes. [Spec §Preview States]
+- [x] CHK014 Retry, rotation, zoom, and reset actions have stable identifiers and explicit availability. [Spec §Actions]
+- [x] CHK015 Automatic retrieval on opening, announced preparation, icon controls, gestures, colors, neutral fallback, retry, and close behavior each have acceptance coverage. [Spec US1, US2, FR-001–FR-010]
+- [x] CHK016 Desktop, compact, one-row icon controls, keyboard, pointer, touch, focus, accessible names, announcements, English, and French requirements are unambiguous while visual composition remains delegated to Figma. [Spec FR-006, FR-011, SC-005, SC-008]
 
 ## Privacy And Regression Safety
 
@@ -43,9 +43,9 @@
 ## Feature Readiness
 
 - [x] CHK021 Every functional requirement resolves to at least one user scenario, measurable outcome, or explicit protected-data review. [Spec §User Scenarios & Testing, §Measurable Outcomes]
-- [x] CHK022 The specification changed from Candidate to Accepted only after explicit human acceptance and does not claim Figma approval, planning approval, implementation, or delivery. [Spec header, §Authority And Scope]
+- [x] CHK022 The revised specification changed from Candidate to Accepted only after explicit human acceptance and does not claim current Figma approval, planning approval, implementation, or delivery. [Spec header, §Authority And Scope]
 
 ## Notes
 
 - All 22 items passed during the candidate review on 2026-08-16.
-- Any later intent change requires revalidation and explicit acceptance of the new exact snapshot.
+- The revised automatic-loading candidate passed all 22 items and was explicitly accepted on 2026-08-16.
