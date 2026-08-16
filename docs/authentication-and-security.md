@@ -2,8 +2,8 @@
 
 [Back to the main README](../README.md)
 
-The application uses a short-lived server-issued JWT stored only in an HTTP-only cookie. Authentication identifies an
-account; every patient, scan, and print operation then applies owner-scoped authorization on the server.
+The API issues a short-lived JWT in an HTTP-only cookie. Authentication identifies the account; every patient, scan,
+and print operation then enforces owner-scoped authorization on the server.
 
 ## Session lifecycle
 
@@ -17,85 +17,54 @@ sequenceDiagram
   User->>Web: Register or sign in
   Web->>API: Submit validated credentials
   API->>DB: Create or verify normalized account
-  API-->>Web: Public session plus HTTP-only cookie
-  Web->>API: Restore session with browser cookie
-  API->>API: Verify signature, issuer, audience, expiry, and claims
-  API->>DB: Confirm the account still exists
+  API-->>Web: Public session and HTTP-only cookie
+  Web->>API: Restore session with cookie
+  API->>API: Verify signature, issuer, audience, expiry and claims
+  API->>DB: Confirm account still exists
   API-->>Web: Public account session
-  Web-->>User: Open the authorized destination
   User->>Web: Sign out
   Web->>API: Delete session
-  API-->>Web: Clear cookie with matching attributes
-  Web->>Web: Clear all account-scoped query state
+  API-->>Web: Clear cookie
+  Web->>Web: Clear account-scoped cache
 ```
 
-Passwords are hashed with Argon2id before persistence. Login uses the same generic public failure for an unknown account
-and an invalid password. Account creation and sign-in are rate-limited through the Nest throttler.
+Passwords are hashed with Argon2id. Unknown accounts and invalid passwords produce the same public failure. Registration
+and sign-in are rate-limited.
 
-JWTs contain only the account identifier plus standard issuer, audience, issued-at, and expiry claims. The session
-lifetime is 30 minutes. The cookie uses:
+The 30-minute cookie uses `HttpOnly`, `SameSite=Lax`, `Path=/api`, and `Secure` in production. The JWT contains only the
+account identifier and standard issuer, audience, issued-at, and expiry claims. It never enters a response body, URL,
+React state, `localStorage`, or `sessionStorage`.
 
-- `HttpOnly` so browser JavaScript cannot read the token;
-- `SameSite=Lax` for the same-site browser model;
-- `Path=/api` to avoid sending it to unrelated Web assets; and
-- `Secure` in production.
+## Authorization
 
-The token never enters a response body, URL, frontend state, `localStorage`, or `sessionStorage`. The frontend restores
-the public session before route guards mount, clears all account-scoped TanStack Query state on sign-out or expiry, and
-retains only a validated internal redirect destination.
+```mermaid
+flowchart LR
+  Cookie["Verified session cookie"] --> Account["Server-derived account ID"]
+  Account --> Patient["Owned patient predicate"]
+  Patient --> Scan["Scan inside owned patient"]
+  Scan --> Print["Print request for owned scan"]
+```
 
-## Authorization and data minimization
-
-The authentication guard protects every API route unless it is explicitly marked public. Controllers receive the
-server-derived account subject; they do not accept an account identifier from the browser.
-
-Patient queries combine resource and owner predicates. Scan access first verifies the parent patient and then resolves
-the scan within that patient. Print operations follow the same patient and scan chain. Unknown and foreign-owned
-resources therefore return the same not-found category without disclosing existence.
-
-The application retains only the assessment fields needed for accounts, patients, scans, and print tracking. It does
-not claim GDPR, HDS, medical-device, or other formal certification.
+Every route is protected unless explicitly public. Controllers never trust an account identifier supplied by the
+browser. Unknown and foreign-owned resources return the same not-found category so existence is not disclosed.
 
 ## Input and error boundaries
 
-Nest applies one global `ValidationPipe` with transformation, whitelisting, and rejection of unknown properties.
-Feature DTOs own scalar constraints. The scan boundary repeats the byte limit at transport and application levels and
-validates PLY structure from bounded content rather than trusting extensions or MIME types.
+- One global Nest `ValidationPipe` transforms known values, strips nothing silently, and rejects unknown properties.
+- DTOs own scalar constraints; scan size and PLY structure are checked again at the application boundary.
+- Public failures use RFC 9457 Problem Details with stable codes.
+- The global filter removes framework, database, storage, and provider details.
+- The frontend translates stable codes; raw server, Zod, or provider text is never user-facing.
+- Helmet sets standard security headers and credentialed CORS accepts only the configured Web origin.
 
-Every public failure is returned as RFC 9457 Problem Details with a stable `code`. The global filter removes framework,
-database, storage, and provider detail. The frontend maps stable codes and field violations to localized messages; raw
-server, schema-generator, or provider text is never presented to users.
+## Protected data
 
-Helmet supplies standard HTTP security headers. Credentialed CORS accepts only the configured Web origin. The current
-production routing serves Web and `/api` on one site and uses `SameSite=Lax`; introducing a cross-site credential flow
-would require a fresh CSRF and cookie-policy review.
+MinIO is private. Original filenames are not retained, and object keys are opaque UUIDs. Logs exclude names, emails,
+cookies, credentials, connection strings, scan bytes, raw provider bodies, and original filenames.
 
-## Protected storage and integrations
+The repository contains only synthetic examples. Real provider, JWT, PostgreSQL, MinIO, GitHub, and Dokploy secrets
+belong in ignored local configuration or their owning secret stores. Exact local and production configuration names
+are documented in [Local development](local-development.md#configuration) and the
+[Dokploy runbook](../infrastructure/dokploy/README.md#github-production-environment).
 
-MinIO is private and reachable only through the API. Object names are opaque UUIDs, and original upload names are not
-retained or logged. Storage errors cross the adapter as safe unavailable or not-found categories.
-
-The printing adapter alone owns the provider URL, credential, timeout, request shape, and runtime response validation.
-It applies a finite timeout and logs only safe operation categories, durations, HTTP status categories, local request
-identifiers, and stable references. It never logs credentials, uploaded bytes, raw provider bodies, names, emails,
-cookies, or connection strings.
-
-## Configuration boundaries
-
-The API requires and validates these server-side names before listening:
-
-| Concern           | Variables                                                                                                                      |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Runtime           | `NODE_ENV`, `APP_REVISION`, `API_PORT`, `WEB_ORIGIN`                                                                           |
-| JWT               | `JWT_SECRET`, `JWT_ISSUER`, `JWT_AUDIENCE`                                                                                     |
-| PostgreSQL        | `DATABASE_HOST`, `DATABASE_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`                                          |
-| Scan storage      | `MAX_SCAN_SIZE_BYTES`, `MINIO_ENDPOINT`, `MINIO_PORT`, `MINIO_USE_SSL`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET` |
-| Printing provider | `PRINTING_API_BASE_URL`, `PRINTING_API_KEY`, `PRINTING_API_TIMEOUT_MS`                                                         |
-
-The Web build consumes only `VITE_API_BASE_URL`. It must contain no credential. `.env.local` is ignored and
-`.env.example` contains synthetic development placeholders. Production values belong to Dokploy runtime configuration;
-GitHub receives only the release credentials and non-secret deployment variables listed in the
-[production handover](../infrastructure/dokploy/README.md#github-production-environment).
-
-No real credential, supplied scan, contact detail, patient record, runtime database, object-storage volume, cookie, or
-generated provider response belongs in source, tests, screenshots, logs, images, caches, or reviewer evidence.
+This assessment does not claim GDPR, HDS, medical-device, or other formal certification.

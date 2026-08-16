@@ -2,6 +2,8 @@
 
 [Back to the main README](../../README.md)
 
+[Delivery overview](../../docs/delivery.md)
+
 This directory describes one bounded production environment. Routine releases never recreate PostgreSQL or MinIO and never build repository source on the VPS.
 
 ## Security prerequisite
