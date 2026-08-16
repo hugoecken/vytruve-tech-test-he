@@ -21,6 +21,7 @@ import {
   formatScanLabel,
 } from '@/modules/scans/lib/scan-formatters';
 import { ScanUploadOverlay } from '@/modules/scans/ui/scan-upload-overlay';
+import { ScanPreview } from '@/modules/scans/ui/scan-preview';
 import {
   downloadPatientScan,
   useListPatientScans,
@@ -372,6 +373,7 @@ export function ScansPanel({
             setSelectedScanId(null);
           }
         }}
+        patientId={patientId}
         scan={selectedScan}
       />
     </section>
@@ -381,6 +383,7 @@ export function ScansPanel({
 /** Props for the read-only scan consultation overlay. */
 interface ScanDetailsOverlayProps {
   onOpenChange: (open: boolean) => void;
+  patientId: string;
   scan: ScanResponse | null;
 }
 
@@ -390,37 +393,45 @@ interface ScanDetailsOverlayProps {
  * @param props Selected scan and controlled close action.
  * @returns A responsive read-only scan consultation overlay.
  */
-function ScanDetailsOverlay({ onOpenChange, scan }: ScanDetailsOverlayProps) {
+function ScanDetailsOverlay({
+  onOpenChange,
+  patientId,
+  scan,
+}: ScanDetailsOverlayProps) {
   const { i18n, t } = useTranslation();
 
   return (
     <ResponsiveDetailsOverlay
       closeLabel={t('common.actions.close')}
+      contentClassName="sm:max-w-5xl"
       description={t('scans.details.description')}
       onOpenChange={onOpenChange}
       open={scan !== null}
       title={t('scans.details.title')}
     >
       {scan !== null && (
-        <DetailList>
-          <DetailItem label={t('scans.details.fields.format')}>
-            {scan.format.toUpperCase()}
-          </DetailItem>
-          <DetailItem label={t('scans.details.fields.encoding')}>
-            {t(`scans.encoding.${scan.encoding}`)}
-          </DetailItem>
-          <DetailItem label={t('scans.details.fields.size')}>
-            {formatScanFileSize(scan.sizeBytes, i18n.language)}
-          </DetailItem>
-          <DetailItem label={t('scans.details.fields.added')}>
-            {formatDateTime(scan.createdAt, i18n.language)}
-          </DetailItem>
-          <DetailItem label={t('scans.details.fields.printing')}>
-            {scan.printingAvailable
-              ? t('scans.details.printing.available')
-              : t('scans.details.printing.unavailable')}
-          </DetailItem>
-        </DetailList>
+        <div className="grid min-h-0 gap-4 sm:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]">
+          <ScanPreview patientId={patientId} scanId={scan.id} />
+          <DetailList>
+            <DetailItem label={t('scans.details.fields.format')}>
+              {scan.format.toUpperCase()}
+            </DetailItem>
+            <DetailItem label={t('scans.details.fields.encoding')}>
+              {t(`scans.encoding.${scan.encoding}`)}
+            </DetailItem>
+            <DetailItem label={t('scans.details.fields.size')}>
+              {formatScanFileSize(scan.sizeBytes, i18n.language)}
+            </DetailItem>
+            <DetailItem label={t('scans.details.fields.added')}>
+              {formatDateTime(scan.createdAt, i18n.language)}
+            </DetailItem>
+            <DetailItem label={t('scans.details.fields.printing')}>
+              {scan.printingAvailable
+                ? t('scans.details.printing.available')
+                : t('scans.details.printing.unavailable')}
+            </DetailItem>
+          </DetailList>
+        </div>
       )}
     </ResponsiveDetailsOverlay>
   );
