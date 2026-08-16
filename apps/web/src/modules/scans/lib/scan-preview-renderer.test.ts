@@ -123,88 +123,109 @@ describe('scan preview renderer', () => {
   });
 
   it.each([
-    ['ASCII with vertex colors', () => createAsciiPly(true), true],
-    ['binary little-endian without colors', createBinaryPly, false],
-  ])('prepares and disposes a synthetic %s mesh', (_encoding, data, colors) => {
-    const container = createContainer();
-    const onReady = vi.fn();
-    const onUnavailable = vi.fn();
+    ['ASCII with vertex colors', () => createAsciiPly(true), true, 'ascii'],
+    [
+      'binary little-endian without colors',
+      () => createBinaryPly(true),
+      false,
+      'binary_little_endian',
+    ],
+    [
+      'binary big-endian without colors',
+      () => createBinaryPly(false),
+      false,
+      'binary_big_endian',
+    ],
+  ])(
+    'prepares and disposes a synthetic %s mesh',
+    (_kind, data, colors, encoding) => {
+      const container = createContainer();
+      const onReady = vi.fn();
+      const onUnavailable = vi.fn();
 
-    const preview = createScanPreviewRenderer({
-      container,
-      data: data(),
-      onReady,
-      onUnavailable,
-    });
+      const preview = createScanPreviewRenderer({
+        container,
+        data: data(),
+        onReady,
+        onUnavailable,
+      });
 
-    expect(preview).not.toBeNull();
-    expect(onReady).toHaveBeenCalledOnce();
-    expect(onUnavailable).not.toHaveBeenCalled();
-    expect(container).toContainElement(container.querySelector('canvas'));
-    expect(graphics.renderers[0]?.setPixelRatio).toHaveBeenCalledWith(
-      Math.min(window.devicePixelRatio, 2),
-    );
-    expect(graphics.renderers[0]?.render).toHaveBeenCalled();
-    const scene = graphics.renderers[0]?.render.mock.calls[0]?.[0] as Scene;
-    expect(scene.children.some((child) => child instanceof AmbientLight)).toBe(
-      true,
-    );
-    expect(
-      scene.children.some((child) => child instanceof DirectionalLight),
-    ).toBe(true);
-    const mesh = scene.children.find((child) => child instanceof Mesh) as Mesh;
-    expect(mesh.material).toBeInstanceOf(MeshStandardMaterial);
-    expect((mesh.material as MeshStandardMaterial).vertexColors).toBe(colors);
-    if (!colors) {
-      expect((mesh.material as MeshStandardMaterial).color.getHex()).toBe(
-        0x94a3b8,
+      expect(preview).not.toBeNull();
+      expect(onReady).toHaveBeenCalledWith(encoding);
+      expect(onUnavailable).not.toHaveBeenCalled();
+      expect(container).toContainElement(container.querySelector('canvas'));
+      expect(graphics.renderers[0]?.setPixelRatio).toHaveBeenCalledWith(
+        Math.min(window.devicePixelRatio, 2),
       );
-    }
-    expect(mesh.geometry.hasAttribute('normal')).toBe(true);
-    const camera = graphics.renderers[0]?.render.mock.calls[0]?.[1] as
-      | PerspectiveCamera
-      | undefined;
-    expect(camera?.position.length()).toBeGreaterThan(0);
-    expect(graphics.controls[0]).toMatchObject({
-      autoRotate: false,
-      enableDamping: false,
-      enablePan: false,
-    });
+      expect(graphics.renderers[0]?.render).toHaveBeenCalled();
+      const scene = graphics.renderers[0]?.render.mock.calls[0]?.[0] as Scene;
+      expect(
+        scene.children.some((child) => child instanceof AmbientLight),
+      ).toBe(true);
+      expect(
+        scene.children.some((child) => child instanceof DirectionalLight),
+      ).toBe(true);
+      const mesh = scene.children.find(
+        (child) => child instanceof Mesh,
+      ) as Mesh;
+      expect(mesh.material).toBeInstanceOf(MeshStandardMaterial);
+      expect((mesh.material as MeshStandardMaterial).vertexColors).toBe(colors);
+      if (!colors) {
+        expect((mesh.material as MeshStandardMaterial).color.getHex()).toBe(
+          0x94a3b8,
+        );
+      }
+      expect(mesh.geometry.hasAttribute('normal')).toBe(true);
+      const camera = graphics.renderers[0]?.render.mock.calls[0]?.[1] as
+        | PerspectiveCamera
+        | undefined;
+      expect(camera?.position.length()).toBeGreaterThan(0);
+      expect(graphics.controls[0]).toMatchObject({
+        autoRotate: false,
+        enableDamping: false,
+        enablePan: false,
+      });
 
-    const initialRenderCount = graphics.renderers[0]?.render.mock.calls.length;
-    FakeResizeObserver.instances[0]?.callback(
-      [],
-      FakeResizeObserver.instances[0] as unknown as ResizeObserver,
-    );
-    expect(graphics.renderers[0]?.render).toHaveBeenCalledTimes(
-      (initialRenderCount ?? 0) + 1,
-    );
+      const initialRenderCount =
+        graphics.renderers[0]?.render.mock.calls.length;
+      FakeResizeObserver.instances[0]?.callback(
+        [],
+        FakeResizeObserver.instances[0] as unknown as ResizeObserver,
+      );
+      expect(graphics.renderers[0]?.render).toHaveBeenCalledTimes(
+        (initialRenderCount ?? 0) + 1,
+      );
 
-    preview?.rotateLeft();
-    preview?.rotateRight();
-    preview?.zoomIn();
-    preview?.zoomOut();
-    preview?.reset();
-    expect(graphics.controls[0]?.rotateLeft).toHaveBeenNthCalledWith(
-      1,
-      Math.PI / 12,
-    );
-    expect(graphics.controls[0]?.rotateLeft).toHaveBeenNthCalledWith(
-      2,
-      -Math.PI / 12,
-    );
-    expect(graphics.controls[0]?.dollyIn).toHaveBeenCalledWith(0.8);
-    expect(graphics.controls[0]?.dollyOut).toHaveBeenCalledWith(0.8);
-    graphics.controls[0]?.emit('change');
-    expect(graphics.renderers[0]?.render.mock.calls.length).toBeGreaterThan(1);
+      preview?.rotateLeft();
+      preview?.rotateRight();
+      preview?.zoomIn();
+      preview?.zoomOut();
+      preview?.reset();
+      expect(graphics.controls[0]?.rotateLeft).toHaveBeenNthCalledWith(
+        1,
+        Math.PI / 12,
+      );
+      expect(graphics.controls[0]?.rotateLeft).toHaveBeenNthCalledWith(
+        2,
+        -Math.PI / 12,
+      );
+      expect(graphics.controls[0]?.dollyIn).toHaveBeenCalledWith(0.8);
+      expect(graphics.controls[0]?.dollyOut).toHaveBeenCalledWith(0.8);
+      graphics.controls[0]?.emit('change');
+      expect(graphics.renderers[0]?.render.mock.calls.length).toBeGreaterThan(
+        1,
+      );
 
-    preview?.dispose();
-    preview?.dispose();
-    expect(graphics.controls[0]?.dispose).toHaveBeenCalledOnce();
-    expect(graphics.renderers[0]?.dispose).toHaveBeenCalledOnce();
-    expect(FakeResizeObserver.instances[0]?.disconnect).toHaveBeenCalledOnce();
-    expect(container.querySelector('canvas')).not.toBeInTheDocument();
-  });
+      preview?.dispose();
+      preview?.dispose();
+      expect(graphics.controls[0]?.dispose).toHaveBeenCalledOnce();
+      expect(graphics.renderers[0]?.dispose).toHaveBeenCalledOnce();
+      expect(
+        FakeResizeObserver.instances[0]?.disconnect,
+      ).toHaveBeenCalledOnce();
+      expect(container.querySelector('canvas')).not.toBeInTheDocument();
+    },
+  );
 
   it.each([
     ['empty', createAsciiPlyWithVertices([])],
@@ -228,6 +249,41 @@ describe('scan preview renderer', () => {
     expect(onReady).not.toHaveBeenCalled();
     expect(onUnavailable).toHaveBeenCalledOnce();
     expect(consoleError).not.toHaveBeenCalled();
+  });
+
+  it('rejects unknown header directives without logging their values', () => {
+    const consoleLog = vi
+      .spyOn(console, 'log')
+      .mockImplementation(() => undefined);
+    const onReady = vi.fn();
+    const onUnavailable = vi.fn();
+    const data = encodeAscii(
+      [
+        'ply',
+        'format ascii 1.0',
+        'synthetic_private_header synthetic-private-value',
+        'element vertex 3',
+        'property float x',
+        'property float y',
+        'property float z',
+        'end_header',
+        '0 0 0',
+        '1 0 0',
+        '0 1 0',
+      ].join('\n'),
+    );
+
+    const preview = createScanPreviewRenderer({
+      container: createContainer(),
+      data,
+      onReady,
+      onUnavailable,
+    });
+
+    expect(preview).toBeNull();
+    expect(onReady).not.toHaveBeenCalled();
+    expect(onUnavailable).toHaveBeenCalledOnce();
+    expect(consoleLog).not.toHaveBeenCalled();
   });
 
   it('fails safely when WebGL2 is unavailable', () => {
@@ -337,11 +393,11 @@ function encodeAscii(value: string): ArrayBuffer {
   return result;
 }
 
-function createBinaryPly(): ArrayBuffer {
+function createBinaryPly(littleEndian: boolean): ArrayBuffer {
   const header = new TextEncoder().encode(
     [
       'ply',
-      'format binary_little_endian 1.0',
+      `format binary_${littleEndian ? 'little' : 'big'}_endian 1.0`,
       'element vertex 3',
       'property float x',
       'property float y',
@@ -355,12 +411,14 @@ function createBinaryPly(): ArrayBuffer {
   const body = new ArrayBuffer(3 * 3 * 4 + 1 + 3 * 4);
   const view = new DataView(body);
   const vertices = [0, 0, 0, 1, 0, 0, 0, 1, 0];
-  vertices.forEach((value, index) => view.setFloat32(index * 4, value, true));
+  vertices.forEach((value, index) =>
+    view.setFloat32(index * 4, value, littleEndian),
+  );
   let offset = vertices.length * 4;
   view.setUint8(offset, 3);
   offset += 1;
   [0, 1, 2].forEach((value, index) =>
-    view.setInt32(offset + index * 4, value, true),
+    view.setInt32(offset + index * 4, value, littleEndian),
   );
   const result = new Uint8Array(header.length + body.byteLength);
   result.set(header);

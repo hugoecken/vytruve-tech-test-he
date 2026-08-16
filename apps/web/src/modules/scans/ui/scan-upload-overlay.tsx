@@ -1,4 +1,4 @@
-import { useId, useState, type ChangeEvent } from 'react';
+import { useCallback, useId, useState, type ChangeEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   CircleAlertIcon,
@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatScanFileSize } from '@/modules/scans/lib/scan-formatters';
+import type { ScanPreviewEncoding } from '@/modules/scans/lib/scan-preview-renderer';
+import { ScanUploadPreview } from '@/modules/scans/ui/scan-upload-preview';
 import {
   getListPatientScansQueryKey,
   useCreatePatientScan,
@@ -47,6 +49,7 @@ import {
 } from '@/shared/ui/drawer';
 import { Input } from '@/shared/ui/input';
 import { Spinner } from '@/shared/ui/spinner';
+import { DetailItem, DetailList } from '@/shared/ui/responsive-details-overlay';
 
 const MAX_SCAN_BYTES = 25 * 1024 * 1024;
 
@@ -57,6 +60,18 @@ interface ScanUploadOverlayProps {
 
 /** Supported local scan validation failure. */
 type ScanFileFailure = 'size' | 'type';
+
+/** One ephemeral selected file and its single optional local read. */
+interface ScanUploadSelection {
+  file: File;
+  previewData: Promise<ArrayBuffer | null> | null;
+}
+
+/** Encoding evidence tagged to the exact read that produced it. */
+interface ScanUploadPreviewMetadata {
+  encoding: ScanPreviewEncoding;
+  source: Promise<ArrayBuffer | null>;
+}
 
 /**
  * Selects, validates and uploads one PLY scan through the generated mutation.
@@ -69,18 +84,30 @@ export function ScanUploadOverlay({ patientId }: ScanUploadOverlayProps) {
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
   const fileInputId = useId();
-  const [file, setFile] = useState<File | null>(null);
+  const [selection, setSelection] = useState<ScanUploadSelection | null>(null);
+  const [previewMetadata, setPreviewMetadata] =
+    useState<ScanUploadPreviewMetadata | null>(null);
   const [open, setOpen] = useState(false);
   const mutation = useCreatePatientScan();
-  let fileFailure: ScanFileFailure | null = null;
-  if (file !== null && !file.name.toLocaleLowerCase().endsWith('.ply')) {
-    fileFailure = 'type';
-  } else if (file !== null && file.size > MAX_SCAN_BYTES) {
-    fileFailure = 'size';
-  }
+  const file = selection?.file ?? null;
+  const previewData = selection?.previewData ?? null;
+  const fileFailure = getScanFileFailure(file);
+  const previewEncoding =
+    previewData !== null && previewMetadata?.source === previewData
+      ? previewMetadata.encoding
+      : null;
+  const setPreviewReady = useCallback(
+    (encoding: ScanPreviewEncoding) => {
+      if (previewData !== null) {
+        setPreviewMetadata({ encoding, source: previewData });
+      }
+    },
+    [previewData],
+  );
 
   const resetSelection = () => {
-    setFile(null);
+    setSelection(null);
+    setPreviewMetadata(null);
     mutation.reset();
   };
 
@@ -95,7 +122,16 @@ export function ScanUploadOverlay({ patientId }: ScanUploadOverlayProps) {
     const selectedFile = event.currentTarget.files?.[0] ?? null;
     event.currentTarget.value = '';
     mutation.reset();
-    setFile(selectedFile);
+    setPreviewMetadata(null);
+    if (selectedFile === null) {
+      setSelection(null);
+      return;
+    }
+    const previewData =
+      getScanFileFailure(selectedFile) === null
+        ? selectedFile.arrayBuffer().catch(() => null)
+        : null;
+    setSelection({ file: selectedFile, previewData });
   };
 
   const upload = async () => {
@@ -136,6 +172,42 @@ export function ScanUploadOverlay({ patientId }: ScanUploadOverlayProps) {
       size: formatScanFileSize(file.size, i18n.language),
     });
   }
+  const fileSummary = file !== null && (
+    <Attachment
+      className="w-full flex-nowrap overflow-hidden"
+      state={attachmentState}
+    >
+      <AttachmentMedia>
+        {mutation.isPending ? (
+          <Spinner aria-hidden="true" />
+        ) : (
+          <FileBoxIcon aria-hidden="true" />
+        )}
+      </AttachmentMedia>
+      <AttachmentContent>
+        <AttachmentTitle title={file.name}>{file.name}</AttachmentTitle>
+        <AttachmentDescription>{attachmentDescription}</AttachmentDescription>
+      </AttachmentContent>
+      <AttachmentActions>
+        <AttachmentAction
+          aria-label={t('scans.upload.replace')}
+          disabled={mutation.isPending}
+          nativeButton={false}
+          render={<label htmlFor={fileInputId} />}
+        >
+          <UploadIcon aria-hidden="true" />
+        </AttachmentAction>
+        <AttachmentAction
+          aria-label={t('scans.upload.remove')}
+          disabled={mutation.isPending}
+          onClick={resetSelection}
+          type="button"
+        >
+          <XIcon aria-hidden="true" />
+        </AttachmentAction>
+      </AttachmentActions>
+    </Attachment>
+  );
   const content = (
     <div className="flex min-w-0 flex-col gap-4">
       {uploadError !== undefined && (
@@ -170,40 +242,31 @@ export function ScanUploadOverlay({ patientId }: ScanUploadOverlayProps) {
             {t('scans.upload.choose')}
           </Button>
         </div>
+      ) : previewData !== null ? (
+        <div className="grid min-h-0 gap-4 sm:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]">
+          <ScanUploadPreview
+            onReady={setPreviewReady}
+            previewData={previewData}
+          />
+          <div className="flex min-w-0 flex-col gap-3">
+            {fileSummary}
+            <DetailList>
+              <DetailItem label={t('scans.details.fields.format')}>
+                PLY
+              </DetailItem>
+              <DetailItem label={t('scans.details.fields.encoding')}>
+                {previewEncoding === null
+                  ? t('scans.upload.preview.detectingEncoding')
+                  : t(`scans.encoding.${previewEncoding}`)}
+              </DetailItem>
+              <DetailItem label={t('scans.details.fields.size')}>
+                {formatScanFileSize(file.size, i18n.language)}
+              </DetailItem>
+            </DetailList>
+          </div>
+        </div>
       ) : (
-        <Attachment
-          className="w-full flex-nowrap overflow-hidden"
-          state={attachmentState}
-        >
-          <AttachmentMedia>
-            {mutation.isPending ? (
-              <Spinner aria-hidden="true" />
-            ) : (
-              <FileBoxIcon aria-hidden="true" />
-            )}
-          </AttachmentMedia>
-          <AttachmentContent>
-            <AttachmentTitle title={file.name}>{file.name}</AttachmentTitle>
-            <AttachmentDescription>
-              {attachmentDescription}
-            </AttachmentDescription>
-          </AttachmentContent>
-          <AttachmentActions>
-            <AttachmentAction
-              aria-label={t('scans.upload.remove')}
-              disabled={mutation.isPending}
-              onClick={resetSelection}
-              type="button"
-            >
-              <XIcon aria-hidden="true" />
-            </AttachmentAction>
-          </AttachmentActions>
-        </Attachment>
-      )}
-      {file !== null && (
-        <p className="text-sm leading-[25px] text-muted-foreground">
-          {t('scans.upload.review')}
-        </p>
+        fileSummary
       )}
     </div>
   );
@@ -275,7 +338,9 @@ export function ScanUploadOverlay({ patientId }: ScanUploadOverlayProps) {
           onOpenChange={setOverlayOpen}
           open={open}
         >
-          <DialogContent>
+          <DialogContent
+            className={previewData === null ? undefined : 'sm:max-w-5xl'}
+          >
             <DialogHeader className="min-w-0">
               <DialogTitle>{t('scans.upload.title')}</DialogTitle>
               <DialogDescription>
@@ -289,6 +354,14 @@ export function ScanUploadOverlay({ patientId }: ScanUploadOverlayProps) {
       )}
     </>
   );
+}
+
+/** Applies the existing local extension and size checks to one selection. */
+function getScanFileFailure(file: File | null): ScanFileFailure | null {
+  if (file !== null && !file.name.toLocaleLowerCase().endsWith('.ply')) {
+    return 'type';
+  }
+  return file !== null && file.size > MAX_SCAN_BYTES ? 'size' : null;
 }
 
 /** Resolves a safe localized upload failure. */

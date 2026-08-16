@@ -51,7 +51,7 @@ The same eager toolbar also fixes the existing scan-details Suspense fallback so
 
 ### Post-design gate
 
-Research preserves the accepted upload decision and server validation boundary. `File` already inherits the standard `Blob.arrayBuffer()` primitive, and the existing renderer already consumes the resulting `ArrayBuffer`. Starting that promise in the selection event prevents React Strict Mode from duplicating the read. The toolbar moves to an eager feature-owned module with a type-only renderer dependency, keeping Three.js deferred. Callback-ref cleanup owns the renderer lifecycle and ignores late promise completion without `useEffect`. A bounded PLY header check replaces the existing ineffective global Three.js console interception before the official loader parses geometry. No constitution violation or complexity exception remains.
+Research preserves the accepted upload decision and server validation boundary. `File` already inherits the standard `Blob.arrayBuffer()` primitive, and the existing renderer already consumes the resulting `ArrayBuffer`. Starting that promise in the selection event prevents React Strict Mode from duplicating the read. The toolbar moves to an eager feature-owned module with a type-only renderer dependency, keeping Three.js deferred. Callback-ref cleanup owns the renderer lifecycle and ignores late promise completion without `useEffect`. A bounded PLY header check blocks add-on diagnostics before the official loader parses geometry. The official Three.js console hook remains scoped to the synchronous parse call because the loader computes bounds before caller-side geometry validation; it is restored in `finally`. No constitution violation or complexity exception remains.
 
 ## Architecture
 
@@ -108,7 +108,7 @@ interface ScanPreviewRenderer {
 }
 ```
 
-No material, camera, resize, gesture, or cleanup fork is introduced. The official `PLYLoader` remains the sole geometry parser. Before calling it, one bounded feature-local header check accepts only standard PLY header directives and passes the technical encoding through the existing `onReady` callback for the upload facts. This removes the current `getConsoleFunction`/`setConsoleFunction` global mutation, which does not intercept the add-on loader's native `console.log` call. Unknown directives fail safely without logging their content. The existing renderer continues to preserve vertex colors, use the neutral material fallback, fit the camera, cap pixel ratio, render only on events, apply `data-base-ui-swipe-ignore`, and dispose CPU/GPU resources.
+No material, camera, resize, gesture, or cleanup fork is introduced. The official `PLYLoader` remains the sole geometry parser. Before calling it, one bounded feature-local header check accepts only standard PLY header directives and passes the technical encoding through the existing `onReady` callback for the upload facts. Unknown directives therefore fail before the add-on's native diagnostic. During the synchronous official parse only, Three.js's documented console hook suppresses core bounding diagnostics that run before caller-side validation and is restored in `finally`; no native-console patch or persistent global override is used. The existing renderer continues to preserve vertex colors, use the neutral material fallback, fit the camera, cap pixel ratio, render only on events, apply `data-base-ui-swipe-ignore`, and dispose CPU/GPU resources.
 
 ### Responsive and localized UI
 
