@@ -33,6 +33,7 @@ flowchart LR
   Patient --> Scans["3D scans"]
   Patient --> Prints["Print requests"]
   Scans --> Upload["Validate and upload PLY"]
+  Scans --> Preview["Open private 3D preview"]
   Scans --> Download["Authorized download"]
   Scans --> Submit["Confirm printing"]
   Submit --> Prints
@@ -66,6 +67,16 @@ confirmation. Stable server field violations return focus and localized feedback
 
 Scan upload accepts one local selection and provides early feedback, but the API remains authoritative for size and
 content. Download actions use safe metadata already present in the row and never reveal storage details.
+
+## Private 3D preview
+
+[The accepted preview frames in Figma](https://www.figma.com/design/tnvp3CFNnb4aC6VWTkK2BI/Vytruve-Product-Design?node-id=389-5297)
+extend scan details without changing their authenticated API boundary. Opening details keeps metadata available and
+starts one request to the existing private content endpoint while lazy-loading the Three.js viewer.
+
+The viewer parses the response in memory without a public or storage URL. Closing the overlay aborts retrieval,
+disposes graphics resources, and evicts the private response; reopening starts one new preparation attempt.
+Implementation decisions and evidence remain in [`specs/002-interactive-scan-preview/`](../specs/002-interactive-scan-preview/).
 
 ## Visual and accessibility contract
 

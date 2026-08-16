@@ -24,6 +24,7 @@ import {
 interface ResponsiveDetailsOverlayProps {
   children: ReactNode;
   closeLabel: string;
+  contentClassName?: string;
   description: string;
   onOpenChange: (open: boolean) => void;
   open: boolean;
@@ -45,6 +46,7 @@ interface DetailItemProps {
 export function ResponsiveDetailsOverlay({
   children,
   closeLabel,
+  contentClassName,
   description,
   onOpenChange,
   open,
@@ -81,7 +83,7 @@ export function ResponsiveDetailsOverlay({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent showCloseButton={false}>
+      <DialogContent className={contentClassName} showCloseButton={false}>
         <DialogClose
           render={
             <Button

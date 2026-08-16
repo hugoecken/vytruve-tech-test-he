@@ -12,8 +12,8 @@
 
 **Purpose**: Add only the maintained dependencies and generated-client capability required by the accepted architecture.
 
-- [ ] T001 Add `three@^0.185.1` and `@types/three@^0.185.1` to `package.json` and `package-lock.json` through npm, preserving the existing npm workspace (FR-004, FR-006–FR-007)
-- [ ] T002 Enable the official Orval TanStack Query abort signal in `orval.config.ts`, regenerate with `npm exec nx -- run web:generate-api`, and verify the ignored generated `useDownloadPatientScan` hook consumes the query signal without manual generated edits (FR-003, FR-010, FR-012)
+- [X] T001 Add `three@^0.185.1` and `@types/three@^0.185.1` to `package.json` and `package-lock.json` through npm, preserving the existing npm workspace (FR-004, FR-006–FR-007)
+- [X] T002 Enable the official Orval TanStack Query abort signal in `orval.config.ts`, regenerate with `npm exec nx -- run web:generate-api`, and verify the ignored generated `useDownloadPatientScan` hook consumes the query signal without manual generated edits (FR-003, FR-010, FR-012)
 
 **Checkpoint**: The locked dependency graph and generated query boundary are ready; no user-visible behavior exists yet.
 
@@ -23,7 +23,7 @@
 
 **Purpose**: Make the existing responsive overlay composition-capable without a preview-specific API.
 
-- [ ] T003 Extend `apps/web/src/shared/ui/responsive-details-overlay.tsx` with only `contentClassName?: string`, applying it to desktop `DialogContent` while preserving compact Drawer behavior and every existing consumer (FR-011, FR-013)
+- [X] T003 Extend `apps/web/src/shared/ui/responsive-details-overlay.tsx` with only `contentClassName?: string`, applying it to desktop `DialogContent` while preserving compact Drawer behavior and every existing consumer (FR-011, FR-013)
 
 **Checkpoint**: The overlay can accept the approved desktop width without boolean-prop proliferation.
 
@@ -37,16 +37,16 @@
 
 ### Tests for User Story 1
 
-- [ ] T004 [P] [US1] Extend `apps/web/src/modules/scans/ui/scans-panel.test.tsx` with a request counter proving one automatic request on opening, announced preparation, retained metadata, and unchanged Print and Download actions (FR-001–FR-002, FR-005–FR-006, FR-013; SC-001, SC-009)
-- [ ] T005 [P] [US1] Create `apps/web/src/modules/scans/lib/scan-preview-renderer.test.ts` with small synthetic ASCII, binary little-endian, and binary big-endian PLY buffers proving non-empty parsing, fitted setup, fixed lighting, vertex-color preservation, neutral fallback, missing-normal computation, event-driven rendering, five commands, resize, and disposal (FR-004, FR-006–FR-007, FR-010; SC-002–SC-005, SC-007)
-- [ ] T006 [P] [US1] Create `apps/web/src/modules/scans/ui/scan-preview-experience.test.tsx` with a mocked renderer facade proving ready-state announcement, one-row icon-only controls, and exact forwarding of rotate left/right, zoom in/out, and reset from accessible names (FR-005–FR-006, FR-011; SC-005, SC-008)
+- [X] T004 [P] [US1] Extend `apps/web/src/modules/scans/ui/scans-panel.test.tsx` with a request counter proving one automatic request on opening, announced preparation, retained metadata, and unchanged Print and Download actions (FR-001–FR-002, FR-005–FR-006, FR-013; SC-001, SC-009)
+- [X] T005 [P] [US1] Create `apps/web/src/modules/scans/lib/scan-preview-renderer.test.ts` with small synthetic ASCII, binary little-endian, and binary big-endian PLY buffers proving non-empty parsing, fitted setup, fixed lighting, vertex-color preservation, neutral fallback, missing-normal computation, event-driven rendering, five commands, resize, and disposal (FR-004, FR-006–FR-007, FR-010; SC-002–SC-005, SC-007)
+- [X] T006 [P] [US1] Create `apps/web/src/modules/scans/ui/scan-preview-experience.test.tsx` with a mocked renderer facade proving ready-state announcement, one-row icon-only controls, and exact forwarding of rotate left/right, zoom in/out, and reset from accessible names (FR-005–FR-006, FR-011; SC-005, SC-008)
 
 ### Implementation for User Story 1
 
-- [ ] T007 [US1] Implement `apps/web/src/modules/scans/lib/scan-preview-renderer.ts` with WebGL2 validation, direct `PLYLoader.parse(ArrayBuffer)`, finite non-empty geometry checks, conditional normals, centering and bounding-sphere camera fit, fixed ambient/directional lighting, vertex/neutral material selection, event-driven `OrbitControls`, pixel-ratio cap, `ResizeObserver`, the six-method facade, and idempotent cleanup (FR-004, FR-006–FR-007, FR-010, FR-012; SC-002–SC-005, SC-007, SC-010)
-- [ ] T008 [US1] Implement the automatic deferred boundary in `apps/web/src/modules/scans/ui/scan-preview.tsx`, mounting `scan-preview-experience.tsx` through React lazy/Suspense as soon as scan details open (FR-001–FR-002, FR-005, FR-012; SC-001, SC-003)
-- [ ] T009 [US1] Implement the successful query and DOM lifecycle in `apps/web/src/modules/scans/ui/scan-preview-experience.tsx`: generated hook, `retry: false`, `gcTime: 0`, mount/focus/reconnect refetches disabled, Blob-to-ArrayBuffer conversion without URL, React 19 callback-ref cleanup, renderer handle, five shadcn controls, polite status, and `data-base-ui-swipe-ignore` (FR-002–FR-007, FR-010–FR-012; SC-002–SC-005, SC-007–SC-008, SC-010)
-- [ ] T010 [US1] Integrate `ScanPreview` and the accepted desktop/compact composition into `apps/web/src/modules/scans/ui/scans-panel.tsx`, then keep only concise English and French preparing/ready/control copy without privacy or storage-URL explanations (FR-001, FR-005–FR-007, FR-011, FR-013; SC-001, SC-004–SC-005, SC-008–SC-009)
+- [X] T007 [US1] Implement `apps/web/src/modules/scans/lib/scan-preview-renderer.ts` with WebGL2 validation, direct `PLYLoader.parse(ArrayBuffer)`, finite non-empty geometry checks, conditional normals, centering and bounding-sphere camera fit, fixed ambient/directional lighting, vertex/neutral material selection, event-driven `OrbitControls`, pixel-ratio cap, `ResizeObserver`, the six-method facade, and idempotent cleanup (FR-004, FR-006–FR-007, FR-010, FR-012; SC-002–SC-005, SC-007, SC-010)
+- [X] T008 [US1] Implement the automatic deferred boundary in `apps/web/src/modules/scans/ui/scan-preview.tsx`, mounting `scan-preview-experience.tsx` through React lazy/Suspense as soon as scan details open (FR-001–FR-002, FR-005, FR-012; SC-001, SC-003)
+- [X] T009 [US1] Implement the successful query and DOM lifecycle in `apps/web/src/modules/scans/ui/scan-preview-experience.tsx`: generated hook, `retry: false`, `gcTime: 0`, mount/focus/reconnect refetches disabled, Blob-to-ArrayBuffer conversion without URL, React 19 callback-ref cleanup, renderer handle, five shadcn controls, polite status, and `data-base-ui-swipe-ignore` (FR-002–FR-007, FR-010–FR-012; SC-002–SC-005, SC-007–SC-008, SC-010)
+- [X] T010 [US1] Integrate `ScanPreview` and the accepted desktop/compact composition into `apps/web/src/modules/scans/ui/scans-panel.tsx`, then keep only concise English and French preparing/ready/control copy without privacy or storage-URL explanations (FR-001, FR-005–FR-007, FR-011, FR-013; SC-001, SC-004–SC-005, SC-008–SC-009)
 
 **Checkpoint**: US1 is independently demonstrable with synthetic data and one locally supplied scan; failure recovery may still be incomplete.
 
@@ -60,13 +60,13 @@
 
 ### Tests for User Story 2
 
-- [ ] T011 [P] [US2] Extend `apps/web/src/modules/scans/ui/scan-preview-experience.test.tsx` with retrieval failure, Blob conversion failure, zero focus/reconnect refetches, one explicit Retry refetch, duplicate-retry prevention, query-content eviction, close-during-fetch cancellation, renderer disposal, and one-request reopening evidence (FR-003, FR-005, FR-008–FR-010, FR-012; SC-006–SC-007, SC-010)
-- [ ] T012 [P] [US2] Extend `apps/web/src/modules/scans/lib/scan-preview-renderer.test.ts` with empty/malformed/non-finite PLY, unavailable WebGL2, construction failure, late cleanup, and dispose-once evidence without exposing error details (FR-008, FR-010, FR-012; SC-006–SC-007, SC-010)
+- [X] T011 [P] [US2] Extend `apps/web/src/modules/scans/ui/scan-preview-experience.test.tsx` with retrieval failure, Blob conversion failure, zero focus/reconnect refetches, one explicit Retry refetch, duplicate-retry prevention, query-content eviction, close-during-fetch cancellation, renderer disposal, and one-request reopening evidence (FR-003, FR-005, FR-008–FR-010, FR-012; SC-006–SC-007, SC-010)
+- [X] T012 [P] [US2] Extend `apps/web/src/modules/scans/lib/scan-preview-renderer.test.ts` with empty/malformed/non-finite PLY, unavailable WebGL2, construction failure, late cleanup, and dispose-once evidence without exposing error details (FR-008, FR-010, FR-012; SC-006–SC-007, SC-010)
 
 ### Implementation for User Story 2
 
-- [ ] T013 [US2] Complete the unavailable/retry state in `apps/web/src/modules/scans/ui/scan-preview-experience.tsx` with one generic callback path, an attempt key, disabled concurrent actions, and `refetch({ cancelRefetch: false })`; add concise localized safe feedback and Retry copy to both locale files (FR-003, FR-005, FR-008–FR-009, FR-011–FR-012; SC-006, SC-008, SC-010)
-- [ ] T014 [US2] Complete close and failure cleanup across `scan-preview.tsx`, `scan-preview-experience.tsx`, and `scan-preview-renderer.ts`, ensuring an aborted or late asynchronous result cannot recreate a renderer and reopening starts one new preparing attempt (FR-010, FR-012; SC-007, SC-010)
+- [X] T013 [US2] Complete the unavailable/retry state in `apps/web/src/modules/scans/ui/scan-preview-experience.tsx` with one generic callback path, an attempt key, disabled concurrent actions, and `refetch({ cancelRefetch: false })`; add concise localized safe feedback and Retry copy to both locale files (FR-003, FR-005, FR-008–FR-009, FR-011–FR-012; SC-006, SC-008, SC-010)
+- [X] T014 [US2] Complete close and failure cleanup across `scan-preview.tsx`, `scan-preview-experience.tsx`, and `scan-preview-renderer.ts`, ensuring an aborted or late asynchronous result cannot recreate a renderer and reopening starts one new preparing attempt (FR-010, FR-012; SC-007, SC-010)
 
 **Checkpoint**: Both user stories are independently executable and every accepted preview state has focused evidence.
 
@@ -76,11 +76,11 @@
 
 **Purpose**: Prove non-regression, deferred loading, product fidelity, Nx ownership, and protected-data safety.
 
-- [ ] T015 Extend `apps/web/src/modules/scans/ui/scans-panel.test.tsx` with final preview/Download/Print non-regression, icon-only controls, removed privacy copy, and compact gesture-boundary assertions, preserving existing tests rather than replacing them (FR-011, FR-013; SC-005, SC-009)
-- [ ] T016 [P] Add the bounded interactive-preview note and deferred-loading/privacy boundary to `docs/frontend.md`, linking to the canonical Figma design while leaving detailed mechanics in these Spec Kit artifacts (FR-012–FR-013; SC-010)
-- [ ] T017 Run `npm exec nx -- test web`, `lint web`, `typecheck web`, and `build web`; inspect Vite output to prove Three.js is deferred; run `npm exec nx -- run web:container`; then execute the workflow-equivalent `nx affected` checks from [`quickstart.md`](quickstart.md) without manual project selection (SC-001–SC-010)
-- [ ] T018 Review all three supplied samples locally at 1440×900 and 390×900 with mouse, keyboard, and touch emulation; cover every accepted encoding, measure post-retrieval readiness, and record only pass/fail evidence without filenames, bytes, or screenshots (SC-002–SC-008, SC-010)
-- [ ] T019 Run Nx format checking, `git diff --check`, final diff inspection, and protected-data/generated-artifact scans; verify no scan fixture, original filename, storage URL/key, credential, debug log, manual generated edit, direct `useEffect`, eager Three.js import, or non-Nx change selector is present (FR-012–FR-013; SC-009–SC-010)
+- [X] T015 Extend `apps/web/src/modules/scans/ui/scans-panel.test.tsx` with final preview/Download/Print non-regression, icon-only controls, removed privacy copy, and compact gesture-boundary assertions, preserving existing tests rather than replacing them (FR-011, FR-013; SC-005, SC-009)
+- [X] T016 [P] Add the bounded interactive-preview note and deferred-loading/privacy boundary to `docs/frontend.md`, linking to the canonical Figma design while leaving detailed mechanics in these Spec Kit artifacts (FR-012–FR-013; SC-010)
+- [X] T017 Run `npm exec nx -- test web`, `lint web`, `typecheck web`, and `build web`; inspect Vite output to prove Three.js is deferred; run `npm exec nx -- run web:container`; then execute the workflow-equivalent `nx affected` checks from [`quickstart.md`](quickstart.md) without manual project selection (SC-001–SC-010)
+- [X] T018 Review all three supplied samples locally at 1440×900 and 390×900 with mouse, keyboard, and touch emulation; cover every accepted encoding, measure post-retrieval readiness, and record only pass/fail evidence without filenames, bytes, or screenshots (SC-002–SC-008, SC-010)
+- [X] T019 Run Nx format checking, `git diff --check`, final diff inspection, and protected-data/generated-artifact scans; verify no scan fixture, original filename, storage URL/key, credential, debug log, manual generated edit, direct `useEffect`, eager Three.js import, or non-Nx change selector is present (FR-012–FR-013; SC-009–SC-010)
 
 **Checkpoint**: Issue #53 has complete local implementation evidence and is ready for review and promotion through the existing Git workflow.
 
