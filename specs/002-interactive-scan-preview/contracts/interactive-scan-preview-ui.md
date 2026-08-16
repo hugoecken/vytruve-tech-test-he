@@ -1,6 +1,6 @@
 # UI Contract: Interactive Scan Preview
 
-**Status**: Accepted as part of plan snapshot `048c933c94548625fea3a269e38e65e84a6f47f4`
+**Status**: Accepted with the automatic-loading plan reconciliation approved on 2026-08-16
 
 ## Authorities
 
@@ -17,24 +17,22 @@ Figma owns composition and visual hierarchy. The specification owns behavior. Th
 
 | Stable state | Visible content | Network behavior | Exit |
 | --- | --- | --- | --- |
-| `SCAN-PREVIEW-IDLE` | Metadata and Preview action | Zero content requests | Preview or close |
-| `SCAN-PREVIEW-PREPARING` | Metadata and announced preparation | One active request at most | Ready, unavailable, or close |
-| `SCAN-PREVIEW-READY` | Viewer, five controls, metadata | No automatic request | Interact or close |
+| `SCAN-PREVIEW-PREPARING` | Metadata and announced preparation | One opening request at most | Ready, unavailable, or close |
+| `SCAN-PREVIEW-READY` | Viewer, five icon controls, metadata | No further automatic request | Interact or close |
 | `SCAN-PREVIEW-UNAVAILABLE` | Generic failure, Retry, metadata | Zero automatic requests | Retry or close |
 
 ## Action Contract
 
 | Stable action | Accessible English name | Result |
 | --- | --- | --- |
-| `ACT-SCAN-PREVIEW` | Preview 3D scan | Starts first attempt |
-| `ACT-SCAN-PREVIEW-RETRY` | Retry preview | Starts one new attempt |
+| `ACT-SCAN-PREVIEW-RETRY` | Retry | Starts one new attempt |
 | `ACT-PREVIEW-ROTATE-LEFT` | Rotate left | Rotates and renders once |
 | `ACT-PREVIEW-ROTATE-RIGHT` | Rotate right | Rotates and renders once |
 | `ACT-PREVIEW-ZOOM-IN` | Zoom in | Moves closer and renders once |
 | `ACT-PREVIEW-ZOOM-OUT` | Zoom out | Moves farther and renders once |
 | `ACT-PREVIEW-RESET` | Reset view | Restores fitted view and renders once |
 
-Every name has a French catalog equivalent. Toolbar buttons are visible, keyboard reachable, visibly focused, and disabled until the renderer is ready.
+Every name has a French catalog equivalent. The five toolbar buttons have no visible text, stay on one row, remain keyboard reachable and visibly focused, and are disabled until the renderer is ready.
 
 ## Layout Contract
 
@@ -64,4 +62,4 @@ Retrieval, conversion, invalid/empty PLY, WebGL2, and temporary resource failure
 
 ## Non-Regression Contract
 
-The existing Download and Print actions remain separate from Preview. Opening details, using Preview, encountering a preview failure, retrying, or closing must not alter upload, download, print eligibility, patient selection, or scan metadata.
+The existing Download and Print actions remain separate from preview preparation. Opening details, encountering a preview failure, retrying, or closing must not alter upload, download, print eligibility, patient selection, or scan metadata.

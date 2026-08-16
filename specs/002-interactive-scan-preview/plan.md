@@ -2,15 +2,15 @@
 
 **Status**: Accepted
 
-**Branch**: `docs/interactive-scan-preview-plan` | **Date**: 2026-08-16 | **Accepted specification**: [`spec.md`](spec.md) at `c1cf30df802c428687aca91798251df2254bbe45`
+**Branch**: `docs/interactive-scan-preview-plan` | **Date**: 2026-08-16 | **Accepted specification**: [`spec.md`](spec.md) integrated at `c2eadd907156e1d986a9d5bed6c29030ea781167`
 
 **Visual authority**: Figma Product Design section `05 · Interactive scan preview` (`389:5297`) in `Ready for Development`, with accepted frames `389:5324`, `389:5334`, `389:5711`, and `389:5721`.
 
-**Planning authority**: GitHub issue #57 owns planning integration. The user explicitly accepted candidate commit `048c933c94548625fea3a269e38e65e84a6f47f4` and its derived `tasks.md` on 2026-08-16. Issue #53 becomes executable only after that accepted snapshot is immutably bound and integrated into `develop`.
+**Planning authority**: GitHub issue #57 owns the accepted architecture at commit `048c933c94548625fea3a269e38e65e84a6f47f4`. The reviewer explicitly approved the automatic-loading amendment and its exact Figma composition on 2026-08-16. This reconciliation changes orchestration and evidence only; it introduces no new architecture decision.
 
 ## Summary
 
-Extend the existing scan-details overlay with an opt-in, private PLY preview. Safe metadata remains immediate and causes no content request. Activating Preview mounts one lazy frontend chunk, starts the existing authenticated Orval query exactly once, converts its bounded `Blob` response to an `ArrayBuffer` without a URL, and creates a disposable Three.js viewer. The viewer supports pointer, touch, keyboard-reachable controls, vertex colors, a neutral fallback material, and a fitted reset view.
+Extend the existing scan-details overlay with a private PLY preview that starts automatically when the overlay opens. Safe metadata remains immediate while one lazy frontend chunk mounts, starts the existing authenticated Orval query exactly once, converts its bounded `Blob` response to an `ArrayBuffer` without a URL, and creates a disposable Three.js viewer. The viewer supports pointer, touch, keyboard-reachable icon controls, vertex colors, a neutral fallback material, and a fitted reset view.
 
 The implementation changes only the Web application and generated-client configuration. It adds no API operation, database state, storage URL, worker, server conversion, or deployment mechanism.
 
@@ -28,11 +28,11 @@ The implementation changes only the Web application and generated-client configu
 
 **Project Type**: Existing React/Vite application in the four-project Nx workspace
 
-**Performance Goals**: No preview request before intent; one request per explicit attempt; event-driven rendering; supplied local samples interactive within three seconds after retrieval
+**Performance Goals**: One initial request per opened scan-details overlay; one request per explicit Retry; event-driven rendering; supplied local samples interactive within three seconds after retrieval
 
 **Constraints**: Accepted 25 MiB limit and three PLY encodings; authenticated same-origin API only; no public or Blob URL for preview; no direct `useEffect`; no continuous animation loop; no committed scan sample
 
-**Scale/Scope**: One existing overlay, four preview states, five visible controls, two responsive compositions, two locales
+**Scale/Scope**: One existing overlay, three preview states, five icon controls, two responsive compositions, two locales
 
 ## Constitution Check
 
@@ -59,7 +59,7 @@ Research preserves every accepted product state and the exact Figma composition.
 
 ```mermaid
 flowchart LR
-  Metadata["Open details: metadata only"] -->|Preview| Lazy["Load preview chunk"]
+  Metadata["Open details: metadata available"] --> Lazy["Load preview chunk"]
   Lazy --> Query["Generated authenticated query"]
   Query -->|Blob| Buffer["blob.arrayBuffer()"]
   Buffer --> Renderer["Disposable Three.js renderer"]
@@ -77,16 +77,16 @@ flowchart LR
 ### Query and preview state
 
 - `ScanDetailsOverlay` continues to receive metadata from the existing collection response.
-- A small `ScanPreview` boundary owns only whether the user has requested a preview. Its initial render contains no Three.js import and no enabled content query.
-- After Preview, React lazy-loads the requested experience. The generated `useDownloadPatientScan` hook runs with `enabled: true`, `retry: false`, `gcTime: 0`, `refetchOnMount: false`, `refetchOnWindowFocus: false`, `refetchOnReconnect: false`, and one selected scan key.
+- A small `ScanPreview` boundary mounts the lazy experience as soon as scan details open. Its regular-bundle module contains no Three.js import.
+- React then loads the deferred preview experience. The generated `useDownloadPatientScan` hook runs with `enabled: true`, `retry: false`, `gcTime: 0`, `refetchOnMount: false`, `refetchOnWindowFocus: false`, `refetchOnReconnect: false`, and one selected scan key.
 - `orval.config.ts` changes `query.signal` from `false` to `true`. Regeneration makes generated query functions consume TanStack Query's `AbortSignal`; no generated file is edited or committed.
-- Preview and Retry controls are disabled while `isFetching`. Retry calls `refetch({ cancelRefetch: false })`, so repeated activation cannot restart or parallelize an active attempt.
-- Each explicit attempt has an incrementing local key. A successful refetch remounts a clean viewer even if the bytes are identical. Query error, Blob conversion failure, invalid PLY, WebGL2 failure, or allocation failure all map to the same localized unavailable state.
-- Closing removes the lazy subtree. React cleanup disposes the renderer, TanStack aborts a consumed in-flight request, and `gcTime: 0` makes inactive private content immediately eligible for collection. Reopening starts at idle.
+- Retry is available only after failure and is disabled while `isFetching`. It calls `refetch({ cancelRefetch: false })`, so repeated activation cannot restart or parallelize an active attempt.
+- The opening attempt starts when the experience mounts; each Retry increments a local key. A successful refetch remounts a clean viewer even if the bytes are identical. Query error, Blob conversion failure, invalid PLY, WebGL2 failure, or allocation failure all map to the same localized unavailable state.
+- Closing removes the lazy subtree. React cleanup disposes the renderer, TanStack aborts a consumed in-flight request, and `gcTime: 0` makes inactive private content immediately eligible for collection. Reopening starts one new preparing attempt.
 
 ### Lazy boundary
 
-`scan-preview.tsx` remains in the regular scans bundle and renders the idle Preview action. Only after intent does it mount `scan-preview-experience.tsx` through `React.lazy` and `Suspense`. The lazy module imports `scan-preview-renderer.ts`; therefore Three.js, `PLYLoader`, and `OrbitControls` stay outside the initial application chunk. Vite output inspection must confirm a distinct deferred chunk.
+`scan-preview.tsx` remains in the regular scans bundle and mounts `scan-preview-experience.tsx` through `React.lazy` and `Suspense` when scan details open. The lazy module imports `scan-preview-renderer.ts`; therefore Three.js, `PLYLoader`, and `OrbitControls` stay outside the initial application chunk even though preparation starts without a second action. Vite output inspection must confirm a distinct deferred chunk.
 
 ### Renderer boundary
 
@@ -122,8 +122,8 @@ The canvas callback ref returns the React 19 cleanup function. It converts the B
 - Add only `contentClassName?: string` to `ResponsiveDetailsOverlay`; it widens the desktop dialog without introducing a preview-specific boolean.
 - Desktop uses the accepted wide dialog with a 4:3 viewer beside metadata. Compact uses the existing scrollable drawer with viewer, controls, then metadata.
 - The interactive viewer root carries `data-base-ui-swipe-ignore`, preserving canvas gestures without disabling drawer dismissal elsewhere.
-- Five shadcn icon buttons expose localized accessible names and visible focus: rotate left, rotate right, zoom in, zoom out, and reset.
-- Preparing uses a polite status. Unavailable uses one generic localized message and Retry. Technical errors, object keys, filenames, bytes, and storage details are never rendered or logged.
+- Five shadcn icon buttons remain on one row and expose localized accessible names and visible focus: rotate left, rotate right, zoom in, zoom out, and reset. They have no visible text labels at either viewport.
+- Preparing uses a polite status without privacy or storage-URL explanatory copy. Unavailable uses one generic localized message and a compact outline Retry action. Technical errors, object keys, filenames, bytes, and storage details are never rendered or logged.
 - Existing Download, Print, metadata, selection, and close behaviors remain independently wired.
 
 ## Project Structure

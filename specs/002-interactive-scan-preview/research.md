@@ -1,12 +1,12 @@
 # Technical Research: Interactive Scan Preview
 
-**Status**: Accepted as part of plan snapshot `048c933c94548625fea3a269e38e65e84a6f47f4`
+**Status**: Accepted with the automatic-loading plan reconciliation approved on 2026-08-16
 
 This document records implementation decisions supporting [`plan.md`](plan.md). It does not replace the accepted specification, Figma evidence, or implementation tests.
 
 ## Existing Authenticated Content Query
 
-**Decision**: Reuse `useDownloadPatientScan` for `GET /api/patients/:patientId/scans/:scanId/content`. Enable Orval's official query `signal` option, regenerate through Nx, and configure the preview use with `retry: false`, `gcTime: 0`, all automatic refetch triggers disabled, and explicit intent.
+**Decision**: Reuse `useDownloadPatientScan` for `GET /api/patients/:patientId/scans/:scanId/content`. Enable Orval's official query `signal` option, regenerate through Nx, and configure the preview use with `retry: false`, `gcTime: 0`, all automatic refetch triggers disabled, and one initial request when scan details open.
 
 **Rationale**: The generated hook already owns credentials, ownership-safe errors, response typing, and its stable key. TanStack Query supports dependent/lazy execution through `enabled`, deliberate retry through `refetch`, and suppression of a concurrent refetch through `cancelRefetch: false`. Orval can generate query cancellation from TanStack's `AbortSignal`, avoiding a handwritten fetch path. [TanStack Query dependent queries](https://tanstack.com/query/latest/docs/framework/react/guides/dependent-queries), [TanStack Query `useQuery`](https://tanstack.com/query/latest/docs/framework/react/reference/useQuery), [Orval query signal](https://orval.dev/docs/reference/configuration/output/#signal)
 
@@ -15,7 +15,7 @@ This document records implementation decisions supporting [`plan.md`](plan.md). 
 - Call `fetch` or `downloadPatientScan` manually: rejected because it bypasses the requested generated hook and duplicates query ownership.
 - Add a preview endpoint or presigned MinIO URL: rejected because the authenticated content operation already enforces the correct boundary and public storage URLs are forbidden.
 - Keep Orval `signal: false`: rejected because an unmounted preview would not consume TanStack's cancellation signal.
-- Automatic retries or mount, focus, and reconnect refetches: rejected because every retrieval attempt must follow explicit intent.
+- Automatic retries or focus and reconnect refetches: rejected because only the first overlay mount may start automatically; every later attempt requires Retry.
 
 ## Blob-to-ArrayBuffer Boundary
 
@@ -38,7 +38,7 @@ This document records implementation decisions supporting [`plan.md`](plan.md). 
 **Alternatives considered**:
 
 - Custom PLY parser or canvas renderer: rejected because maintained Three.js primitives already own both responsibilities.
-- Eager global Three.js import: rejected because most scan-detail openings never request a preview.
+- Eager global Three.js import: rejected because users who never open scan details do not need the preview stack in the initial application entry.
 - WebGPU or a second fallback renderer: rejected because the accepted target is WebGL2 with one explicit unavailable state.
 - Web Worker: rejected because the bounded local evidence does not justify worker messaging, duplicated buffers, or another lifecycle.
 
