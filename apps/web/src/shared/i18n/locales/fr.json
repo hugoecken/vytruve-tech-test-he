@@ -181,8 +181,8 @@
     },
     "encoding": {
       "ascii": "ASCII",
-      "binary_big_endian": "Binaire, gros-boutiste",
-      "binary_little_endian": "Binaire, petit-boutiste"
+      "binary_big_endian": "Binaire (big-endian)",
+      "binary_little_endian": "Binaire (little-endian)"
     },
     "upload": {
       "title": "Ajouter un scan 3D",
@@ -192,10 +192,19 @@
       "fileReady": "PLY · {{size}} · Prêt à être ajouté",
       "review": "Vérifiez le scan sélectionné avant de l’ajouter à ce dossier patient.",
       "failed": "Échec de l’ajout. Réessayez.",
+      "replace": "Remplacer le scan sélectionné",
       "remove": "Retirer le scan sélectionné",
       "cancel": "Annuler",
       "submit": "Ajouter le scan",
       "pending": "Ajout du scan…",
+      "preview": {
+        "preparing": "Préparation de l’aperçu local…",
+        "preparingDescription": "Vérification du scan sélectionné sur cet appareil.",
+        "viewport": "Aperçu du scan 3D sélectionné",
+        "detectingEncoding": "Détection…",
+        "unavailableTitle": "Aperçu local indisponible",
+        "unavailableDescription": "Le scan sélectionné ne peut pas être affiché ici. Vous pouvez le remplacer ou poursuivre l’ajout."
+      },
       "validation": {
         "type": "Choisissez un fichier avec l’extension .ply.",
         "size": "Choisissez un fichier PLY de 25 Mio maximum."

@@ -33,11 +33,12 @@ This document supports [`plan.md`](plan.md). It does not replace the accepted sp
 
 **Decision**: Inspect only the bounded ASCII PLY header before parsing, accept the standard directives supported by the loader, derive the technical encoding, and reject unknown directives without logging them. Keep `PLYLoader.parse` as the only geometry parser.
 
-**Rationale**: The current renderer temporarily changes Three.js's global console function, but the PLY add-on uses native `console.log` for unknown header lines, so that mutation neither protects private content nor stays local to one renderer. A small header guard owns a real protected-data boundary, avoids global state, and still delegates all geometry work to the official loader. [Three.js `PLYLoader`](https://threejs.org/docs/pages/PLYLoader.html)
+**Rationale**: The PLY add-on uses a native diagnostic for unknown header lines, so a bounded header guard owns that protected-data boundary before parsing. The official loader also computes bounds before caller-side validation, where Three.js core can emit geometry diagnostics through its configurable console hook. The implementation therefore scopes that official hook to the synchronous `parse` call and restores it in `finally`; geometry parsing remains delegated to `PLYLoader`. [Three.js `PLYLoader`](https://threejs.org/docs/pages/PLYLoader.html)
 
 **Alternatives considered**:
 
-- Keep `getConsoleFunction`/`setConsoleFunction`: rejected because it does not intercept the add-on's native console call and mutates global Three.js state.
+- Rely only on `getConsoleFunction`/`setConsoleFunction`: rejected because it does not intercept the add-on's native diagnostic for unknown directives.
+- Remove the official hook entirely: rejected because the loader computes bounds before caller-side finite-coordinate validation and Three.js core can otherwise emit protected geometry diagnostics.
 - Replace or vendor `PLYLoader`: rejected because maintaining a parser fork is disproportionate.
 - Monkey-patch `console.log`: rejected because it changes browser-global behavior and can hide unrelated diagnostics.
 - Write a complete PLY parser: rejected because the official loader already owns geometry parsing.
