@@ -16,8 +16,23 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
 
 const CAMERA_FOV = 45;
+const HEADER_LIMIT_BYTES = 65_536;
 const ROTATION_STEP = Math.PI / 12;
 const ZOOM_FACTOR = 0.8;
+const ASCII_DECODER = new TextDecoder();
+const PLY_HEADER_DIRECTIVES = new Set([
+  'comment',
+  'element',
+  'format',
+  'obj_info',
+  'property',
+]);
+
+/** PLY encodings rendered and presented by the scan preview. */
+export type ScanPreviewEncoding =
+  | 'ascii'
+  | 'binary_big_endian'
+  | 'binary_little_endian';
 
 /** Commands exposed by one mounted private scan preview. */
 export interface ScanPreviewRenderer {
@@ -33,7 +48,7 @@ export interface ScanPreviewRenderer {
 interface CreateScanPreviewRendererOptions {
   container: HTMLDivElement;
   data: ArrayBuffer;
-  onReady: () => void;
+  onReady: (encoding: ScanPreviewEncoding) => void;
   onUnavailable: () => void;
 }
 
@@ -63,6 +78,7 @@ export function createScanPreviewRenderer({
       throw new Error('WebGL2 unavailable');
     }
 
+    const encoding = inspectPlyHeader(data);
     geometry = parsePrivatePly(data);
     assertDisplayableGeometry(geometry);
     if (!geometry.hasAttribute('normal')) {
@@ -167,7 +183,7 @@ export function createScanPreviewRenderer({
         render();
       },
     };
-    onReady();
+    onReady(encoding);
     return preview;
   } catch {
     resizeObserver?.disconnect();
@@ -181,7 +197,7 @@ export function createScanPreviewRenderer({
   }
 }
 
-/** Parses untrusted private content without letting Three.js log its geometry. */
+/** Parses guarded bytes while suppressing Three.js core geometry diagnostics. */
 function parsePrivatePly(data: ArrayBuffer): BufferGeometry {
   const previousConsole = getConsoleFunction();
   setConsoleFunction(() => undefined);
@@ -190,6 +206,58 @@ function parsePrivatePly(data: ArrayBuffer): BufferGeometry {
   } finally {
     setConsoleFunction(previousConsole);
   }
+}
+
+/** Validates the bounded textual header before the official loader sees it. */
+function inspectPlyHeader(data: ArrayBuffer): ScanPreviewEncoding {
+  const bytes = new Uint8Array(data);
+  const headerEnd = findPlyHeaderEnd(bytes);
+  const headerBytes = bytes.subarray(0, headerEnd);
+  for (const byte of headerBytes) {
+    if (
+      byte > 0x7f ||
+      (byte < 0x20 && byte !== 0x09 && byte !== 0x0a && byte !== 0x0d)
+    ) {
+      throw new Error('Invalid PLY header');
+    }
+  }
+  const lines = ASCII_DECODER.decode(headerBytes)
+    .replace(/\r\n?/g, '\n')
+    .split('\n');
+  if (lines[0] !== 'ply') {
+    throw new Error('Invalid PLY header');
+  }
+  const format =
+    /^format (ascii|binary_little_endian|binary_big_endian) 1\.0$/.exec(
+      lines[1] ?? '',
+    );
+  if (format === null) {
+    throw new Error('Unsupported PLY format');
+  }
+  for (const line of lines.slice(2)) {
+    if (line === 'end_header') break;
+    if (line === '') continue;
+    const directive = line.split(/\s+/, 1)[0];
+    if (directive === undefined || !PLY_HEADER_DIRECTIVES.has(directive)) {
+      throw new Error('Unsupported PLY header');
+    }
+  }
+  return format[1] as ScanPreviewEncoding;
+}
+
+/** Finds a newline-terminated PLY header without inspecting unbounded bytes. */
+function findPlyHeaderEnd(bytes: Uint8Array): number {
+  const inspectedLength = Math.min(bytes.length, HEADER_LIMIT_BYTES);
+  let lineStart = 0;
+  for (let index = 0; index < inspectedLength; index += 1) {
+    if (bytes[index] !== 0x0a) continue;
+    const lineEnd =
+      index > lineStart && bytes[index - 1] === 0x0d ? index - 1 : index;
+    const line = ASCII_DECODER.decode(bytes.subarray(lineStart, lineEnd));
+    if (line === 'end_header') return index + 1;
+    lineStart = index + 1;
+  }
+  throw new Error('Missing PLY header terminator');
 }
 
 /** Rejects empty or non-finite geometry before renderer construction. */

@@ -1,24 +1,11 @@
-import {
-  useCallback,
-  useRef,
-  useState,
-  type ReactNode,
-  type RefObject,
-} from 'react';
-import {
-  CircleAlertIcon,
-  RefreshCwIcon,
-  RotateCcwIcon,
-  RotateCwIcon,
-  ScanSearchIcon,
-  ZoomInIcon,
-  ZoomOutIcon,
-} from 'lucide-react';
+import { useCallback, useRef, useState } from 'react';
+import { CircleAlertIcon, RefreshCwIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   createScanPreviewRenderer,
   type ScanPreviewRenderer,
 } from '@/modules/scans/lib/scan-preview-renderer';
+import { ScanPreviewToolbar } from '@/modules/scans/ui/scan-preview-toolbar';
 import { useDownloadPatientScan } from '@/shared/api/generated/client/scans/scans';
 import { Button } from '@/shared/ui/button';
 import { Spinner } from '@/shared/ui/spinner';
@@ -141,7 +128,7 @@ export function ScanPreviewExperience({
             {t('scans.details.preview.preparingDescription')}
           </p>
         </div>
-        <PreviewToolbar ready={false} rendererRef={rendererRef} />
+        <ScanPreviewToolbar ready={false} />
       </div>
     );
   }
@@ -176,94 +163,10 @@ export function ScanPreviewExperience({
           </span>
         )}
       </div>
-      <PreviewToolbar
+      <ScanPreviewToolbar
         ready={preparation === 'ready'}
-        rendererRef={rendererRef}
+        renderer={rendererRef.current}
       />
     </div>
-  );
-}
-
-/** Supplies renderer readiness and commands to the preview toolbar. */
-interface PreviewToolbarProps {
-  ready: boolean;
-  rendererRef: RefObject<ScanPreviewRenderer | null>;
-}
-
-/** Renders the five icon-only renderer commands on one row. */
-function PreviewToolbar({ ready, rendererRef }: PreviewToolbarProps) {
-  const { t } = useTranslation();
-
-  return (
-    <div
-      aria-label={t('scans.details.preview.controls')}
-      className="flex flex-nowrap justify-center gap-2 rounded-lg border bg-muted/40 p-2"
-      role="toolbar"
-    >
-      <PreviewControl
-        label={t('scans.details.preview.rotateLeft')}
-        onClick={() => rendererRef.current?.rotateLeft()}
-        ready={ready}
-      >
-        <RotateCcwIcon aria-hidden="true" data-icon="inline-start" />
-      </PreviewControl>
-      <PreviewControl
-        label={t('scans.details.preview.rotateRight')}
-        onClick={() => rendererRef.current?.rotateRight()}
-        ready={ready}
-      >
-        <RotateCwIcon aria-hidden="true" data-icon="inline-start" />
-      </PreviewControl>
-      <PreviewControl
-        label={t('scans.details.preview.zoomIn')}
-        onClick={() => rendererRef.current?.zoomIn()}
-        ready={ready}
-      >
-        <ZoomInIcon aria-hidden="true" data-icon="inline-start" />
-      </PreviewControl>
-      <PreviewControl
-        label={t('scans.details.preview.zoomOut')}
-        onClick={() => rendererRef.current?.zoomOut()}
-        ready={ready}
-      >
-        <ZoomOutIcon aria-hidden="true" data-icon="inline-start" />
-      </PreviewControl>
-      <PreviewControl
-        label={t('scans.details.preview.reset')}
-        onClick={() => rendererRef.current?.reset()}
-        ready={ready}
-      >
-        <ScanSearchIcon aria-hidden="true" data-icon="inline-start" />
-      </PreviewControl>
-    </div>
-  );
-}
-
-/** Defines one accessible icon-only renderer command. */
-interface PreviewControlProps {
-  children: ReactNode;
-  label: string;
-  onClick: () => void;
-  ready: boolean;
-}
-
-/** Renders one toolbar command without a visible text label. */
-function PreviewControl({
-  children,
-  label,
-  onClick,
-  ready,
-}: PreviewControlProps) {
-  return (
-    <Button
-      aria-label={label}
-      disabled={!ready}
-      onClick={onClick}
-      size="icon"
-      type="button"
-      variant="outline"
-    >
-      {children}
-    </Button>
   );
 }

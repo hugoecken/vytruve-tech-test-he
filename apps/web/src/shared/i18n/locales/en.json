@@ -192,10 +192,19 @@
       "fileReady": "PLY · {{size}} · Ready to add",
       "review": "Review the selected scan before uploading it to this patient record.",
       "failed": "Upload failed. Try again.",
+      "replace": "Replace selected scan",
       "remove": "Remove selected scan",
       "cancel": "Cancel",
       "submit": "Add scan",
       "pending": "Adding scan…",
+      "preview": {
+        "preparing": "Preparing local preview…",
+        "preparingDescription": "Checking the selected scan on this device.",
+        "viewport": "Selected 3D scan preview",
+        "detectingEncoding": "Detecting…",
+        "unavailableTitle": "Local preview unavailable",
+        "unavailableDescription": "The selected scan could not be displayed here. You can replace it or continue with the upload."
+      },
       "validation": {
         "type": "Choose a file with the .ply extension.",
         "size": "Choose a PLY file no larger than 25 MiB."
