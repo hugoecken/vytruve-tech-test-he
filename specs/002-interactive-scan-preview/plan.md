@@ -1,12 +1,12 @@
 # Implementation Plan: Interactive Scan Preview
 
-**Status**: Candidate
+**Status**: Accepted
 
 **Branch**: `docs/interactive-scan-preview-plan` | **Date**: 2026-08-16 | **Accepted specification**: [`spec.md`](spec.md) at `c1cf30df802c428687aca91798251df2254bbe45`
 
 **Visual authority**: Figma Product Design section `05 · Interactive scan preview` (`389:5297`) in `Ready for Development`, with accepted frames `389:5324`, `389:5334`, `389:5711`, and `389:5721`.
 
-**Planning authority**: GitHub issue #57 owns this candidate. Issue #53 becomes executable only after this exact plan and its derived `tasks.md` are explicitly approved and immutably bound.
+**Planning authority**: GitHub issue #57 owns planning integration. The user explicitly accepted candidate commit `048c933c94548625fea3a269e38e65e84a6f47f4` and its derived `tasks.md` on 2026-08-16. Issue #53 becomes executable only after that accepted snapshot is immutably bound and integrated into `develop`.
 
 ## Summary
 

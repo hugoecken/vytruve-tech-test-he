@@ -1,6 +1,6 @@
 # Quickstart: Interactive Scan Preview Review
 
-**Status**: Candidate
+**Status**: Accepted as part of plan snapshot `048c933c94548625fea3a269e38e65e84a6f47f4`
 
 This guide defines the implementation evidence for issue #53. Use synthetic PLY data in automated tests. Keep the three supplied review samples outside Git, Figma, screenshots, and logs.
 

@@ -1,6 +1,6 @@
 # Technical Research: Interactive Scan Preview
 
-**Status**: Candidate
+**Status**: Accepted as part of plan snapshot `048c933c94548625fea3a269e38e65e84a6f47f4`
 
 This document records implementation decisions supporting [`plan.md`](plan.md). It does not replace the accepted specification, Figma evidence, or implementation tests.
 

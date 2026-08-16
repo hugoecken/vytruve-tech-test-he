@@ -1,8 +1,8 @@
 # Tasks: Interactive Scan Preview
 
-**Status**: Candidate
+**Status**: Accepted as derived from plan snapshot `048c933c94548625fea3a269e38e65e84a6f47f4`
 
-**Input**: Accepted [`spec.md`](spec.md), candidate [`plan.md`](plan.md), [`research.md`](research.md), [`data-model.md`](data-model.md), [`contracts/interactive-scan-preview-ui.md`](contracts/interactive-scan-preview-ui.md), and [`quickstart.md`](quickstart.md)
+**Input**: Accepted [`spec.md`](spec.md), [`plan.md`](plan.md), [`research.md`](research.md), [`data-model.md`](data-model.md), [`contracts/interactive-scan-preview-ui.md`](contracts/interactive-scan-preview-ui.md), and [`quickstart.md`](quickstart.md)
 
 **Tests**: Required by the accepted specification and planning authority. Write each focused test group first and observe the intended failure before its implementation task.
 

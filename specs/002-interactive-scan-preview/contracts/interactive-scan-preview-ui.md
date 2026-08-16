@@ -1,6 +1,6 @@
 # UI Contract: Interactive Scan Preview
 
-**Status**: Candidate
+**Status**: Accepted as part of plan snapshot `048c933c94548625fea3a269e38e65e84a6f47f4`
 
 ## Authorities
 

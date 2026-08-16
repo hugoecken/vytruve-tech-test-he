@@ -1,6 +1,6 @@
 # Data Model: Interactive Scan Preview
 
-**Status**: Candidate
+**Status**: Accepted as part of plan snapshot `048c933c94548625fea3a269e38e65e84a6f47f4`
 
 The feature adds no persisted entity, API model, database column, object-storage key, cookie, or browser-storage entry. The existing `ScanResponse` remains the only metadata model. The structures below exist only for one mounted details overlay.
 
