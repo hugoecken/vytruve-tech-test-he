@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-16
 
-**Status**: Candidate
+**Status**: Accepted
 
 **Input**: Allow an authenticated orthoprosthetist to inspect an owned private PLY scan interactively from the existing scan-details overlay without weakening privacy or changing download and printing workflows.
 

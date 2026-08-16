@@ -43,7 +43,7 @@
 ## Feature Readiness
 
 - [x] CHK021 Every functional requirement resolves to at least one user scenario, measurable outcome, or explicit protected-data review. [Spec §User Scenarios & Testing, §Measurable Outcomes]
-- [x] CHK022 The candidate is ready for explicit acceptance but does not claim acceptance, Figma approval, planning approval, implementation, or delivery. [Spec header, §Authority And Scope]
+- [x] CHK022 The specification changed from Candidate to Accepted only after explicit human acceptance and does not claim Figma approval, planning approval, implementation, or delivery. [Spec header, §Authority And Scope]
 
 ## Notes
 
