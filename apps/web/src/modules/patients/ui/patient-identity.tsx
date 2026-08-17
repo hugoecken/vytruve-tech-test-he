@@ -1,6 +1,5 @@
 import type { ElementType, ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
-import { getPatientInitials } from '@/modules/patients/lib/patient-identity';
+import { UserRoundIcon } from 'lucide-react';
 import { getPatientPhotoUrl } from '@/modules/patients/lib/patient-photo-url';
 import type { PatientResponse } from '@/shared/api/generated/models/patientResponse';
 import { cn } from '@/shared/lib/utils';
@@ -29,7 +28,6 @@ export function PatientIdentity({
   patient,
   photoRevision = 0,
 }: PatientIdentityProps) {
-  const { i18n } = useTranslation();
   const Name: ElementType = as;
   const fullName = `${patient.firstName} ${patient.lastName}`;
   return (
@@ -44,11 +42,7 @@ export function PatientIdentity({
           />
         )}
         <AvatarFallback>
-          {getPatientInitials(
-            patient.firstName,
-            patient.lastName,
-            i18n.language,
-          )}
+          <UserRoundIcon aria-hidden="true" className="size-1/2" />
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0">

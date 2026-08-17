@@ -109,7 +109,6 @@
       "patient": "Patient",
       "age": "Age",
       "created": "Created",
-      "action": "Action",
       "openNamed": "Open {{name}}’s patient record"
     },
     "create": {

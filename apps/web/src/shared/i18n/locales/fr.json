@@ -109,7 +109,6 @@
       "patient": "Patient",
       "age": "Âge",
       "created": "Créé le",
-      "action": "Action",
       "openNamed": "Ouvrir le dossier patient de {{name}}"
     },
     "create": {

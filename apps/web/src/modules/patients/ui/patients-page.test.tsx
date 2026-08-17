@@ -78,7 +78,9 @@ describe('patient directory', () => {
         HttpResponse.json({ items: [], pageInfo: pageInfo() }),
       ),
     );
-    const { router } = renderRoute('/patients', { session: accountSession });
+    const { container, router } = renderRoute('/patients', {
+      session: accountSession,
+    });
 
     await user.click(
       await screen.findByRole('row', {
@@ -89,7 +91,7 @@ describe('patient directory', () => {
     expect(
       await screen.findByRole('heading', { name: 'Alex Martin' }),
     ).toBeVisible();
-    expect(screen.getByText('AM')).toBeVisible();
+    expect(container.querySelector('.lucide-user-round')).toBeVisible();
     expect(router.state.location.pathname).toBe(`/patients/${patient.id}`);
   });
 

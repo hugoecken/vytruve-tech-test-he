@@ -41,11 +41,15 @@ describe(PatientIdentity.name, () => {
     });
   });
 
-  it('shows the full name with locale-aware grapheme initials', () => {
-    render(<PatientIdentity patient={{ ...patient, hasPhoto: false }} />);
+  it('shows the full name with the default patient avatar', () => {
+    const { container } = render(
+      <PatientIdentity patient={{ ...patient, hasPhoto: false }} />,
+    );
 
     expect(screen.getByText('👩🏽‍⚕️lise Éclair')).toBeVisible();
-    expect(screen.getByText('👩🏽‍⚕️É')).toBeVisible();
+    expect(
+      container.querySelector('[data-slot="avatar-fallback"] svg'),
+    ).toBeVisible();
   });
 
   it('uses the authenticated current-photo route with a decorative image', async () => {
@@ -64,11 +68,15 @@ describe(PatientIdentity.name, () => {
     expect(screen.getByText('👩🏽‍⚕️lise Éclair')).toBeVisible();
   });
 
-  it('falls back to initials when current photo rendering fails', async () => {
+  it('falls back to the default avatar when current photo rendering fails', async () => {
     imageOutcome = 'error';
-    render(<PatientIdentity patient={patient} />);
+    const { container } = render(<PatientIdentity patient={patient} />);
 
-    expect(await screen.findByText('👩🏽‍⚕️É')).toBeVisible();
+    await waitFor(() =>
+      expect(
+        container.querySelector('[data-slot="avatar-fallback"] svg'),
+      ).toBeVisible(),
+    );
     expect(screen.getByText('👩🏽‍⚕️lise Éclair')).toBeVisible();
   });
 });

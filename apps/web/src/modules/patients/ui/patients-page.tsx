@@ -6,7 +6,7 @@ import {
   tableFeatures,
   useTable,
 } from '@tanstack/react-table';
-import { ChevronRightIcon, UsersIcon } from 'lucide-react';
+import { UsersIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { CollectionLoadError } from '@/modules/collections/ui/collection-load-error';
 import { CollectionRecoveryAlert } from '@/modules/collections/ui/collection-recovery-alert';
@@ -15,7 +15,6 @@ import { PatientCreateOverlay } from '@/modules/patients/ui/patient-create-overl
 import { PatientIdentity } from '@/modules/patients/ui/patient-identity';
 import { useListPatients } from '@/shared/api/generated/client/patients/patients';
 import type { PatientResponse } from '@/shared/api/generated/models/patientResponse';
-import { Button } from '@/shared/ui/button';
 import {
   Empty,
   EmptyDescription,
@@ -80,31 +79,8 @@ export function PatientsPage() {
           cell: ({ getValue }) => formatDate(getValue(), i18n.language),
           header: t('patients.table.created'),
         }),
-        patientColumnHelper.display({
-          cell: ({ row }) => (
-            <Button
-              aria-label={t('patients.table.openNamed', {
-                name: `${row.original.firstName} ${row.original.lastName}`,
-              })}
-              onClick={(event) => {
-                event.stopPropagation();
-                void navigate({
-                  params: { patientId: row.original.id },
-                  to: '/patients/$patientId',
-                });
-              }}
-              size="icon"
-              type="button"
-              variant="outline"
-            >
-              <ChevronRightIcon aria-hidden="true" />
-            </Button>
-          ),
-          header: t('patients.table.action'),
-          id: 'action',
-        }),
       ]),
-    [i18n.language, navigate, t],
+    [i18n.language, t],
   );
   const table = useTable({
     features: patientTableFeatures,
@@ -180,7 +156,7 @@ export function PatientsPage() {
               pending={query.isFetching}
               previousLabel={t('collections.pagination.previous')}
             >
-              <Table className="table-fixed">
+              <Table>
                 <TableCaption className="sr-only">
                   {t('patients.table.caption')}
                 </TableCaption>
@@ -188,10 +164,7 @@ export function PatientsPage() {
                   {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow className="h-10" key={headerGroup.id}>
                       {headerGroup.headers.map((header) => (
-                        <TableHead
-                          className={getPatientColumnClass(header.column.id)}
-                          key={header.id}
-                        >
+                        <TableHead key={header.id}>
                           {header.isPlaceholder ? null : (
                             <table.FlexRender header={header} />
                           )}
@@ -216,10 +189,7 @@ export function PatientsPage() {
                       }}
                     >
                       {row.getAllCells().map((cell) => (
-                        <TableCell
-                          className={getPatientColumnClass(cell.column.id)}
-                          key={cell.id}
-                        >
+                        <TableCell key={cell.id}>
                           <table.FlexRender cell={cell} />
                         </TableCell>
                       ))}
@@ -233,22 +203,6 @@ export function PatientsPage() {
       </div>
     </section>
   );
-}
-
-/** Keeps the accepted patient-directory columns stable across breakpoints. */
-function getPatientColumnClass(columnId: string): string {
-  switch (columnId) {
-    case 'patient':
-      return 'w-1/2 whitespace-normal';
-    case 'age':
-      return 'w-1/4 sm:w-[13.333%]';
-    case 'createdAt':
-      return 'hidden sm:table-cell sm:w-[23.333%]';
-    case 'action':
-      return 'w-1/4 sm:w-[13.333%]';
-    default:
-      return '';
-  }
 }
 
 /** Renders the initial patient table skeleton without provisional rows. */

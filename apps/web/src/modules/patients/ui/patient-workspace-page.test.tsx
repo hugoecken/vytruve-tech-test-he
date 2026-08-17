@@ -28,7 +28,9 @@ describe('patient workspace', () => {
       }),
     );
 
-    renderRoute(`/patients/${patient.id}`, { session: accountSession });
+    const { container } = renderRoute(`/patients/${patient.id}`, {
+      session: accountSession,
+    });
 
     expect(
       await screen.findByRole(
@@ -37,7 +39,7 @@ describe('patient workspace', () => {
         { timeout: 3000 },
       ),
     ).toBeVisible();
-    expect(screen.getByText('AM')).toBeVisible();
+    expect(container.querySelector('.lucide-user-round')).toBeVisible();
     expect(screen.getByText(/34 years · Record created/)).toBeVisible();
     expect(screen.getByRole('tab', { name: '3D scans' })).toHaveAttribute(
       'aria-selected',
