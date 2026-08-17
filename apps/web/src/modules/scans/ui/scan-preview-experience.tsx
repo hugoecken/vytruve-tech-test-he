@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { CircleAlertIcon, RefreshCwIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { SCAN_TRANSFER_TIMEOUT_MS } from '@/modules/scans/config/scans';
 import {
   createScanPreviewRenderer,
   type ScanPreviewRenderer,
@@ -38,6 +39,7 @@ export function ScanPreviewExperience({
       retry: false,
       select: (response) => response.data,
     },
+    request: { timeoutMs: SCAN_TRANSFER_TIMEOUT_MS },
   });
   const content = query.data;
   const unavailable = query.isError || preparation === 'unavailable';

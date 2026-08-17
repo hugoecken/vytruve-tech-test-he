@@ -2,6 +2,13 @@ import { browserEnvironment } from '@/shared/config/browser-environment';
 import { ApiProblemError, ApiTransportError } from './api-error';
 import { toApiProblem } from './problem-details.mapper';
 
+const DEFAULT_API_REQUEST_TIMEOUT_MS = 15_000;
+
+/** Fetch options with an application-owned finite request deadline. */
+export interface ApiRequestOptions extends RequestInit {
+  timeoutMs?: number;
+}
+
 /**
  * Error exposed by every generated query and mutation hook.
  *
@@ -23,28 +30,43 @@ export type ErrorType<TProblem> = ApiProblemError | ApiTransportError;
  */
 export async function apiClient<T>(
   path: string,
-  options: RequestInit,
+  options: ApiRequestOptions,
 ): Promise<T> {
-  const headers = new Headers(options.headers);
-  if (options.body instanceof FormData) {
+  const {
+    signal: cancellationSignal,
+    timeoutMs = DEFAULT_API_REQUEST_TIMEOUT_MS,
+    ...requestOptions
+  } = options;
+  const headers = new Headers(requestOptions.headers);
+  if (requestOptions.body instanceof FormData) {
     headers.delete('content-type');
   }
+  const timeoutSignal = AbortSignal.timeout(timeoutMs);
+  const signal =
+    cancellationSignal === null || cancellationSignal === undefined
+      ? timeoutSignal
+      : AbortSignal.any([cancellationSignal, timeoutSignal]);
 
   let response: Response;
+  let content: unknown;
   try {
     response = await fetch(new URL(path, `${browserEnvironment.apiBaseUrl}/`), {
-      ...options,
+      ...requestOptions,
       credentials: 'include',
       headers,
+      signal,
     });
+    content = await readResponseContent(response);
   } catch (error) {
+    if (error instanceof ApiTransportError) {
+      throw error;
+    }
     if (error instanceof DOMException && error.name === 'AbortError') {
       throw error;
     }
     throw new ApiTransportError(null);
   }
 
-  const content = await readResponseContent(response);
   if (!response.ok) {
     const problem = toApiProblem(content);
     if (problem !== null) {
@@ -76,7 +98,13 @@ async function readResponseContent(response: Response): Promise<unknown> {
   if (contentType.includes('json')) {
     try {
       return await response.json();
-    } catch {
+    } catch (error) {
+      if (
+        error instanceof DOMException &&
+        (error.name === 'AbortError' || error.name === 'TimeoutError')
+      ) {
+        throw error;
+      }
       throw new ApiTransportError(response.status);
     }
   }

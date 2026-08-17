@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { CollectionLoadError } from '@/modules/collections/ui/collection-load-error';
 import { CollectionRecoveryAlert } from '@/modules/collections/ui/collection-recovery-alert';
 import { CollectionTableShell } from '@/modules/collections/ui/collection-table-shell';
+import { SCAN_TRANSFER_TIMEOUT_MS } from '@/modules/scans/config/scans';
 import { formatScanLabel } from '@/modules/scans/lib/scan-formatters';
 import { ScanUploadOverlay } from '@/modules/scans/ui/scan-upload-overlay';
 import { ScanPreview } from '@/modules/scans/ui/scan-preview';
@@ -112,7 +113,9 @@ export function ScansPanel({
       setDownloadingId(scan.id);
       let objectUrl: string | null = null;
       try {
-        const response = await downloadPatientScan(patientId, scan.id);
+        const response = await downloadPatientScan(patientId, scan.id, {
+          timeoutMs: SCAN_TRANSFER_TIMEOUT_MS,
+        });
         objectUrl = URL.createObjectURL(response.data);
         const anchor = document.createElement('a');
         anchor.href = objectUrl;

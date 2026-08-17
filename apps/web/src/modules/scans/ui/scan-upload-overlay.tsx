@@ -8,6 +8,7 @@ import {
   XIcon,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { SCAN_TRANSFER_TIMEOUT_MS } from '@/modules/scans/config/scans';
 import type { ScanPreviewEncoding } from '@/modules/scans/lib/scan-preview-renderer';
 import { ScanUploadPreview } from '@/modules/scans/ui/scan-upload-preview';
 import {
@@ -88,7 +89,9 @@ export function ScanUploadOverlay({ patientId }: ScanUploadOverlayProps) {
   const [previewMetadata, setPreviewMetadata] =
     useState<ScanUploadPreviewMetadata | null>(null);
   const [open, setOpen] = useState(false);
-  const mutation = useCreatePatientScan();
+  const mutation = useCreatePatientScan({
+    request: { timeoutMs: SCAN_TRANSFER_TIMEOUT_MS },
+  });
   const file = selection?.file ?? null;
   const previewData = selection?.previewData ?? null;
   const fileFailure = getScanFileFailure(file);

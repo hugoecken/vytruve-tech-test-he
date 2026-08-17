@@ -1,6 +1,7 @@
-import { HttpResponse, http } from 'msw';
+import { HttpResponse, delay, http } from 'msw';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
 import { createDeferred } from '@/test/deferred';
 import { API_URL, accountSession, pageInfo, problem } from '@/test/fixtures';
 import { renderRoute } from '@/test/render';
@@ -85,6 +86,37 @@ describe('authentication', () => {
     expect(
       await screen.findByRole('heading', { name: 'Patients' }),
     ).toBeVisible();
+  });
+
+  it('reports a request deadline through the existing network error', async () => {
+    const user = userEvent.setup();
+    const timeout = new AbortController();
+    vi.spyOn(AbortSignal, 'timeout').mockReturnValue(timeout.signal);
+    server.use(
+      http.post(`${API_URL}/auth/sessions`, async () => {
+        await delay('infinite');
+        return HttpResponse.json(accountSession);
+      }),
+    );
+
+    renderRoute('/sign-in');
+    await user.type(
+      await screen.findByLabelText('Email'),
+      accountSession.email,
+    );
+    await user.type(screen.getByLabelText('Password'), 'correct-password');
+    await user.click(screen.getByRole('button', { name: 'Sign in' }));
+
+    expect(
+      await screen.findByRole('button', { name: 'Signing in…' }),
+    ).toBeDisabled();
+    timeout.abort(new DOMException('Synthetic timeout.', 'TimeoutError'));
+    expect(
+      await screen.findByText(
+        'The service is temporarily unavailable. Please try again.',
+      ),
+    ).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Sign in' })).toBeEnabled();
   });
 
   it('rejects an external redirect and navigates to the patient directory', async () => {
