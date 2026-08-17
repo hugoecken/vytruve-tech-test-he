@@ -11,6 +11,7 @@ import { CollectionLoadError } from '@/modules/collections/ui/collection-load-er
 import { CollectionTableShell } from '@/modules/collections/ui/collection-table-shell';
 import {
   isActivePrintRequestStatus,
+  PRINTING_REQUEST_TIMEOUT_MS,
   PRINT_REQUEST_PAGE_SIZE,
 } from '@/modules/printing/config/printing';
 import { formatScanLabel } from '@/modules/scans/lib/scan-formatters';
@@ -114,6 +115,7 @@ export function PrintRequestsPanel({
         retry: false,
         select: (response) => response.data,
       },
+      request: { timeoutMs: PRINTING_REQUEST_TIMEOUT_MS },
     },
   );
 

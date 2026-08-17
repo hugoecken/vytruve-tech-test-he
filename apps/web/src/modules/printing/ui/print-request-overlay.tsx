@@ -3,6 +3,7 @@ import { CircleAlertIcon, PrinterIcon, XIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   isActivePrintRequestStatus,
+  PRINTING_REQUEST_TIMEOUT_MS,
   PRINT_REQUEST_PAGE_SIZE,
 } from '@/modules/printing/config/printing';
 import { formatScanLabel } from '@/modules/scans/lib/scan-formatters';
@@ -72,7 +73,10 @@ export function PrintRequestOverlay({
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
-  const mutation = useCreatePrintRequest({ mutation: { retry: false } });
+  const mutation = useCreatePrintRequest({
+    mutation: { retry: false },
+    request: { timeoutMs: PRINTING_REQUEST_TIMEOUT_MS },
+  });
 
   /** Closes the controlled overlay only while no mutation is in flight. */
   const setOpen = (nextOpen: boolean): void => {
