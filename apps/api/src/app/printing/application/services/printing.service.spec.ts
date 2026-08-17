@@ -32,6 +32,7 @@ const PATIENT: PatientModel = {
   firstName: 'Alex',
   id: PATIENT_ID,
   lastName: 'Morgan',
+  photo: null,
 };
 
 /** Repository mutations relevant to printing orchestration. */

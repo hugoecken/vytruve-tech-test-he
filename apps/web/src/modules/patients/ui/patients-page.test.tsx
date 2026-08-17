@@ -1,6 +1,8 @@
+import { fileTypeFromBlob } from 'file-type';
 import { HttpResponse, delay, http } from 'msw';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
 import {
   API_URL,
   accountSession,
@@ -11,7 +13,24 @@ import {
 import { renderRoute } from '@/test/render';
 import { server } from '@/test/server';
 
+vi.mock('file-type', () => ({ fileTypeFromBlob: vi.fn() }));
+
+const detectedFileType = vi.mocked(fileTypeFromBlob);
+
 describe('patient directory', () => {
+  beforeEach(() => {
+    detectedFileType.mockReset();
+    detectedFileType.mockResolvedValue({ ext: 'png', mime: 'image/png' });
+    vi.stubGlobal(
+      'createImageBitmap',
+      vi.fn().mockResolvedValue({ close: vi.fn() }),
+    );
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it('announces the initial loading state', async () => {
     server.use(
       http.get(`${API_URL}/patients`, async () => {
@@ -23,7 +42,7 @@ describe('patient directory', () => {
     renderRoute('/patients', { session: accountSession });
 
     expect(
-      await screen.findByRole('status', { name: 'Loading' }),
+      await screen.findByRole('status', { name: 'Loading' }, { timeout: 3000 }),
     ).toBeVisible();
   });
 
@@ -59,15 +78,20 @@ describe('patient directory', () => {
         HttpResponse.json({ items: [], pageInfo: pageInfo() }),
       ),
     );
-    const { router } = renderRoute('/patients', { session: accountSession });
+    const { container, router } = renderRoute('/patients', {
+      session: accountSession,
+    });
 
     await user.click(
-      await screen.findByLabelText('Open Alex Martin’s patient record'),
+      await screen.findByRole('row', {
+        name: 'Open Alex Martin’s patient record',
+      }),
     );
 
     expect(
       await screen.findByRole('heading', { name: 'Alex Martin' }),
     ).toBeVisible();
+    expect(container.querySelector('.lucide-user-round')).toBeVisible();
     expect(router.state.location.pathname).toBe(`/patients/${patient.id}`);
   });
 
@@ -127,7 +151,7 @@ describe('patient directory', () => {
         HttpResponse.json({ items: [], pageInfo: pageInfo() }),
       ),
       http.post(`${API_URL}/patients`, async ({ request }) => {
-        submittedBody = await request.json();
+        submittedBody = Object.fromEntries(await request.formData());
         return HttpResponse.json(patient, { status: 201 });
       }),
       http.get(`${API_URL}/patients/${patient.id}`, () =>
@@ -154,10 +178,147 @@ describe('patient directory', () => {
       await screen.findByRole('heading', { name: 'Alex Martin' }),
     ).toBeVisible();
     expect(submittedBody).toEqual({
-      age: patient.age,
+      age: String(patient.age),
       firstName: patient.firstName,
       lastName: patient.lastName,
     });
     expect(router.state.location.pathname).toBe(`/patients/${patient.id}`);
   });
+
+  it('reviews and submits one patient photo in the generated multipart request', async () => {
+    const user = userEvent.setup();
+    let submittedBody: FormData | undefined;
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const url = String(input);
+      if (init?.method === 'POST') {
+        submittedBody = init.body as FormData;
+        return Response.json(patient, { status: 201 });
+      }
+      if (url.endsWith(`/patients/${patient.id}`)) {
+        return Response.json(patient);
+      }
+      if (url.endsWith(`/patients/${patient.id}/scans?page=0&pageSize=10`)) {
+        return Response.json({ items: [], pageInfo: pageInfo() });
+      }
+      return Response.json({ items: [], pageInfo: pageInfo() });
+    });
+    renderRoute('/patients', { session: accountSession });
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Add patient' }),
+    );
+    await user.type(screen.getByLabelText('First name'), patient.firstName);
+    await user.type(screen.getByLabelText('Last name'), patient.lastName);
+    await user.type(screen.getByLabelText('Age'), String(patient.age));
+    const photo = new File(['synthetic'], 'patient.png', { type: 'image/png' });
+    await user.upload(screen.getByLabelText('Profile photo (optional)'), photo);
+    expect(
+      await screen.findByRole('img', { name: 'Selected photo' }),
+    ).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Add patient' }));
+
+    expect(
+      await screen.findByRole('heading', { name: 'Alex Martin' }),
+    ).toBeVisible();
+    expect(submittedBody?.get('photo')).toEqual(photo);
+  });
+
+  it('prevents duplicate creation while the confirmed request is pending', async () => {
+    const user = userEvent.setup();
+    const pendingRequest = deferred<void>();
+    let requestCount = 0;
+    server.use(
+      http.get(`${API_URL}/patients`, () =>
+        HttpResponse.json({ items: [], pageInfo: pageInfo() }),
+      ),
+      http.post(`${API_URL}/patients`, async () => {
+        requestCount += 1;
+        await pendingRequest.promise;
+        return HttpResponse.json(patient, { status: 201 });
+      }),
+      http.get(`${API_URL}/patients/${patient.id}`, () =>
+        HttpResponse.json(patient),
+      ),
+      http.get(`${API_URL}/patients/${patient.id}/scans`, () =>
+        HttpResponse.json({ items: [], pageInfo: pageInfo() }),
+      ),
+    );
+    renderRoute('/patients', { session: accountSession });
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Add patient' }),
+    );
+    await user.type(screen.getByLabelText('First name'), patient.firstName);
+    await user.type(screen.getByLabelText('Last name'), patient.lastName);
+    await user.type(screen.getByLabelText('Age'), String(patient.age));
+    await user.click(screen.getByRole('button', { name: 'Add patient' }));
+    await waitFor(() => expect(requestCount).toBe(1));
+
+    const pendingButton = screen.getByRole('button', {
+      name: 'Adding patient…',
+    });
+    expect(pendingButton).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Close' })).toBeNull();
+    await user.click(pendingButton);
+    expect(requestCount).toBe(1);
+    pendingRequest.resolve(undefined);
+    expect(
+      await screen.findByRole('heading', { name: 'Alex Martin' }),
+    ).toBeVisible();
+  });
+
+  it('retains valid form state for a deliberate retry after failure', async () => {
+    const user = userEvent.setup();
+    let requestCount = 0;
+    server.use(
+      http.get(`${API_URL}/patients`, () =>
+        HttpResponse.json({ items: [], pageInfo: pageInfo() }),
+      ),
+      http.post(`${API_URL}/patients`, () => {
+        requestCount += 1;
+        return requestCount === 1
+          ? HttpResponse.json(
+              problem('PATIENT_PHOTO_STORAGE_UNAVAILABLE', 503),
+              { status: 503 },
+            )
+          : HttpResponse.json(patient, { status: 201 });
+      }),
+      http.get(`${API_URL}/patients/${patient.id}`, () =>
+        HttpResponse.json(patient),
+      ),
+      http.get(`${API_URL}/patients/${patient.id}/scans`, () =>
+        HttpResponse.json({ items: [], pageInfo: pageInfo() }),
+      ),
+    );
+    renderRoute('/patients', { session: accountSession });
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Add patient' }),
+    );
+    await user.type(screen.getByLabelText('First name'), patient.firstName);
+    await user.type(screen.getByLabelText('Last name'), patient.lastName);
+    await user.type(screen.getByLabelText('Age'), String(patient.age));
+    await user.click(screen.getByRole('button', { name: 'Add patient' }));
+
+    expect(
+      await screen.findByText(
+        'Patient photo storage is temporarily unavailable.',
+      ),
+    ).toBeVisible();
+    expect(screen.getByLabelText('First name')).toHaveValue(patient.firstName);
+    await user.click(screen.getByRole('button', { name: 'Add patient' }));
+    expect(
+      await screen.findByRole('heading', { name: 'Alex Martin' }),
+    ).toBeVisible();
+  });
 });
+
+/** Creates a controllable promise for pending-state assertions. */
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolvePromise) => {
+    resolve = resolvePromise;
+  });
+  return { promise, resolve };
+}

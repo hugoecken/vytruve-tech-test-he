@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { CircleAlertIcon, CirclePlusIcon } from 'lucide-react';
+import { CircleAlertIcon, PencilIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { getPatientPhotoUrl } from '@/modules/patients/lib/patient-photo-url';
 import {
+  getGetPatientQueryKey,
   getListPatientsQueryKey,
-  useCreatePatient,
+  useUpdatePatient,
 } from '@/shared/api/generated/client/patients/patients';
+import type { PatientResponse } from '@/shared/api/generated/models/patientResponse';
 import { CreatePatientBody } from '@/shared/api/generated/validation/patients/patients.zod';
 import {
   ApiProblemError,
@@ -44,21 +46,25 @@ import {
   type PatientPhotoDecision,
 } from './patient-photo-field';
 
-const CREATE_PATIENT_FORM_ID = 'create-patient-form';
+const EDIT_PATIENT_FORM_ID = 'edit-patient-form';
 
-/**
- * Opens a responsive patient creation Dialog or compact Drawer.
- *
- * @returns The trigger and localized patient form.
- */
-export function PatientCreateOverlay() {
+/** Props for the responsive owned-patient edit workflow. */
+interface PatientEditOverlayProps {
+  onPhotoChanged: () => void;
+  patient: PatientResponse;
+}
+
+/** Edits complete patient identity and one explicit current-photo decision. */
+export function PatientEditOverlay({
+  onPhotoChanged,
+  patient,
+}: PatientEditOverlayProps) {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const mutation = useCreatePatient();
+  const mutation = useUpdatePatient();
   const form = useForm<PatientFormValues>({
-    defaultValues: { firstName: '', lastName: '' },
+    defaultValues: patientFields(patient),
     mode: 'onSubmit',
     reValidateMode: 'onChange',
     resolver: zodResolver(CreatePatientBody),
@@ -72,7 +78,7 @@ export function PatientCreateOverlay() {
   const setOverlayOpen = (nextOpen: boolean) => {
     setOpen(nextOpen);
     if (!nextOpen) {
-      form.reset();
+      form.reset(patientFields(patient));
       mutation.reset();
       setPhotoDecision({ action: 'keep' });
       setPhotoFieldKey((key) => key + 1);
@@ -87,16 +93,30 @@ export function PatientCreateOverlay() {
           ...values,
           photo:
             photoDecision.action === 'replace' ? photoDecision.file : undefined,
+          photoAction:
+            photoDecision.action === 'remove'
+              ? 'remove'
+              : photoDecision.action === 'replace'
+                ? 'replace'
+                : 'keep',
         },
+        patientId: patient.id,
       });
+      queryClient.setQueryData(getGetPatientQueryKey(patient.id), response);
       await queryClient.invalidateQueries({
         queryKey: getListPatientsQueryKey(),
       });
-      setOverlayOpen(false);
-      await navigate({
-        params: { patientId: response.data.id },
-        to: '/patients/$patientId',
-      });
+      form.reset(patientFields(response.data));
+      if (
+        photoDecision.action === 'remove' ||
+        photoDecision.action === 'replace'
+      ) {
+        onPhotoChanged();
+      }
+      mutation.reset();
+      setPhotoDecision({ action: 'keep' });
+      setPhotoFieldKey((key) => key + 1);
+      setOpen(false);
     } catch (error) {
       let shouldFocus = true;
       if (error instanceof ApiProblemError) {
@@ -130,8 +150,9 @@ export function PatientCreateOverlay() {
 
   const photoUnavailable =
     photoDecision.action === 'invalid' || photoDecision.action === 'preparing';
-  const formContent = (
-    <form id={CREATE_PATIENT_FORM_ID} noValidate onSubmit={submit}>
+  const unchanged = !form.formState.isDirty && photoDecision.action === 'keep';
+  const content = (
+    <form id={EDIT_PATIENT_FORM_ID} noValidate onSubmit={submit}>
       <FieldGroup className="gap-4">
         {form.formState.errors.root?.message !== undefined && (
           <Alert variant="destructive">
@@ -142,15 +163,19 @@ export function PatientCreateOverlay() {
           </Alert>
         )}
         <PatientPhotoField
+          currentPhotoUrl={
+            patient.hasPhoto ? getPatientPhotoUrl(patient.id) : undefined
+          }
           disabled={mutation.isPending}
-          inputId="patient-create-photo"
+          hasCurrentPhoto={patient.hasPhoto}
+          inputId="patient-edit-photo"
           key={photoFieldKey}
           onChange={setPhotoDecision}
         />
         <PatientFormFields
           disabled={mutation.isPending}
           form={form}
-          idPrefix="patient-create"
+          idPrefix="patient-edit"
         />
       </FieldGroup>
     </form>
@@ -164,22 +189,20 @@ export function PatientCreateOverlay() {
         type="button"
         variant="outline"
       >
-        {t('patients.create.cancel')}
+        {t('patients.edit.cancel')}
       </Button>
       <Button
-        disabled={mutation.isPending || photoUnavailable}
-        form={CREATE_PATIENT_FORM_ID}
+        disabled={mutation.isPending || photoUnavailable || unchanged}
+        form={EDIT_PATIENT_FORM_ID}
         size="lg"
         type="submit"
       >
-        {mutation.isPending ? (
+        {mutation.isPending && (
           <Spinner aria-hidden="true" data-icon="inline-start" />
-        ) : (
-          <CirclePlusIcon aria-hidden="true" data-icon="inline-start" />
         )}
         {mutation.isPending
-          ? t('patients.create.pending')
-          : t('patients.create.submit')}
+          ? t('patients.edit.pending')
+          : t('patients.edit.submit')}
       </Button>
     </>
   );
@@ -187,13 +210,13 @@ export function PatientCreateOverlay() {
   return (
     <>
       <Button
-        className="w-full sm:w-auto"
-        onClick={() => setOverlayOpen(true)}
-        size="lg"
+        aria-label={t('patients.edit.action')}
+        onClick={() => setOpen(true)}
+        size="icon"
         type="button"
+        variant="ghost"
       >
-        <CirclePlusIcon aria-hidden="true" data-icon="inline-start" />
-        {t('patients.add')}
+        <PencilIcon aria-hidden="true" />
       </Button>
       {isMobile ? (
         <Drawer
@@ -204,12 +227,12 @@ export function PatientCreateOverlay() {
         >
           <DrawerContent>
             <DrawerHeader>
-              <DrawerTitle>{t('patients.create.title')}</DrawerTitle>
+              <DrawerTitle>{t('patients.edit.title')}</DrawerTitle>
               <DrawerDescription>
-                {t('patients.create.description')}
+                {t('patients.edit.description')}
               </DrawerDescription>
             </DrawerHeader>
-            <div className="overflow-y-auto px-4 py-4">{formContent}</div>
+            <div className="overflow-y-auto px-4 py-4">{content}</div>
             <DrawerFooter className="flex-row justify-end gap-3">
               {footer}
             </DrawerFooter>
@@ -223,16 +246,25 @@ export function PatientCreateOverlay() {
         >
           <DialogContent showCloseButton={!mutation.isPending}>
             <DialogHeader>
-              <DialogTitle>{t('patients.create.title')}</DialogTitle>
+              <DialogTitle>{t('patients.edit.title')}</DialogTitle>
               <DialogDescription>
-                {t('patients.create.description')}
+                {t('patients.edit.description')}
               </DialogDescription>
             </DialogHeader>
-            {formContent}
+            {content}
             <DialogFooter className="bg-background">{footer}</DialogFooter>
           </DialogContent>
         </Dialog>
       )}
     </>
   );
+}
+
+/** Selects only editable generated patient values. */
+function patientFields(patient: PatientResponse): PatientFormValues {
+  return {
+    age: patient.age,
+    firstName: patient.firstName,
+    lastName: patient.lastName,
+  };
 }
