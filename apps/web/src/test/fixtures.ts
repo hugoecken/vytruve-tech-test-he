@@ -22,6 +22,7 @@ export const patient: PatientResponse = {
   age: 34,
   createdAt: '2026-08-10T08:30:00.000Z',
   firstName: 'Alex',
+  hasPhoto: false,
   id: '22222222-2222-4222-8222-222222222222',
   lastName: 'Martin',
 };

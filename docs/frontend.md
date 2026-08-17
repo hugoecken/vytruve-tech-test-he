@@ -66,7 +66,13 @@ JSON forms use generated Zod Mini request schemas with focused interaction-only 
 confirmation. Stable server field violations return focus and localized feedback to the owning control.
 
 Scan upload accepts one local selection and provides early feedback, but the API remains authoritative for size and
-content. Download actions use safe metadata already present in the row and never reveal storage details.
+content. Patient create and edit reuse one photo field that checks JPEG, PNG, or WebP content locally, previews the
+exact selection, and sends nothing before the form is confirmed. React 19 callback-ref cleanup revokes temporary Blob
+URLs without retaining photo content in query state. Download actions use safe metadata already present in the row
+and never reveal storage details.
+
+The directory and workspace reuse one shadcn Avatar composition. It reads the current photo only through the
+authenticated API route and falls back to locale-aware Unicode grapheme initials while keeping the full name visible.
 
 ## Private 3D preview
 

@@ -31,7 +31,7 @@ export class ProblemDetailsFilter implements ExceptionFilter {
     const http = host.switchToHttp();
     const request = http.getRequest<Request>();
     const response = http.getResponse<Response>();
-    const problem = this.resolveProblem(exception);
+    const problem = this.resolveProblem(exception, request);
     const responseProblem: ProblemDetails = {
       ...problem,
       instance: request.path,
@@ -47,9 +47,13 @@ export class ProblemDetailsFilter implements ExceptionFilter {
    * Resolves supported failures without exposing framework or infrastructure messages.
    *
    * @param exception Failure escaping a controller or guard.
+   * @param request Current request used only to classify bounded upload routes.
    * @returns Safe problem metadata without its request-specific instance.
    */
-  private resolveProblem(exception: unknown): ProblemDetailsDefinition {
+  private resolveProblem(
+    exception: unknown,
+    request: Request,
+  ): ProblemDetailsDefinition {
     if (exception instanceof ProblemDetailsException) {
       return exception.getProblemDetails();
     }
@@ -62,6 +66,14 @@ export class ProblemDetailsFilter implements ExceptionFilter {
       );
     }
     if (exception instanceof PayloadTooLargeException) {
+      if (isPatientPhotoUpload(request)) {
+        return createProblem(
+          HttpStatus.PAYLOAD_TOO_LARGE,
+          ProblemCode.PATIENT_PHOTO_TOO_LARGE,
+          'Patient photo too large',
+          'The patient photo exceeds the 5 MiB size limit.',
+        );
+      }
       return createProblem(
         HttpStatus.PAYLOAD_TOO_LARGE,
         ProblemCode.SCAN_TOO_LARGE,
@@ -100,6 +112,14 @@ export class ProblemDetailsFilter implements ExceptionFilter {
       'The request could not be completed.',
     );
   }
+}
+
+/** Identifies only the two bounded multipart patient-photo mutations. */
+function isPatientPhotoUpload(request: Request): boolean {
+  return (
+    (request.method === 'POST' || request.method === 'PATCH') &&
+    /^\/api\/patients(?:\/[0-9a-f-]+)?\/?$/i.test(request.path)
+  );
 }
 
 /**

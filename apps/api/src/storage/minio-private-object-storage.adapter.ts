@@ -5,19 +5,21 @@ import { Client, S3Error } from 'minio';
 import type { Readable } from 'node:stream';
 import type { ApiEnvironment } from '@api/config/environment';
 import {
-  ScanStorageError,
-  type ScanStoragePort,
-} from '../../application/ports/scan-storage.port';
+  PrivateObjectStorageError,
+  type PrivateObjectStoragePort,
+} from './private-object-storage.port';
 
-/** Private S3-compatible scan storage backed by the official MinIO client. */
+/** Private S3-compatible object storage backed by the official MinIO client. */
 @Injectable()
-export class MinioScanStorageAdapter implements ScanStoragePort, OnModuleInit {
+export class MinioPrivateObjectStorageAdapter
+  implements PrivateObjectStoragePort, OnModuleInit
+{
   private readonly bucket: string;
   private readonly client: Client;
-  private readonly logger = new Logger(MinioScanStorageAdapter.name);
+  private readonly logger = new Logger(MinioPrivateObjectStorageAdapter.name);
 
   /**
-   * Creates one immutable MinIO client from validated application configuration.
+   * Creates one immutable MinIO client from validated configuration.
    *
    * @param config Validated API configuration.
    */
@@ -48,25 +50,25 @@ export class MinioScanStorageAdapter implements ScanStoragePort, OnModuleInit {
           }
         }
       }
-      this.logger.log({ event: 'scan_storage_readiness', outcome: 'ready' });
+      this.logger.log({ event: 'private_storage_readiness', outcome: 'ready' });
     } catch {
       this.logger.error({
-        event: 'scan_storage_readiness',
+        event: 'private_storage_readiness',
         outcome: 'failed',
       });
-      throw new Error('Private scan storage initialization failed');
+      throw new Error('Private object storage initialization failed');
     }
   }
 
   /**
-   * Verifies that the application-owned private bucket remains reachable.
+   * Verifies that the private bucket remains reachable.
    *
-   * @throws ScanStorageError when MinIO is unavailable or the bucket is absent.
+   * @throws PrivateObjectStorageError when MinIO is unavailable or absent.
    */
   async checkReadiness(): Promise<void> {
     try {
       if (!(await this.client.bucketExists(this.bucket))) {
-        throw new ScanStorageError('unavailable');
+        throw new PrivateObjectStorageError('unavailable');
       }
     } catch (error) {
       throw translateStorageError(error);
@@ -74,20 +76,25 @@ export class MinioScanStorageAdapter implements ScanStoragePort, OnModuleInit {
   }
 
   /**
-   * Stores one bounded scan under a flat opaque key.
+   * Stores one bounded object under a flat opaque key.
    *
    * @param storageKey Application-generated UUID key.
-   * @param content Structurally validated PLY bytes.
-   * @throws ScanStorageError when storage is unavailable.
+   * @param content Validated bounded bytes.
+   * @param contentType Validated media type.
+   * @throws PrivateObjectStorageError when storage is unavailable.
    */
-  async write(storageKey: string, content: Buffer): Promise<void> {
+  async write(
+    storageKey: string,
+    content: Buffer,
+    contentType: string,
+  ): Promise<void> {
     try {
       await this.client.putObject(
         this.bucket,
         validateStorageKey(storageKey),
         content,
         content.length,
-        { 'Content-Type': 'application/octet-stream' },
+        { 'Content-Type': contentType },
       );
     } catch (error) {
       throw translateStorageError(error);
@@ -95,10 +102,10 @@ export class MinioScanStorageAdapter implements ScanStoragePort, OnModuleInit {
   }
 
   /**
-   * Removes exactly one opaque object during metadata compensation.
+   * Removes exactly one opaque object during compensation or cleanup.
    *
    * @param storageKey Application-generated UUID key.
-   * @throws ScanStorageError when storage is unavailable.
+   * @throws PrivateObjectStorageError when storage is unavailable.
    */
   async remove(storageKey: string): Promise<void> {
     try {
@@ -112,12 +119,12 @@ export class MinioScanStorageAdapter implements ScanStoragePort, OnModuleInit {
   }
 
   /**
-   * Opens one authorized object and verifies its size against persisted metadata.
+   * Opens one authorized object and verifies persisted byte length.
    *
    * @param storageKey Opaque key loaded from owner-scoped metadata.
-   * @param expectedSizeBytes Persisted exact object size.
+   * @param expectedSizeBytes Persisted exact byte length.
    * @returns MinIO stream and verified content length.
-   * @throws ScanStorageError when the object is absent, inconsistent, or unavailable.
+   * @throws PrivateObjectStorageError when absent, inconsistent, or unavailable.
    */
   async open(
     storageKey: string,
@@ -127,7 +134,7 @@ export class MinioScanStorageAdapter implements ScanStoragePort, OnModuleInit {
       const objectName = validateStorageKey(storageKey);
       const metadata = await this.client.statObject(this.bucket, objectName);
       if (metadata.size !== expectedSizeBytes) {
-        throw new ScanStorageError('unavailable');
+        throw new PrivateObjectStorageError('unavailable');
       }
       return {
         sizeBytes: metadata.size,
@@ -139,45 +146,29 @@ export class MinioScanStorageAdapter implements ScanStoragePort, OnModuleInit {
   }
 }
 
-/**
- * Restricts object access to the flat UUID namespace generated by the application.
- *
- * @param storageKey Key loaded from application or persistence state.
- * @returns Validated flat object name.
- * @throws ScanStorageError when the key could address another namespace.
- */
+/** Restricts object access to the flat UUID namespace generated by the API. */
 function validateStorageKey(storageKey: string): string {
   if (!isUUID(storageKey)) {
-    throw new ScanStorageError('unavailable');
+    throw new PrivateObjectStorageError('unavailable');
   }
   return storageKey;
 }
 
-/**
- * Recognizes the harmless race where another API instance created the bucket.
- *
- * @param error Unknown MinIO bucket-creation failure.
- * @returns Whether the configured bucket is already owned by these credentials.
- */
+/** Recognizes concurrent creation of the configured application-owned bucket. */
 function isOwnedBucketRace(error: unknown): boolean {
   return error instanceof S3Error && error.code === 'BucketAlreadyOwnedByYou';
 }
 
-/**
- * Removes MinIO details from storage failures before they cross the port.
- *
- * @param error Unknown SDK or stream failure.
- * @returns Provider-neutral storage error.
- */
-function translateStorageError(error: unknown): ScanStorageError {
-  if (error instanceof ScanStorageError) {
+/** Removes MinIO details from failures before they cross the storage port. */
+function translateStorageError(error: unknown): PrivateObjectStorageError {
+  if (error instanceof PrivateObjectStorageError) {
     return error;
   }
   if (
     error instanceof S3Error &&
     (error.code === 'NoSuchKey' || error.code === 'NotFound')
   ) {
-    return new ScanStorageError('not_found');
+    return new PrivateObjectStorageError('not_found');
   }
-  return new ScanStorageError('unavailable');
+  return new PrivateObjectStorageError('unavailable');
 }

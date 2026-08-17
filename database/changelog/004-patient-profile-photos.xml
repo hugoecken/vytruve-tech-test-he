@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
+>
+  <changeSet id="004-add-patient-profile-photo" author="vytruve">
+    <addColumn tableName="patient">
+      <column name="photo_storage_key" type="varchar(36)" />
+      <column name="photo_format" type="varchar(4)" />
+      <column name="photo_size_bytes" type="integer" />
+    </addColumn>
+    <!-- Liquibase OSS 4.33 has no portable XML change type for a named check constraint. -->
+    <sql dbms="postgresql">
+      ALTER TABLE patient ADD CONSTRAINT ck_patient_photo_metadata CHECK (
+        (photo_storage_key IS NULL AND photo_format IS NULL AND photo_size_bytes IS NULL)
+        OR
+        (photo_storage_key IS NOT NULL AND photo_format IN ('jpeg', 'png', 'webp') AND photo_size_bytes BETWEEN 1 AND 5242880)
+      )
+    </sql>
+    <rollback>
+      <sql dbms="postgresql">
+        ALTER TABLE patient DROP CONSTRAINT ck_patient_photo_metadata
+      </sql>
+      <dropColumn tableName="patient" columnName="photo_size_bytes" />
+      <dropColumn tableName="patient" columnName="photo_format" />
+      <dropColumn tableName="patient" columnName="photo_storage_key" />
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

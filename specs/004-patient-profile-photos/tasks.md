@@ -18,7 +18,7 @@
 
 **Purpose**: Add only the two dependencies selected by the approved plan.
 
-- [ ] T001 Add `sharp@^0.35.3` and `file-type@^22.0.2` with the npm lockfile in `package.json` and `package-lock.json`
+- [x] T001 Add `sharp@^0.35.3` and `file-type@^22.0.2` with the npm lockfile in `package.json` and `package-lock.json`
 
 ---
 
@@ -28,13 +28,13 @@
 
 **Critical**: Complete this phase before starting a user-story phase.
 
-- [ ] T002 [P] Add provider-level contract coverage for bounded put, stat, stream, remove, readiness, safe key handling, and provider failures in `apps/api/src/storage/minio-private-object-storage.adapter.spec.ts`
-- [ ] T003 Implement the minimal `PrivateObjectStoragePort`, MinIO adapter, and Nest module selected by the plan in `apps/api/src/storage/private-object-storage.port.ts`, `apps/api/src/storage/minio-private-object-storage.adapter.ts`, and `apps/api/src/storage/private-object-storage.module.ts`
-- [ ] T004 Rewire scans and health checks to the shared private-storage token without changing their behavior in `apps/api/src/app/scans/application/ports/scan-storage.port.ts`, `apps/api/src/app/scans/infrastructure/storage/minio-scan-storage.adapter.ts`, `apps/api/src/app/scans/scans.module.ts`, and `apps/api/src/app/health/health.service.ts`
-- [ ] T005 [P] Append the nullable photo metadata columns and all-null-or-all-present constraint, then map them through the patient model in `database/changelog/004-patient-profile-photos.xml`, `database/db.changelog-master.xml`, `apps/api/src/app/patients/infrastructure/persistence/patient.entity.ts`, `apps/api/src/app/patients/application/models/patient.model.ts`, and `apps/api/src/app/patients/infrastructure/persistence/mappers/patient-persistence.mapper.ts`
-- [ ] T006 [P] Add synthetic JPEG, PNG, WebP, empty, oversized, unsupported, and corrupt-content tests in `apps/api/src/app/patients/application/validation/patient-photo.validator.spec.ts`
-- [ ] T007 Implement bounded authoritative photo validation, upload parsing, and stable safe problem codes in `apps/api/src/app/patients/application/validation/patient-photo.validator.ts`, `apps/api/src/app/patients/api/pipes/patient-photo-upload.pipe.ts`, and `apps/api/src/http/problem-code.ts`
-- [ ] T008 Add `hasPhoto` to the patient API representation without exposing storage metadata in `apps/api/src/app/patients/api/dto/patient-response.dto.ts` and `apps/api/src/app/patients/api/mappers/patient-api.mapper.ts`
+- [x] T002 [P] Add provider-level contract coverage for bounded put, stat, stream, remove, readiness, safe key handling, and provider failures in `apps/api/src/storage/minio-private-object-storage.adapter.spec.ts`
+- [x] T003 Implement the minimal `PrivateObjectStoragePort`, MinIO adapter, and Nest module selected by the plan in `apps/api/src/storage/private-object-storage.port.ts`, `apps/api/src/storage/minio-private-object-storage.adapter.ts`, and `apps/api/src/storage/private-object-storage.module.ts`
+- [x] T004 Rewire scans and health checks to the shared private-storage token without changing their behavior in `apps/api/src/app/scans/application/ports/scan-storage.port.ts`, `apps/api/src/app/scans/infrastructure/storage/minio-scan-storage.adapter.ts`, `apps/api/src/app/scans/scans.module.ts`, and `apps/api/src/app/health/health.service.ts`
+- [x] T005 [P] Append the nullable photo metadata columns and all-null-or-all-present constraint, then map them through the patient model in `database/changelog/004-patient-profile-photos.xml`, `database/db.changelog-master.xml`, `apps/api/src/app/patients/infrastructure/persistence/patient.entity.ts`, `apps/api/src/app/patients/application/models/patient.model.ts`, and `apps/api/src/app/patients/infrastructure/persistence/mappers/patient-persistence.mapper.ts`
+- [x] T006 [P] Add synthetic JPEG, PNG, WebP, empty, oversized, unsupported, and corrupt-content tests in `apps/api/src/app/patients/application/validation/patient-photo.validator.spec.ts`
+- [x] T007 Implement bounded authoritative photo validation, upload parsing, and stable safe problem codes in `apps/api/src/app/patients/application/validation/patient-photo.validator.ts`, `apps/api/src/app/patients/api/pipes/patient-photo-upload.pipe.ts`, and `apps/api/src/http/problem-code.ts`
+- [x] T008 Add `hasPhoto` to the patient API representation without exposing storage metadata in `apps/api/src/app/patients/api/dto/patient-response.dto.ts` and `apps/api/src/app/patients/api/mappers/patient-api.mapper.ts`
 
 **Checkpoint**: The shared storage adapter preserves scan behavior, the full migration is append-only, photo validation is bounded, and patient JSON exposes only `hasPhoto`.
 
@@ -50,18 +50,18 @@
 
 ### Tests for User Story 1
 
-- [ ] T009 [P] [US1] Add no-photo, valid-photo, validation-failure, storage-failure, persistence-failure compensation, and duplicate-submit service tests in `apps/api/src/app/patients/application/services/patients.service.spec.ts`
-- [ ] T010 [P] [US1] Add local preparing, selected, replace, remove, invalid, obsolete-decode, Blob cleanup, and zero-request tests in `apps/web/src/modules/patients/ui/patient-photo-field.test.tsx`
-- [ ] T011 [P] [US1] Extend patient creation tests for no-photo regression, multipart photo creation, pending protection, retryable failure, and direct workspace navigation in `apps/web/src/modules/patients/ui/patients-page.test.tsx`
+- [x] T009 [P] [US1] Add no-photo, valid-photo, validation-failure, storage-failure, persistence-failure compensation, and duplicate-submit service tests in `apps/api/src/app/patients/application/services/patients.service.spec.ts`
+- [x] T010 [P] [US1] Add local preparing, selected, replace, remove, invalid, obsolete-decode, Blob cleanup, and zero-request tests in `apps/web/src/modules/patients/ui/patient-photo-field.test.tsx`
+- [x] T011 [P] [US1] Extend patient creation tests for no-photo regression, multipart photo creation, pending protection, retryable failure, and direct workspace navigation in `apps/web/src/modules/patients/ui/patients-page.test.tsx`
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] Convert patient creation to the documented optional multipart contract and Swagger responses in `apps/api/src/app/patients/api/dto/create-patient-request.dto.ts` and `apps/api/src/app/patients/api/controllers/patients.controller.ts`
-- [ ] T013 [US1] Confirm patient metadata and an optional validated private object as one creation result with exact-key compensation in `apps/api/src/app/patients/application/services/patients.service.ts` and `apps/api/src/app/patients/patients.module.ts`
-- [ ] T014 [US1] Emit OpenAPI and regenerate the ignored Orval mutations and Zod Mini request schemas through the `api:openapi` and `web:generate-api` targets configured by `apps/api/project.json` and `apps/web/project.json`
-- [ ] T015 [US1] Build the shared patient fields and local photo state composition with official shadcn primitives and React 19 ref cleanup in `apps/web/src/modules/patients/ui/patient-form-fields.tsx` and `apps/web/src/modules/patients/ui/patient-photo-field.tsx`
-- [ ] T016 [US1] Submit the existing create flow as generated multipart data while preserving field state, pending behavior, and navigation in `apps/web/src/modules/patients/ui/patient-create-overlay.tsx`
-- [ ] T017 [US1] Add concise English and French create-photo, preparing, validation, replace, remove, pending, and safe-error copy in `apps/web/src/shared/i18n/locales/en.json` and `apps/web/src/shared/i18n/locales/fr.json`
+- [x] T012 [US1] Convert patient creation to the documented optional multipart contract and Swagger responses in `apps/api/src/app/patients/api/dto/create-patient-request.dto.ts` and `apps/api/src/app/patients/api/controllers/patients.controller.ts`
+- [x] T013 [US1] Confirm patient metadata and an optional validated private object as one creation result with exact-key compensation in `apps/api/src/app/patients/application/services/patients.service.ts` and `apps/api/src/app/patients/patients.module.ts`
+- [x] T014 [US1] Emit OpenAPI and regenerate the ignored Orval mutations and Zod Mini request schemas through the `api:openapi` and `web:generate-api` targets configured by `apps/api/project.json` and `apps/web/project.json`
+- [x] T015 [US1] Build the shared patient fields and local photo state composition with official shadcn primitives and React 19 ref cleanup in `apps/web/src/modules/patients/ui/patient-form-fields.tsx` and `apps/web/src/modules/patients/ui/patient-photo-field.tsx`
+- [x] T016 [US1] Submit the existing create flow as generated multipart data while preserving field state, pending behavior, and navigation in `apps/web/src/modules/patients/ui/patient-create-overlay.tsx`
+- [x] T017 [US1] Add concise English and French create-photo, preparing, validation, replace, remove, pending, and safe-error copy in `apps/web/src/shared/i18n/locales/en.json` and `apps/web/src/shared/i18n/locales/fr.json`
 
 **Checkpoint**: User Story 1 passes independently with and without a photo, and local selection performs no mutation before Create patient.
 
@@ -77,18 +77,18 @@
 
 ### Tests for User Story 2
 
-- [ ] T018 [P] [US2] Add owner-scoped keep, add, replace, remove, row-lock, no-partial-update, new-object compensation, former-object cleanup, and indistinguishable-not-found tests in `apps/api/src/app/patients/application/services/patients.service.spec.ts`
-- [ ] T019 [P] [US2] Add prefilled, unchanged, keep, replace, remove, pending, cancel, close, failed-save, and successful-refresh tests in `apps/web/src/modules/patients/ui/patient-edit-overlay.test.tsx`
-- [ ] T020 [P] [US2] Extend workspace tests for the accessible Edit patient action, responsive overlay, preserved scan tab, and refreshed identity in `apps/web/src/modules/patients/ui/patient-workspace-page.test.tsx`
+- [x] T018 [P] [US2] Add owner-scoped keep, add, replace, remove, row-lock, no-partial-update, new-object compensation, former-object cleanup, and indistinguishable-not-found tests in `apps/api/src/app/patients/application/services/patients.service.spec.ts`
+- [x] T019 [P] [US2] Add prefilled, unchanged, keep, replace, remove, pending, cancel, close, failed-save, and successful-refresh tests in `apps/web/src/modules/patients/ui/patient-edit-overlay.test.tsx`
+- [x] T020 [P] [US2] Extend workspace tests for the accessible Edit patient action, responsive overlay, preserved scan tab, and refreshed identity in `apps/web/src/modules/patients/ui/patient-workspace-page.test.tsx`
 
 ### Implementation for User Story 2
 
-- [ ] T021 [US2] Add the complete multipart update DTO and owner-scoped `PATCH /api/patients/:patientId` contract in `apps/api/src/app/patients/api/dto/update-patient-request.dto.ts` and `apps/api/src/app/patients/api/controllers/patients.controller.ts`
-- [ ] T022 [US2] Implement the scoped EntityManager transaction, owned row lock, explicit photo decision, compensation, and post-commit former-object cleanup in `apps/api/src/app/patients/application/services/patients.service.ts`
-- [ ] T023 [US2] Regenerate the ignored OpenAPI/Orval artifacts after the update contract through the targets configured by `apps/api/project.json` and `apps/web/project.json`
-- [ ] T024 [US2] Implement the responsive edit flow by composing the shared patient fields and photo field in `apps/web/src/modules/patients/ui/patient-edit-overlay.tsx`
-- [ ] T025 [US2] Connect Edit patient, generated update mutation, exact query invalidation, and image refresh without changing workspace destinations in `apps/web/src/modules/patients/ui/patient-workspace-page.tsx`
-- [ ] T026 [US2] Add concise English and French edit, save, unchanged, keep, replace, remove, pending, and safe-error copy in `apps/web/src/shared/i18n/locales/en.json` and `apps/web/src/shared/i18n/locales/fr.json`
+- [x] T021 [US2] Add the complete multipart update DTO and owner-scoped `PATCH /api/patients/:patientId` contract in `apps/api/src/app/patients/api/dto/update-patient-request.dto.ts` and `apps/api/src/app/patients/api/controllers/patients.controller.ts`
+- [x] T022 [US2] Implement the scoped EntityManager transaction, owned row lock, explicit photo decision, compensation, and post-commit former-object cleanup in `apps/api/src/app/patients/application/services/patients.service.ts`
+- [x] T023 [US2] Regenerate the ignored OpenAPI/Orval artifacts after the update contract through the targets configured by `apps/api/project.json` and `apps/web/project.json`
+- [x] T024 [US2] Implement the responsive edit flow by composing the shared patient fields and photo field in `apps/web/src/modules/patients/ui/patient-edit-overlay.tsx`
+- [x] T025 [US2] Connect Edit patient, generated update mutation, exact query invalidation, and image refresh without changing workspace destinations in `apps/web/src/modules/patients/ui/patient-workspace-page.tsx`
+- [x] T026 [US2] Add concise English and French edit, save, unchanged, keep, replace, remove, pending, and safe-error copy in `apps/web/src/shared/i18n/locales/en.json` and `apps/web/src/shared/i18n/locales/fr.json`
 
 **Checkpoint**: User Story 2 passes independently for identity-only and every explicit photo decision, with no partial confirmed state.
 
@@ -104,16 +104,16 @@
 
 ### Tests for User Story 3
 
-- [ ] T027 [P] [US3] Add owner-scoped current-photo streaming, exact headers, missing/foreign/no-photo concealment, object mismatch, and storage-unavailable tests in `apps/api/src/app/patients/application/services/patients.service.spec.ts`
-- [ ] T028 [P] [US3] Add Unicode grapheme initials, current photo, failed-image fallback, full-name, and non-interactive avatar tests in `apps/web/src/modules/patients/ui/patient-identity.test.tsx`
-- [ ] T029 [P] [US3] Extend directory and workspace tests for consistent identity, existing row keyboard activation, pagination, scans, and printing in `apps/web/src/modules/patients/ui/patients-page.test.tsx` and `apps/web/src/modules/patients/ui/patient-workspace-page.test.tsx`
+- [x] T027 [P] [US3] Add owner-scoped current-photo streaming, exact headers, missing/foreign/no-photo concealment, object mismatch, and storage-unavailable tests in `apps/api/src/app/patients/application/services/patients.service.spec.ts`
+- [x] T028 [P] [US3] Add Unicode grapheme initials, current photo, failed-image fallback, full-name, and non-interactive avatar tests in `apps/web/src/modules/patients/ui/patient-identity.test.tsx`
+- [x] T029 [P] [US3] Extend directory and workspace tests for consistent identity, existing row keyboard activation, pagination, scans, and printing in `apps/web/src/modules/patients/ui/patients-page.test.tsx` and `apps/web/src/modules/patients/ui/patient-workspace-page.test.tsx`
 
 ### Implementation for User Story 3
 
-- [ ] T030 [US3] Add authenticated current-photo streaming with private no-store headers and safe owner concealment in `apps/api/src/app/patients/application/services/patients.service.ts` and `apps/api/src/app/patients/api/controllers/patients.controller.ts`
-- [ ] T031 [US3] Regenerate and inspect the ignored binary photo operation and updated patient models through the targets configured by `apps/api/project.json` and `apps/web/project.json`
-- [ ] T032 [US3] Implement locale-aware initials and the official shadcn photo-or-fallback composition in `apps/web/src/modules/patients/lib/patient-identity.ts` and `apps/web/src/modules/patients/ui/patient-identity.tsx`
-- [ ] T033 [US3] Use the shared identity composition in the existing directory row and workspace header without changing navigation in `apps/web/src/modules/patients/ui/patients-page.tsx` and `apps/web/src/modules/patients/ui/patient-workspace-page.tsx`
+- [x] T030 [US3] Add authenticated current-photo streaming with private no-store headers and safe owner concealment in `apps/api/src/app/patients/application/services/patients.service.ts` and `apps/api/src/app/patients/api/controllers/patients.controller.ts`
+- [x] T031 [US3] Regenerate and inspect the ignored binary photo operation and updated patient models through the targets configured by `apps/api/project.json` and `apps/web/project.json`
+- [x] T032 [US3] Implement locale-aware initials and the official shadcn photo-or-fallback composition in `apps/web/src/modules/patients/lib/patient-identity.ts` and `apps/web/src/modules/patients/ui/patient-identity.tsx`
+- [x] T033 [US3] Use the shared identity composition in the existing directory row and workspace header without changing navigation in `apps/web/src/modules/patients/ui/patients-page.tsx` and `apps/web/src/modules/patients/ui/patient-workspace-page.tsx`
 
 **Checkpoint**: User Story 3 passes independently for photo, no-photo, and image-failure states in desktop and compact layouts.
 
@@ -129,13 +129,13 @@
 
 ### Tests for User Story 4
 
-- [ ] T034 [P] [US4] Complete API failure-path assertions for stable Problem Details, compensation outcomes, safe logging, former-photo inaccessibility, and scan-storage regression in `apps/api/src/app/patients/application/services/patients.service.spec.ts`, `apps/api/src/app/scans/application/services/scans.service.spec.ts`, and `apps/api/src/storage/minio-private-object-storage.adapter.spec.ts`
-- [ ] T035 [P] [US4] Complete Web recovery assertions for retained form state, deliberate retry, discarded temporary content, inaccessible confirmed image fallback, localization, focus, and announcements in `apps/web/src/modules/patients/ui/patients-page.test.tsx`, `apps/web/src/modules/patients/ui/patient-edit-overlay.test.tsx`, and `apps/web/src/modules/patients/ui/patient-photo-field.test.tsx`
+- [x] T034 [P] [US4] Complete API failure-path assertions for stable Problem Details, compensation outcomes, safe logging, former-photo inaccessibility, and scan-storage regression in `apps/api/src/app/patients/application/services/patients.service.spec.ts`, `apps/api/src/app/scans/application/services/scans.service.spec.ts`, and `apps/api/src/storage/minio-private-object-storage.adapter.spec.ts`
+- [x] T035 [P] [US4] Complete Web recovery assertions for retained form state, deliberate retry, discarded temporary content, inaccessible confirmed image fallback, localization, focus, and announcements in `apps/web/src/modules/patients/ui/patients-page.test.tsx`, `apps/web/src/modules/patients/ui/patient-edit-overlay.test.tsx`, and `apps/web/src/modules/patients/ui/patient-photo-field.test.tsx`
 
 ### Implementation for User Story 4
 
-- [ ] T036 [US4] Reconcile safe patient-photo error translation and metadata-free operational logging across `apps/api/src/app/patients/application/services/patients.service.ts`, `apps/api/src/http/problem-details.filter.ts`, and `apps/api/src/storage/minio-private-object-storage.adapter.ts`
-- [ ] T037 [US4] Reconcile localized retry, pending, invalid, and fallback presentation without clearing valid user input in `apps/web/src/modules/patients/ui/patient-create-overlay.tsx`, `apps/web/src/modules/patients/ui/patient-edit-overlay.tsx`, and `apps/web/src/modules/patients/ui/patient-photo-field.tsx`
+- [x] T036 [US4] Reconcile safe patient-photo error translation and metadata-free operational logging across `apps/api/src/app/patients/application/services/patients.service.ts`, `apps/api/src/http/problem-details.filter.ts`, and `apps/api/src/storage/minio-private-object-storage.adapter.ts`
+- [x] T037 [US4] Reconcile localized retry, pending, invalid, and fallback presentation without clearing valid user input in `apps/web/src/modules/patients/ui/patient-create-overlay.tsx`, `apps/web/src/modules/patients/ui/patient-edit-overlay.tsx`, and `apps/web/src/modules/patients/ui/patient-photo-field.tsx`
 
 **Checkpoint**: Every accepted failure path retains the correct confirmed authority and exposes no private storage or ownership detail.
 
@@ -145,10 +145,10 @@
 
 **Purpose**: Document the delivered boundary and prove the full contract, migration, regression, accessibility, and delivery evidence.
 
-- [ ] T038 [P] Add concise patient-photo implementation notes and explicit trade-offs in `docs/backend-and-data.md` and `docs/frontend.md`
-- [ ] T039 Run OpenAPI emission, Orval generation, API/Web focused tests, lint, typecheck, build, and full Liquibase validation using the targets in `apps/api/project.json`, `apps/web/project.json`, and `database/project.json`
+- [x] T038 [P] Add concise patient-photo implementation notes and explicit trade-offs in `docs/backend-and-data.md` and `docs/frontend.md`
+- [x] T039 Run OpenAPI emission, Orval generation, API/Web focused tests, lint, typecheck, build, and full Liquibase validation using the targets in `apps/api/project.json`, `apps/web/project.json`, and `database/project.json`
 - [ ] T040 Compare desktop `1440×900` and compact `390×900` create, edit, validation, directory, and workspace behavior with Figma nodes `425:7`, `425:33`, `425:55`, `425:63`, `425:71`, `425:77`, and `431:558`, including English, French, keyboard, focus, and announcements
-- [ ] T041 Build the API and Web containers, run the repository workflow's `nx affected` targets without manual filtering, then inspect `git diff --check`, generated/ignored files, secrets, protected data, synthetic fixtures, and the complete changed workset
+- [x] T041 Build the API and Web containers, run the repository workflow's `nx affected` targets without manual filtering, then inspect `git diff --check`, generated/ignored files, secrets, protected data, synthetic fixtures, and the complete changed workset
 
 ---
 

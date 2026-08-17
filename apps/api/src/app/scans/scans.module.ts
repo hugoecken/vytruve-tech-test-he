@@ -5,23 +5,22 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { memoryStorage } from 'multer';
 import { PatientsModule } from '@api/app/patients/patients.module';
 import type { ApiEnvironment } from '@api/config/environment';
+import { PrivateObjectStorageModule } from '@api/storage/private-object-storage.module';
 import { ScansController } from './api/controllers/scans.controller';
 import { ScanApiMapper } from './api/mappers/scan-api.mapper';
 import {
   RequiredScanFilePipe,
   ScanFileSizePipe,
 } from './api/pipes/ply-upload.pipe';
-import { SCAN_STORAGE } from './application/ports/scan-storage.port';
 import { ScansService } from './application/services/scans.service';
 import { PlyContentValidator } from './application/validation/ply-content.validator';
 import { ScanEntity } from './infrastructure/persistence/scan.entity';
 import { ScanPersistenceMapper } from './infrastructure/persistence/mappers/scan-persistence.mapper';
-import { MinioScanStorageAdapter } from './infrastructure/storage/minio-scan-storage.adapter';
 
 /** Composes owner-scoped scan HTTP, validation, persistence, and storage. */
 @Module({
   controllers: [ScansController],
-  exports: [SCAN_STORAGE, ScansService],
+  exports: [ScansService],
   imports: [
     MulterModule.registerAsync({
       inject: [ConfigService],
@@ -40,10 +39,10 @@ import { MinioScanStorageAdapter } from './infrastructure/storage/minio-scan-sto
       },
     }),
     PatientsModule,
+    PrivateObjectStorageModule,
     TypeOrmModule.forFeature([ScanEntity]),
   ],
   providers: [
-    { provide: SCAN_STORAGE, useClass: MinioScanStorageAdapter },
     PlyContentValidator,
     RequiredScanFilePipe,
     ScanFileSizePipe,

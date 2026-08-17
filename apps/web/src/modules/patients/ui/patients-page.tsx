@@ -12,6 +12,7 @@ import { CollectionLoadError } from '@/modules/collections/ui/collection-load-er
 import { CollectionRecoveryAlert } from '@/modules/collections/ui/collection-recovery-alert';
 import { CollectionTableShell } from '@/modules/collections/ui/collection-table-shell';
 import { PatientCreateOverlay } from '@/modules/patients/ui/patient-create-overlay';
+import { PatientIdentity } from '@/modules/patients/ui/patient-identity';
 import { useListPatients } from '@/shared/api/generated/client/patients/patients';
 import type { PatientResponse } from '@/shared/api/generated/models/patientResponse';
 import {
@@ -66,6 +67,7 @@ export function PatientsPage() {
         patientColumnHelper.accessor(
           (patient) => `${patient.firstName} ${patient.lastName}`,
           {
+            cell: ({ row }) => <PatientIdentity patient={row.original} />,
             header: t('patients.table.patient'),
             id: 'patient',
           },

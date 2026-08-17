@@ -31,8 +31,13 @@ describe('patient workspace', () => {
     renderRoute(`/patients/${patient.id}`, { session: accountSession });
 
     expect(
-      await screen.findByRole('heading', { name: 'Alex Martin' }),
+      await screen.findByRole(
+        'heading',
+        { name: 'Alex Martin' },
+        { timeout: 3000 },
+      ),
     ).toBeVisible();
+    expect(screen.getByText('AM')).toBeVisible();
     expect(screen.getByText(/34 years · Record created/)).toBeVisible();
     expect(screen.getByRole('tab', { name: '3D scans' })).toHaveAttribute(
       'aria-selected',

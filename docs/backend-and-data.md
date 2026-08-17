@@ -41,6 +41,9 @@ erDiagram
     string first_name
     string last_name
     int age
+    string photo_storage_key
+    string photo_format
+    int photo_size_bytes
   }
   SCAN {
     uuid id
@@ -60,11 +63,11 @@ erDiagram
   }
 ```
 
-| Owner             | Stored responsibility                                                                          | Never exposed publicly                                  |
-| ----------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| PostgreSQL        | Accounts, ownership, patient data, scan metadata, print references, and last safe print state. | Password hashes and persistence details.                |
-| MinIO             | PLY bytes under application-generated UUID keys.                                               | Bucket details, object keys, and original filenames.    |
-| Printing provider | External production-job state.                                                                 | Credential, raw payloads, and provider-specific errors. |
+| Owner             | Stored responsibility                                                                                                  | Never exposed publicly                                  |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| PostgreSQL        | Accounts, ownership, patient data, current-photo metadata, scan metadata, print references, and last safe print state. | Password hashes and persistence details.                |
+| MinIO             | Patient-photo and PLY bytes under application-generated UUID keys.                                                     | Bucket details, object keys, and original filenames.    |
+| Printing provider | External production-job state.                                                                                         | Credential, raw payloads, and provider-specific errors. |
 
 ## Schema ownership
 
@@ -96,6 +99,17 @@ sequenceDiagram
 Filename and MIME claims are not trusted. Downloads repeat patient and scan ownership checks, validate the stored
 size, and stream bytes through the API under a synthetic filename. The narrow compensation protects new uploads
 without adding a queue or speculative cleanup service.
+
+## Patient photos
+
+One nullable metadata tuple on `patient` represents the current photo; there is no photo table or history. The API
+validates bounded JPEG, PNG, or WebP bytes with Sharp, stores them through the same private object-storage adapter as
+scans, and exposes only `hasPhoto` in patient JSON.
+
+Create and update use one multipart request. A replacement is written before the owner-scoped SQL transaction; if
+the transaction fails, that exact new object is removed. After a successful replacement or removal, the committed
+row no longer references the former key before best-effort cleanup begins. Current bytes are streamed only from the
+cookie-authenticated patient route with `Cache-Control: private, no-store`.
 
 ## Executable HTTP contract
 

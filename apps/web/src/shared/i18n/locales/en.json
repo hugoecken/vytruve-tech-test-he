@@ -82,6 +82,23 @@
     "title": "Patients",
     "description": "Manage patient records and access their clinical workflows.",
     "add": "Add patient",
+    "photo": {
+      "label": "Profile photo (optional)",
+      "hint": "Add a photo to recognize this patient.",
+      "formats": "JPEG, PNG, or WebP · 5 MiB max",
+      "choose": "Choose photo",
+      "change": "Change photo",
+      "remove": "Remove photo",
+      "removed": "The current photo will be removed when you save.",
+      "preparing": "Preparing photo",
+      "selected": "Selected photo",
+      "current": "Current photo",
+      "validation": {
+        "type": "Choose a JPEG, PNG, or WebP image.",
+        "size": "Choose an image no larger than 5 MiB.",
+        "decode": "Choose an image that can be opened safely."
+      }
+    },
     "empty": {
       "title": "No patient records yet",
       "description": "Add a patient record to start managing 3D scans."
@@ -111,6 +128,14 @@
       "cancel": "Cancel",
       "submit": "Add patient",
       "pending": "Adding patient…"
+    },
+    "edit": {
+      "action": "Edit patient",
+      "title": "Edit patient",
+      "description": "Update the patient’s identity and profile photo.",
+      "cancel": "Cancel",
+      "submit": "Save changes",
+      "pending": "Saving changes…"
     },
     "workspace": {
       "back": "Back to patients",
@@ -337,6 +362,10 @@
       "AUTH_RATE_LIMITED": "Too many attempts. Please wait before trying again.",
       "INTERNAL_ERROR": "The service encountered an unexpected problem.",
       "PATIENT_NOT_FOUND": "The patient record could not be found.",
+      "PATIENT_PHOTO_INVALID_CONTENT": "The selected photo could not be opened safely.",
+      "PATIENT_PHOTO_STORAGE_UNAVAILABLE": "Patient photo storage is temporarily unavailable.",
+      "PATIENT_PHOTO_TOO_LARGE": "The selected photo exceeds the 5 MiB limit.",
+      "PATIENT_PHOTO_UNSUPPORTED_TYPE": "Choose a JPEG, PNG, or WebP photo.",
       "PRINTING_CAPACITY_REACHED": "The printing center cannot accept another request right now.",
       "PRINTING_UNAVAILABLE": "Printing is temporarily unavailable. Please try again later.",
       "PRINT_REQUEST_CONFLICT": "This scan already has a print request in progress.",

@@ -9,6 +9,8 @@ import { CollectionRecoveryAlert } from '@/modules/collections/ui/collection-rec
 import { PrintRequestOverlay } from '@/modules/printing/ui/print-request-overlay';
 import { PrintRequestsPanel } from '@/modules/printing/ui/print-requests-panel';
 import { ScansPanel } from '@/modules/scans/ui/scans-panel';
+import { PatientEditOverlay } from '@/modules/patients/ui/patient-edit-overlay';
+import { PatientIdentity } from '@/modules/patients/ui/patient-identity';
 import { useGetPatient } from '@/shared/api/generated/client/patients/patients';
 import { getListPatientScansQueryKey } from '@/shared/api/generated/client/scans/scans';
 import type { PrintRequestResponse } from '@/shared/api/generated/models/printRequestResponse';
@@ -49,6 +51,7 @@ export function PatientWorkspacePage({ patientId }: PatientWorkspacePageProps) {
     'conflict' | 'uncertain' | null
   >(null);
   const [resourceUnavailable, setResourceUnavailable] = useState(false);
+  const [photoRevision, setPhotoRevision] = useState(0);
   const query = useGetPatient(patientId, {
     query: { select: (response) => response.data },
   });
@@ -173,19 +176,27 @@ export function PatientWorkspacePage({ patientId }: PatientWorkspacePageProps) {
       )}
 
       <Card className="mt-5 h-30">
-        <CardHeader>
-          <h1
-            className="text-lg leading-6 font-semibold"
-            id="patient-workspace-title"
-          >
-            {patient.firstName} {patient.lastName}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {t('patients.workspace.identity', {
-              age: patient.age,
-              date: formatDate(patient.createdAt, i18n.language),
-            })}
-          </p>
+        <CardHeader className="flex-row items-start justify-between gap-4">
+          <div className="min-w-0">
+            <PatientIdentity
+              as="h1"
+              avatarClassName="size-12"
+              nameClassName="text-lg leading-6 font-semibold"
+              nameId="patient-workspace-title"
+              patient={patient}
+              photoRevision={photoRevision}
+            />
+            <p className="ml-15 text-sm text-muted-foreground">
+              {t('patients.workspace.identity', {
+                age: patient.age,
+                date: formatDate(patient.createdAt, i18n.language),
+              })}
+            </p>
+          </div>
+          <PatientEditOverlay
+            onPhotoChanged={() => setPhotoRevision((revision) => revision + 1)}
+            patient={patient}
+          />
         </CardHeader>
       </Card>
 

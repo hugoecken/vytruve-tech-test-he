@@ -1,12 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
-import { Inject } from '@nestjs/common';
 import type { ApiEnvironment } from '@api/config/environment';
 import {
-  SCAN_STORAGE,
-  type ScanStoragePort,
-} from '@api/app/scans/application/ports/scan-storage.port';
+  PRIVATE_OBJECT_STORAGE,
+  type PrivateObjectStoragePort,
+} from '@api/storage/private-object-storage.port';
 
 /** Safe operational state returned without dependency or configuration details. */
 export interface HealthResult {
@@ -24,12 +23,13 @@ export class HealthService {
    *
    * @param config Validated API configuration.
    * @param dataSource Active application PostgreSQL connection.
-   * @param scanStorage Private scan-storage boundary.
+   * @param privateStorage Shared private object-storage boundary.
    */
   constructor(
     config: ConfigService<ApiEnvironment, true>,
     private readonly dataSource: DataSource,
-    @Inject(SCAN_STORAGE) private readonly scanStorage: ScanStoragePort,
+    @Inject(PRIVATE_OBJECT_STORAGE)
+    private readonly privateStorage: PrivateObjectStoragePort,
   ) {
     this.revision = config.getOrThrow<string>('APP_REVISION');
   }
@@ -52,7 +52,7 @@ export class HealthService {
 
     try {
       await this.dataSource.query('SELECT 1');
-      await this.scanStorage.checkReadiness();
+      await this.privateStorage.checkReadiness();
       return { revision: this.revision, status: 'ready' };
     } catch {
       return { revision: this.revision, status: 'unavailable' };

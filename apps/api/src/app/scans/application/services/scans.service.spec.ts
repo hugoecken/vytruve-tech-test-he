@@ -6,14 +6,14 @@ import type { PatientModel } from '@api/app/patients/application/models/patient.
 import type { PatientsService } from '@api/app/patients/application/services/patients.service';
 import type { ApiEnvironment } from '@api/config/environment';
 import { ProblemCode } from '@api/http/problem-code';
+import {
+  PrivateObjectStorageError,
+  type PrivateObjectStoragePort,
+} from '@api/storage/private-object-storage.port';
 import { expectProblemDetails } from '@api/test-support/problem-details';
 import { ASCII_TRIANGLE_PLY } from '@api/test-support/ply-fixtures';
 import { ScanEntity } from '../../infrastructure/persistence/scan.entity';
 import { ScanPersistenceMapper } from '../../infrastructure/persistence/mappers/scan-persistence.mapper';
-import {
-  ScanStorageError,
-  type ScanStoragePort,
-} from '../ports/scan-storage.port';
 import { PlyContentValidator } from '../validation/ply-content.validator';
 import { ScansService } from './scans.service';
 
@@ -27,6 +27,7 @@ const PATIENT: PatientModel = {
   firstName: 'Alex',
   id: PATIENT_ID,
   lastName: 'Morgan',
+  photo: null,
 };
 
 /** Repository methods exercised by scan application behavior. */
@@ -42,10 +43,12 @@ interface PatientsDouble {
 
 /** Private object-storage operations exercised by scan behavior. */
 interface StorageDouble {
-  checkReadiness: jest.MockedFunction<ScanStoragePort['checkReadiness']>;
-  open: jest.MockedFunction<ScanStoragePort['open']>;
-  remove: jest.MockedFunction<ScanStoragePort['remove']>;
-  write: jest.MockedFunction<ScanStoragePort['write']>;
+  checkReadiness: jest.MockedFunction<
+    PrivateObjectStoragePort['checkReadiness']
+  >;
+  open: jest.MockedFunction<PrivateObjectStoragePort['open']>;
+  remove: jest.MockedFunction<PrivateObjectStoragePort['remove']>;
+  write: jest.MockedFunction<PrivateObjectStoragePort['write']>;
 }
 
 describe(ScansService.name, () => {
@@ -121,7 +124,9 @@ describe(ScansService.name, () => {
 
   it('returns a stable storage problem when metadata compensation fails', async () => {
     repository.save.mockRejectedValue(new Error('database unavailable'));
-    storage.remove.mockRejectedValue(new ScanStorageError('unavailable'));
+    storage.remove.mockRejectedValue(
+      new PrivateObjectStorageError('unavailable'),
+    );
 
     await expectProblemDetails(
       service.create({
@@ -135,7 +140,9 @@ describe(ScansService.name, () => {
   });
 
   it('translates private storage write failures without exposing provider details', async () => {
-    storage.write.mockRejectedValue(new ScanStorageError('unavailable'));
+    storage.write.mockRejectedValue(
+      new PrivateObjectStorageError('unavailable'),
+    );
 
     await expectProblemDetails(
       service.create({

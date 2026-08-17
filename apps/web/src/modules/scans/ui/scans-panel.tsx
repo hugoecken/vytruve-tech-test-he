@@ -16,10 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { CollectionLoadError } from '@/modules/collections/ui/collection-load-error';
 import { CollectionRecoveryAlert } from '@/modules/collections/ui/collection-recovery-alert';
 import { CollectionTableShell } from '@/modules/collections/ui/collection-table-shell';
-import {
-  formatScanFileSize,
-  formatScanLabel,
-} from '@/modules/scans/lib/scan-formatters';
+import { formatScanLabel } from '@/modules/scans/lib/scan-formatters';
 import { ScanUploadOverlay } from '@/modules/scans/ui/scan-upload-overlay';
 import { ScanPreview } from '@/modules/scans/ui/scan-preview';
 import {
@@ -27,6 +24,7 @@ import {
   useListPatientScans,
 } from '@/shared/api/generated/client/scans/scans';
 import type { ScanResponse } from '@/shared/api/generated/models/scanResponse';
+import { formatFileSize } from '@/shared/lib/format-file-size';
 import {
   Alert,
   AlertAction,
@@ -146,7 +144,7 @@ export function ScansPanel({
           header: t('scans.table.format'),
         }),
         scanColumnHelper.accessor('sizeBytes', {
-          cell: ({ getValue }) => formatScanFileSize(getValue(), i18n.language),
+          cell: ({ getValue }) => formatFileSize(getValue(), i18n.language),
           header: t('scans.table.size'),
         }),
         scanColumnHelper.accessor('createdAt', {
@@ -420,7 +418,7 @@ function ScanDetailsOverlay({
               {t(`scans.encoding.${scan.encoding}`)}
             </DetailItem>
             <DetailItem label={t('scans.details.fields.size')}>
-              {formatScanFileSize(scan.sizeBytes, i18n.language)}
+              {formatFileSize(scan.sizeBytes, i18n.language)}
             </DetailItem>
             <DetailItem label={t('scans.details.fields.added')}>
               {formatDateTime(scan.createdAt, i18n.language)}

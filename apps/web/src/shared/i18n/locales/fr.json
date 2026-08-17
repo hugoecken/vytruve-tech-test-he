@@ -82,6 +82,23 @@
     "title": "Patients",
     "description": "Gérez les dossiers patients et accédez à leurs parcours cliniques.",
     "add": "Ajouter un patient",
+    "photo": {
+      "label": "Photo de profil (facultative)",
+      "hint": "Ajoutez une photo pour reconnaître ce patient.",
+      "formats": "JPEG, PNG ou WebP · 5 Mio max",
+      "choose": "Choisir une photo",
+      "change": "Changer la photo",
+      "remove": "Supprimer la photo",
+      "removed": "La photo actuelle sera supprimée à l’enregistrement.",
+      "preparing": "Préparation de la photo",
+      "selected": "Photo sélectionnée",
+      "current": "Photo actuelle",
+      "validation": {
+        "type": "Choisissez une image JPEG, PNG ou WebP.",
+        "size": "Choisissez une image de 5 Mio maximum.",
+        "decode": "Choisissez une image qui peut être ouverte en toute sécurité."
+      }
+    },
     "empty": {
       "title": "Aucun dossier patient",
       "description": "Ajoutez un dossier patient pour commencer à gérer des scans 3D."
@@ -111,6 +128,14 @@
       "cancel": "Annuler",
       "submit": "Ajouter le patient",
       "pending": "Ajout du patient…"
+    },
+    "edit": {
+      "action": "Modifier le patient",
+      "title": "Modifier le patient",
+      "description": "Mettez à jour l’identité et la photo de profil du patient.",
+      "cancel": "Annuler",
+      "submit": "Enregistrer",
+      "pending": "Enregistrement…"
     },
     "workspace": {
       "back": "Retour aux patients",
@@ -337,6 +362,10 @@
       "AUTH_RATE_LIMITED": "Trop de tentatives. Patientez avant de réessayer.",
       "INTERNAL_ERROR": "Le service a rencontré un problème inattendu.",
       "PATIENT_NOT_FOUND": "Le dossier patient est introuvable.",
+      "PATIENT_PHOTO_INVALID_CONTENT": "La photo sélectionnée ne peut pas être ouverte en toute sécurité.",
+      "PATIENT_PHOTO_STORAGE_UNAVAILABLE": "Le stockage des photos patient est temporairement indisponible.",
+      "PATIENT_PHOTO_TOO_LARGE": "La photo sélectionnée dépasse la limite de 5 Mio.",
+      "PATIENT_PHOTO_UNSUPPORTED_TYPE": "Choisissez une photo JPEG, PNG ou WebP.",
       "PRINTING_CAPACITY_REACHED": "Le centre d'impression ne peut pas accepter de nouvelle demande pour le moment.",
       "PRINTING_UNAVAILABLE": "L'impression est temporairement indisponible. Réessayez plus tard.",
       "PRINT_REQUEST_CONFLICT": "Une demande d'impression est déjà en cours pour ce scan.",
