@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react';
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 
 /** Props for the visual surface and controls around a feature-owned table. */
@@ -38,23 +39,28 @@ export function CollectionTableShell({
         <Button
           disabled={page === 0 || pending}
           onClick={onPrevious}
-          size="lg"
+          size="default"
           type="button"
-          variant="outline"
+          variant="ghost"
         >
+          <ChevronLeftIcon aria-hidden="true" data-icon="inline-start" />
           {previousLabel}
         </Button>
-        <span aria-live="polite" className="min-w-14 text-center text-sm">
+        <span
+          aria-live="polite"
+          className="min-w-14 text-center text-sm text-muted-foreground"
+        >
           {pageLabel}
         </span>
         <Button
           disabled={!hasNext || pending}
           onClick={onNext}
-          size="lg"
+          size="default"
           type="button"
-          variant="outline"
+          variant="ghost"
         >
           {nextLabel}
+          <ChevronRightIcon aria-hidden="true" data-icon="inline-end" />
         </Button>
       </div>
     </div>

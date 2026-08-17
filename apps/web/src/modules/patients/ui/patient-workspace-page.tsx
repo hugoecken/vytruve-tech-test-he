@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { ArrowLeftIcon, CircleAlertIcon } from 'lucide-react';
+import { CircleAlertIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { clearAccountState } from '@/modules/auth/api/session-cache';
 import { CollectionLoadError } from '@/modules/collections/ui/collection-load-error';
@@ -16,7 +16,7 @@ import { getListPatientScansQueryKey } from '@/shared/api/generated/client/scans
 import type { PrintRequestResponse } from '@/shared/api/generated/models/printRequestResponse';
 import type { ScanResponse } from '@/shared/api/generated/models/scanResponse';
 import { ApiProblemError } from '@/shared/api/http/api-error';
-import { Button, buttonVariants } from '@/shared/ui/button';
+import { Button } from '@/shared/ui/button';
 import { Card, CardHeader } from '@/shared/ui/card';
 import {
   Empty,
@@ -153,14 +153,11 @@ export function PatientWorkspacePage({ patientId }: PatientWorkspacePageProps) {
       className="flex flex-col"
     >
       <Link
-        className={buttonVariants({
-          className: 'h-11 w-fit',
-          variant: 'outline',
-        })}
+        aria-label={t('patients.workspace.back')}
+        className="w-fit text-2xl leading-8 font-semibold"
         to="/patients"
       >
-        <ArrowLeftIcon aria-hidden="true" data-icon="inline-start" />
-        {t('patients.workspace.back')}
+        {t('patients.title')}
       </Link>
 
       {query.isError && (
@@ -175,24 +172,25 @@ export function PatientWorkspacePage({ patientId }: PatientWorkspacePageProps) {
         </div>
       )}
 
-      <Card className="mt-5 h-30">
-        <CardHeader className="flex-row items-start justify-between gap-4">
-          <div className="min-w-0">
-            <PatientIdentity
-              as="h1"
-              avatarClassName="size-12"
-              nameClassName="text-lg leading-6 font-semibold"
-              nameId="patient-workspace-title"
-              patient={patient}
-              photoRevision={photoRevision}
-            />
-            <p className="ml-15 text-sm text-muted-foreground">
-              {t('patients.workspace.identity', {
-                age: patient.age,
-                date: formatDate(patient.createdAt, i18n.language),
-              })}
-            </p>
-          </div>
+      <Card className="mt-5 h-30 [--card-spacing:--spacing(6)]">
+        <CardHeader className="flex h-full flex-row items-center gap-3">
+          <PatientIdentity
+            as="h1"
+            avatarClassName="size-12"
+            className="min-w-0 flex-1"
+            description={
+              <p className="truncate text-sm text-muted-foreground">
+                {t('patients.workspace.identity', {
+                  age: patient.age,
+                  date: formatDate(patient.createdAt, i18n.language),
+                })}
+              </p>
+            }
+            nameClassName="truncate text-base leading-6 font-medium"
+            nameId="patient-workspace-title"
+            patient={patient}
+            photoRevision={photoRevision}
+          />
           <PatientEditOverlay
             onPhotoChanged={() => setPhotoRevision((revision) => revision + 1)}
             patient={patient}

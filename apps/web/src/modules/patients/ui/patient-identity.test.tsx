@@ -56,6 +56,10 @@ describe(PatientIdentity.name, () => {
       'src',
       `http://localhost:3000/api/patients/${patient.id}/photo`,
     );
+    expect(container.querySelector('img')).toHaveAttribute(
+      'crossorigin',
+      'use-credentials',
+    );
     expect(container.querySelector('img')).toHaveAttribute('alt', '');
     expect(screen.getByText('👩🏽‍⚕️lise Éclair')).toBeVisible();
   });

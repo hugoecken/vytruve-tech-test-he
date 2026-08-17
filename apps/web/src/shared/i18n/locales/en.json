@@ -80,15 +80,16 @@
   "patients": {
     "collection": "Patients",
     "title": "Patients",
-    "description": "Manage patient records and access their clinical workflows.",
+    "description": "Review patient records, 3D scans and socket production.",
     "add": "Add patient",
     "photo": {
       "label": "Profile photo (optional)",
       "hint": "Add a photo to recognize this patient.",
       "formats": "JPEG, PNG, or WebP · 5 MiB max",
       "choose": "Choose photo",
-      "change": "Change photo",
-      "remove": "Remove photo",
+      "change": "Change",
+      "remove": "Remove",
+      "notAdded": "Photo not added",
       "removed": "The current photo will be removed when you save.",
       "preparing": "Preparing photo",
       "selected": "Selected photo",
@@ -108,18 +109,19 @@
       "patient": "Patient",
       "age": "Age",
       "created": "Created",
+      "action": "Action",
       "openNamed": "Open {{name}}’s patient record"
     },
     "create": {
       "title": "Add a patient record",
-      "description": "Add the patient’s details before adding 3D scans.",
+      "description": "Add identity details and an optional profile photo.",
       "fields": {
         "firstName": "First name",
-        "firstNamePlaceholder": "Enter the first name",
+        "firstNamePlaceholder": "Enter the patient's first name",
         "lastName": "Last name",
-        "lastNamePlaceholder": "Enter the last name",
+        "lastNamePlaceholder": "Enter the patient's last name",
         "age": "Age",
-        "agePlaceholder": "Enter the age"
+        "agePlaceholder": "Enter the patient's age"
       },
       "validation": {
         "name": "Enter a name between 1 and 100 characters.",
@@ -131,8 +133,8 @@
     },
     "edit": {
       "action": "Edit patient",
-      "title": "Edit patient",
-      "description": "Update the patient’s identity and profile photo.",
+      "title": "Edit patient record",
+      "description": "Update identity details or the profile photo.",
       "cancel": "Cancel",
       "submit": "Save changes",
       "pending": "Saving changes…"

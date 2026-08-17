@@ -131,12 +131,7 @@ export function PatientCreateOverlay() {
   const photoUnavailable =
     photoDecision.action === 'invalid' || photoDecision.action === 'preparing';
   const formContent = (
-    <form
-      className="pb-2"
-      id={CREATE_PATIENT_FORM_ID}
-      noValidate
-      onSubmit={submit}
-    >
+    <form id={CREATE_PATIENT_FORM_ID} noValidate onSubmit={submit}>
       <FieldGroup className="gap-4">
         {form.formState.errors.root?.message !== undefined && (
           <Alert variant="destructive">
@@ -146,16 +141,16 @@ export function PatientCreateOverlay() {
             </AlertDescription>
           </Alert>
         )}
-        <PatientFormFields
-          disabled={mutation.isPending}
-          form={form}
-          idPrefix="patient-create"
-        />
         <PatientPhotoField
           disabled={mutation.isPending}
           inputId="patient-create-photo"
           key={photoFieldKey}
           onChange={setPhotoDecision}
+        />
+        <PatientFormFields
+          disabled={mutation.isPending}
+          form={form}
+          idPrefix="patient-create"
         />
       </FieldGroup>
     </form>
@@ -226,10 +221,7 @@ export function PatientCreateOverlay() {
           onOpenChange={setOverlayOpen}
           open={open}
         >
-          <DialogContent
-            className="sm:max-w-xl"
-            showCloseButton={!mutation.isPending}
-          >
+          <DialogContent showCloseButton={!mutation.isPending}>
             <DialogHeader>
               <DialogTitle>{t('patients.create.title')}</DialogTitle>
               <DialogDescription>
@@ -237,7 +229,7 @@ export function PatientCreateOverlay() {
               </DialogDescription>
             </DialogHeader>
             {formContent}
-            <DialogFooter>{footer}</DialogFooter>
+            <DialogFooter className="bg-background">{footer}</DialogFooter>
           </DialogContent>
         </Dialog>
       )}

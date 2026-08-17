@@ -44,8 +44,8 @@ describe(PatientPhotoField.name, () => {
     expect(
       screen.getByRole('status', { name: 'Preparing photo' }),
     ).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Change photo' })).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Remove photo' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Change' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Remove' })).toBeVisible();
     decoding.resolve({ close: vi.fn() } as unknown as ImageBitmap);
 
     expect(
@@ -77,7 +77,7 @@ describe(PatientPhotoField.name, () => {
       await screen.findByRole('img', { name: 'Selected photo' }),
     ).toHaveAttribute('src', 'blob:second');
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:first');
-    await user.click(screen.getByRole('button', { name: 'Remove photo' }));
+    await user.click(screen.getByRole('button', { name: 'Remove' }));
     expect(screen.getByRole('button', { name: 'Choose photo' })).toBeVisible();
     expect(onChange).toHaveBeenLastCalledWith({ action: 'keep' });
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:second');
@@ -131,7 +131,7 @@ describe(PatientPhotoField.name, () => {
     const first = new File(['first'], 'first.png', { type: 'image/png' });
     const second = new File(['second'], 'second.png', { type: 'image/png' });
     await user.upload(screen.getByLabelText('Profile photo (optional)'), first);
-    expect(screen.getByRole('button', { name: 'Change photo' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Change' })).toBeVisible();
     await user.upload(
       screen.getByLabelText('Profile photo (optional)'),
       second,

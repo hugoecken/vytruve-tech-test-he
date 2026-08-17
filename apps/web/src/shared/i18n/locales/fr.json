@@ -80,15 +80,16 @@
   "patients": {
     "collection": "les patients",
     "title": "Patients",
-    "description": "Gérez les dossiers patients et accédez à leurs parcours cliniques.",
+    "description": "Consultez les dossiers patients, les scans 3D et la fabrication d’emboîtures.",
     "add": "Ajouter un patient",
     "photo": {
       "label": "Photo de profil (facultative)",
       "hint": "Ajoutez une photo pour reconnaître ce patient.",
       "formats": "JPEG, PNG ou WebP · 5 Mio max",
       "choose": "Choisir une photo",
-      "change": "Changer la photo",
-      "remove": "Supprimer la photo",
+      "change": "Changer",
+      "remove": "Supprimer",
+      "notAdded": "Photo non ajoutée",
       "removed": "La photo actuelle sera supprimée à l’enregistrement.",
       "preparing": "Préparation de la photo",
       "selected": "Photo sélectionnée",
@@ -108,18 +109,19 @@
       "patient": "Patient",
       "age": "Âge",
       "created": "Créé le",
+      "action": "Action",
       "openNamed": "Ouvrir le dossier patient de {{name}}"
     },
     "create": {
       "title": "Ajouter un dossier patient",
-      "description": "Ajoutez les informations du patient avant ses scans 3D.",
+      "description": "Ajoutez l’identité et une photo de profil facultative.",
       "fields": {
         "firstName": "Prénom",
-        "firstNamePlaceholder": "Saisissez le prénom",
+        "firstNamePlaceholder": "Saisissez le prénom du patient",
         "lastName": "Nom",
-        "lastNamePlaceholder": "Saisissez le nom",
+        "lastNamePlaceholder": "Saisissez le nom du patient",
         "age": "Âge",
-        "agePlaceholder": "Saisissez l’âge"
+        "agePlaceholder": "Saisissez l’âge du patient"
       },
       "validation": {
         "name": "Saisissez un nom de 1 à 100 caractères.",
@@ -131,8 +133,8 @@
     },
     "edit": {
       "action": "Modifier le patient",
-      "title": "Modifier le patient",
-      "description": "Mettez à jour l’identité et la photo de profil du patient.",
+      "title": "Modifier le dossier patient",
+      "description": "Mettez à jour l’identité ou la photo de profil.",
       "cancel": "Annuler",
       "submit": "Enregistrer",
       "pending": "Enregistrement…"

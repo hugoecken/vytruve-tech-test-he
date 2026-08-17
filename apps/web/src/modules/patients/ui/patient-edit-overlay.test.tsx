@@ -24,6 +24,19 @@ describe('patient editing', () => {
       'createImageBitmap',
       vi.fn().mockResolvedValue({ close: vi.fn() }),
     );
+    vi.stubGlobal(
+      'Image',
+      class {
+        complete = false;
+        naturalWidth = 0;
+        onerror: (() => void) | null = null;
+        onload: (() => void) | null = null;
+
+        set src(_value: string) {
+          queueMicrotask(() => this.onload?.());
+        }
+      },
+    );
   });
 
   afterEach(() => {
@@ -56,6 +69,10 @@ describe('patient editing', () => {
       ),
     );
     expect(screen.getByLabelText('First name')).toHaveValue(patient.firstName);
+    expect(screen.getByRole('img', { name: 'Current photo' })).toHaveAttribute(
+      'crossorigin',
+      'use-credentials',
+    );
     expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
     await user.clear(screen.getByLabelText('First name'));
     await user.type(screen.getByLabelText('First name'), 'Jamie');
@@ -182,7 +199,7 @@ describe('patient editing', () => {
     await user.click(
       await screen.findByRole('button', { name: 'Edit patient' }),
     );
-    await user.click(screen.getByRole('button', { name: 'Remove photo' }));
+    await user.click(screen.getByRole('button', { name: 'Remove' }));
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
 
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());

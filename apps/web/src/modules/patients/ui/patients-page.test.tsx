@@ -81,7 +81,9 @@ describe('patient directory', () => {
     const { router } = renderRoute('/patients', { session: accountSession });
 
     await user.click(
-      await screen.findByLabelText('Open Alex Martin’s patient record'),
+      await screen.findByRole('row', {
+        name: 'Open Alex Martin’s patient record',
+      }),
     );
 
     expect(

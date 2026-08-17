@@ -1,14 +1,10 @@
 import { useCallback, useRef, useState } from 'react';
-import { ImageIcon, UploadIcon, XIcon } from 'lucide-react';
+import { PlusIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatFileSize } from '@/shared/lib/format-file-size';
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import { Button } from '@/shared/ui/button';
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from '@/shared/ui/field';
+import { Field, FieldDescription, FieldLabel } from '@/shared/ui/field';
 import { Input } from '@/shared/ui/input';
 import { Spinner } from '@/shared/ui/spinner';
 
@@ -136,62 +132,70 @@ export function PatientPhotoField({
         type="file"
       />
       {isPhotoMediaState(state) ? (
-        <div className="flex min-w-0 flex-col gap-3 rounded-xl border bg-muted/20 p-3 sm:flex-row sm:items-center">
+        <div className="flex min-w-0 items-center gap-4">
           <PhotoMedia currentPhotoUrl={currentPhotoUrl} state={state} />
-          <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-2">
             <PhotoSummary language={i18n.language} state={state} />
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 disabled={disabled}
                 nativeButton={false}
                 render={<label htmlFor={inputId} />}
+                size="sm"
                 type="button"
                 variant="outline"
               >
-                <UploadIcon aria-hidden="true" data-icon="inline-start" />
                 {t('patients.photo.change')}
               </Button>
               <Button
                 disabled={disabled}
                 onClick={remove}
+                size="sm"
                 type="button"
                 variant="outline"
               >
-                <XIcon aria-hidden="true" data-icon="inline-start" />
                 {t('patients.photo.remove')}
               </Button>
             </div>
           </div>
         </div>
       ) : (
-        <div className="flex min-h-28 flex-col items-center justify-center gap-3 rounded-xl border border-dashed bg-muted/20 p-4 text-center">
-          <ImageIcon
-            aria-hidden="true"
-            className="size-6 text-muted-foreground"
-          />
-          <FieldDescription>
-            {state.status === 'removed'
-              ? t('patients.photo.removed')
-              : t('patients.photo.hint')}
-          </FieldDescription>
-          <Button
-            disabled={disabled}
-            nativeButton={false}
-            render={<label htmlFor={inputId} />}
-            type="button"
-            variant="outline"
-          >
-            <UploadIcon aria-hidden="true" data-icon="inline-start" />
-            {t('patients.photo.choose')}
-          </Button>
+        <div className="flex min-w-0 items-center gap-4 rounded-lg border p-3">
+          <Avatar aria-hidden="true" className="size-18">
+            <AvatarFallback>
+              <PlusIcon aria-hidden="true" className="size-7.5" />
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex min-w-0 flex-1 flex-col items-start gap-2">
+            <p className="text-sm font-semibold">
+              {t('patients.photo.notAdded')}
+            </p>
+            <FieldDescription
+              className="text-xs leading-4"
+              role={state.status === 'invalid' ? 'alert' : undefined}
+            >
+              {state.status === 'invalid'
+                ? t(`patients.photo.validation.${state.code}`)
+                : state.status === 'removed'
+                  ? t('patients.photo.removed')
+                  : t('patients.photo.hint')}
+            </FieldDescription>
+            <Button
+              disabled={disabled}
+              nativeButton={false}
+              render={<label htmlFor={inputId} />}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              {t('patients.photo.choose')}
+            </Button>
+          </div>
         </div>
       )}
-      {state.status === 'invalid' && (
-        <FieldError>{t(`patients.photo.validation.${state.code}`)}</FieldError>
-      )}
-      {state.status !== 'invalid' && !isPhotoMediaState(state) && (
-        <FieldDescription>{t('patients.photo.formats')}</FieldDescription>
-      )}
+      <FieldDescription className="text-xs leading-4">
+        {t('patients.photo.formats')}
+      </FieldDescription>
     </Field>
   );
 }
@@ -207,29 +211,35 @@ function PhotoMedia({
   const { t } = useTranslation();
   if (state.status === 'preparing') {
     return (
-      <div
+      <Avatar
         aria-label={t('patients.photo.preparing')}
-        className="flex size-28 shrink-0 items-center justify-center rounded-xl bg-muted sm:size-32"
+        className="size-24"
         role="status"
       >
-        <Spinner aria-hidden="true" className="size-6" />
-      </div>
+        <AvatarFallback>
+          <Spinner aria-hidden="true" className="size-6" />
+        </AvatarFallback>
+      </Avatar>
     );
   }
   if (state.status === 'current') {
     return currentPhotoUrl === undefined ? (
-      <div className="flex size-28 shrink-0 items-center justify-center rounded-xl bg-muted sm:size-32">
-        <ImageIcon
-          aria-hidden="true"
-          className="size-7 text-muted-foreground"
-        />
-      </div>
+      <Avatar aria-hidden="true" className="size-24">
+        <AvatarFallback>
+          <PlusIcon className="size-7.5" />
+        </AvatarFallback>
+      </Avatar>
     ) : (
-      <img
-        alt={t('patients.photo.current')}
-        className="size-28 shrink-0 rounded-xl object-cover sm:size-32"
-        src={currentPhotoUrl}
-      />
+      <Avatar className="size-24">
+        <AvatarImage
+          alt={t('patients.photo.current')}
+          crossOrigin="use-credentials"
+          src={currentPhotoUrl}
+        />
+        <AvatarFallback>
+          <PlusIcon aria-hidden="true" className="size-7.5" />
+        </AvatarFallback>
+      </Avatar>
     );
   }
   return <LocalPhotoPreview objectUrl={state.objectUrl} />;
@@ -244,7 +254,7 @@ function LocalPhotoPreview({ objectUrl }: { objectUrl: string }) {
   return (
     <img
       alt={t('patients.photo.selected')}
-      className="size-28 shrink-0 rounded-xl object-cover sm:size-32"
+      className="size-24 shrink-0 rounded-full object-cover"
       ref={imageRef}
       src={objectUrl}
     />
@@ -262,14 +272,14 @@ function PhotoSummary({
   const { t } = useTranslation();
   if (state.status === 'selected') {
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-xs leading-4 text-muted-foreground">
         {state.format.toUpperCase()} ·{' '}
         {formatFileSize(state.file.size, language)}
       </p>
     );
   }
   return (
-    <p className="text-sm text-muted-foreground">
+    <p className="text-xs leading-4 text-muted-foreground">
       {state.status === 'preparing'
         ? t('patients.photo.preparing')
         : t('patients.photo.current')}

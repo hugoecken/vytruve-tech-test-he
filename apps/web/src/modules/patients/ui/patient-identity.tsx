@@ -1,4 +1,4 @@
-import type { ElementType } from 'react';
+import type { ElementType, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getPatientInitials } from '@/modules/patients/lib/patient-identity';
 import { getPatientPhotoUrl } from '@/modules/patients/lib/patient-photo-url';
@@ -11,6 +11,7 @@ interface PatientIdentityProps {
   as?: 'h1' | 'span';
   avatarClassName?: string;
   className?: string;
+  description?: ReactNode;
   nameClassName?: string;
   nameId?: string;
   patient: PatientResponse;
@@ -22,6 +23,7 @@ export function PatientIdentity({
   as = 'span',
   avatarClassName,
   className,
+  description,
   nameClassName,
   nameId,
   patient,
@@ -36,6 +38,7 @@ export function PatientIdentity({
         {patient.hasPhoto && (
           <AvatarImage
             alt=""
+            crossOrigin="use-credentials"
             key={photoRevision}
             src={getPatientPhotoUrl(patient.id)}
           />
@@ -48,9 +51,12 @@ export function PatientIdentity({
           )}
         </AvatarFallback>
       </Avatar>
-      <Name className={cn('min-w-0 truncate', nameClassName)} id={nameId}>
-        {fullName}
-      </Name>
+      <div className="min-w-0">
+        <Name className={cn('block min-w-0', nameClassName)} id={nameId}>
+          {fullName}
+        </Name>
+        {description}
+      </div>
     </div>
   );
 }

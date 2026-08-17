@@ -162,11 +162,6 @@ export function PatientEditOverlay({
             </AlertDescription>
           </Alert>
         )}
-        <PatientFormFields
-          disabled={mutation.isPending}
-          form={form}
-          idPrefix="patient-edit"
-        />
         <PatientPhotoField
           currentPhotoUrl={
             patient.hasPhoto ? getPatientPhotoUrl(patient.id) : undefined
@@ -176,6 +171,11 @@ export function PatientEditOverlay({
           inputId="patient-edit-photo"
           key={photoFieldKey}
           onChange={setPhotoDecision}
+        />
+        <PatientFormFields
+          disabled={mutation.isPending}
+          form={form}
+          idPrefix="patient-edit"
         />
       </FieldGroup>
     </form>
@@ -244,10 +244,7 @@ export function PatientEditOverlay({
           onOpenChange={setOverlayOpen}
           open={open}
         >
-          <DialogContent
-            className="sm:max-w-xl"
-            showCloseButton={!mutation.isPending}
-          >
+          <DialogContent showCloseButton={!mutation.isPending}>
             <DialogHeader>
               <DialogTitle>{t('patients.edit.title')}</DialogTitle>
               <DialogDescription>
@@ -255,7 +252,7 @@ export function PatientEditOverlay({
               </DialogDescription>
             </DialogHeader>
             {content}
-            <DialogFooter>{footer}</DialogFooter>
+            <DialogFooter className="bg-background">{footer}</DialogFooter>
           </DialogContent>
         </Dialog>
       )}
