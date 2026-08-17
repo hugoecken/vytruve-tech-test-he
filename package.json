@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nx run-many -t serve --projects=api,web --parallel=2"
+    "start": "nx run web:generate-api && nx run-many -t serve --projects=api,web --parallel=2"
   },
   "engines": {
     "node": ">=24 <25"

@@ -53,15 +53,14 @@ printing-provider placeholders only in ignored `.env.local`; never commit the su
 The API validates its required settings before listening. The Web build receives only `VITE_API_BASE_URL`, which is
 safe for browser users. Never expose a server secret through a `VITE_` variable.
 
-| Concern                       | Variables                                                                                                                      |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| API runtime                   | `NODE_ENV`, `APP_REVISION`, `API_PORT`, `WEB_ORIGIN`                                                                           |
-| Browser-safe Web build        | `VITE_API_BASE_URL`                                                                                                            |
-| JWT                           | `JWT_SECRET`, `JWT_ISSUER`, `JWT_AUDIENCE`                                                                                     |
-| PostgreSQL                    | `DATABASE_HOST`, `DATABASE_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`                                          |
-| Scan storage                  | `MAX_SCAN_SIZE_BYTES`, `MINIO_ENDPOINT`, `MINIO_PORT`, `MINIO_USE_SSL`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET` |
-| Printing provider             | `PRINTING_API_BASE_URL`, `PRINTING_API_KEY`, `PRINTING_API_TIMEOUT_MS`                                                         |
-| Optional local design tooling | `SHADCNDESIGN_LICENSE_KEY`                                                                                                     |
+| Concern                | Variables                                                                                                                      |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| API runtime            | `NODE_ENV`, `APP_REVISION`, `API_PORT`, `WEB_ORIGIN`                                                                           |
+| Browser-safe Web build | `VITE_API_BASE_URL`                                                                                                            |
+| JWT                    | `JWT_SECRET`, `JWT_ISSUER`, `JWT_AUDIENCE`                                                                                     |
+| PostgreSQL             | `DATABASE_HOST`, `DATABASE_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`                                          |
+| Scan storage           | `MAX_SCAN_SIZE_BYTES`, `MINIO_ENDPOINT`, `MINIO_PORT`, `MINIO_USE_SSL`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET` |
+| Printing provider      | `PRINTING_API_BASE_URL`, `PRINTING_API_KEY`, `PRINTING_API_TIMEOUT_MS`                                                         |
 
 Production values do not come from this file. They belong to Dokploy and the protected GitHub environment described
 in [Delivery](delivery.md) and the [Dokploy runbook](../infrastructure/dokploy/README.md).

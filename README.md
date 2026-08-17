@@ -32,6 +32,11 @@ Requirements: Node.js 24 LTS, npm 10, and Docker with Docker Compose.
 ```bash
 npm ci
 cp .env.example .env.local
+```
+
+Replace `PRINTING_API_BASE_URL` and `PRINTING_API_KEY` in `.env.local` with the values supplied for the assessment.
+
+```bash
 npm exec nx -- run infrastructure:up
 npm exec nx -- run database:migrate
 npm start
