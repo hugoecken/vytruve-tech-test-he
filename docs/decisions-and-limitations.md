@@ -27,9 +27,9 @@ approved digest between planned upgrades.
 
 ## Deliberately excluded
 
-The MVP does not include patient editing or deletion, scan deletion, print cancellation, password recovery, MFA,
-notifications, billing, dashboards, advanced search, or administrative workflows. These are product-scope choices,
-not hidden unfinished endpoints.
+The MVP includes owned-patient editing and private profile photos. It does not include patient deletion, scan deletion,
+print cancellation, password recovery, MFA, notifications, billing, dashboards, advanced search, or administrative
+workflows. These are product-scope choices, not hidden unfinished endpoints.
 
 It also makes no GDPR, HDS, medical-device, disaster-recovery, high-availability, or zero-downtime certification claim.
 

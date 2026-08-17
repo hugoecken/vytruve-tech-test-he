@@ -3,8 +3,11 @@ import type {
   CreatePatientCommand,
   PatientModel,
   PatientPageModel,
+  PatientPhotoInput,
+  UpdatePatientCommand,
 } from '../../application/models/patient.model';
 import type { CreatePatientRequest } from '../dto/create-patient-request.dto';
+import type { UpdatePatientRequest } from '../dto/update-patient-request.dto';
 import {
   PatientPageResponse,
   PatientResponse,
@@ -17,12 +20,32 @@ export class PatientApiMapper {
   toCreateCommand(
     request: CreatePatientRequest,
     accountId: string,
+    photo?: PatientPhotoInput,
   ): CreatePatientCommand {
     return {
       accountId,
       age: request.age,
       firstName: request.firstName,
       lastName: request.lastName,
+      photo,
+    };
+  }
+
+  /** Maps a complete owned update request and optional validated replacement. */
+  toUpdateCommand(
+    request: UpdatePatientRequest,
+    accountId: string,
+    patientId: string,
+    photo?: PatientPhotoInput,
+  ): UpdatePatientCommand {
+    return {
+      accountId,
+      age: request.age,
+      firstName: request.firstName,
+      lastName: request.lastName,
+      patientId,
+      photo,
+      photoAction: request.photoAction,
     };
   }
 
@@ -32,6 +55,7 @@ export class PatientApiMapper {
       age: model.age,
       createdAt: model.createdAt.toISOString(),
       firstName: model.firstName,
+      hasPhoto: model.photo !== null,
       id: model.id,
       lastName: model.lastName,
     };

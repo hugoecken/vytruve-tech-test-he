@@ -8,7 +8,6 @@ import {
   XIcon,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { formatScanFileSize } from '@/modules/scans/lib/scan-formatters';
 import type { ScanPreviewEncoding } from '@/modules/scans/lib/scan-preview-renderer';
 import { ScanUploadPreview } from '@/modules/scans/ui/scan-upload-preview';
 import {
@@ -19,6 +18,7 @@ import {
   ApiProblemError,
   ApiTransportError,
 } from '@/shared/api/http/api-error';
+import { formatFileSize } from '@/shared/lib/format-file-size';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { Alert, AlertDescription } from '@/shared/ui/alert';
 import {
@@ -169,7 +169,7 @@ export function ScanUploadOverlay({ patientId }: ScanUploadOverlayProps) {
     attachmentDescription = t('scans.upload.failed');
   } else if (file !== null) {
     attachmentDescription = t('scans.upload.fileReady', {
-      size: formatScanFileSize(file.size, i18n.language),
+      size: formatFileSize(file.size, i18n.language),
     });
   }
   const fileSummary = file !== null && (
@@ -260,7 +260,7 @@ export function ScanUploadOverlay({ patientId }: ScanUploadOverlayProps) {
                   : t(`scans.encoding.${previewEncoding}`)}
               </DetailItem>
               <DetailItem label={t('scans.details.fields.size')}>
-                {formatScanFileSize(file.size, i18n.language)}
+                {formatFileSize(file.size, i18n.language)}
               </DetailItem>
             </DetailList>
           </div>

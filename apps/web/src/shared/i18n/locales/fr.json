@@ -80,8 +80,26 @@
   "patients": {
     "collection": "les patients",
     "title": "Patients",
-    "description": "Gérez les dossiers patients et accédez à leurs parcours cliniques.",
+    "description": "Consultez les dossiers patients, les scans 3D et la fabrication d’emboîtures.",
     "add": "Ajouter un patient",
+    "photo": {
+      "label": "Photo de profil (facultative)",
+      "hint": "Ajoutez une photo pour reconnaître ce patient.",
+      "formats": "JPEG, PNG ou WebP · 5 Mio max",
+      "choose": "Choisir une photo",
+      "change": "Changer",
+      "remove": "Supprimer",
+      "notAdded": "Photo non ajoutée",
+      "removed": "La photo actuelle sera supprimée à l’enregistrement.",
+      "preparing": "Préparation de la photo",
+      "selected": "Photo sélectionnée",
+      "current": "Photo actuelle",
+      "validation": {
+        "type": "Choisissez une image JPEG, PNG ou WebP.",
+        "size": "Choisissez une image de 5 Mio maximum.",
+        "decode": "Choisissez une image qui peut être ouverte en toute sécurité."
+      }
+    },
     "empty": {
       "title": "Aucun dossier patient",
       "description": "Ajoutez un dossier patient pour commencer à gérer des scans 3D."
@@ -95,14 +113,14 @@
     },
     "create": {
       "title": "Ajouter un dossier patient",
-      "description": "Ajoutez les informations du patient avant ses scans 3D.",
+      "description": "Ajoutez l’identité et une photo de profil facultative.",
       "fields": {
         "firstName": "Prénom",
-        "firstNamePlaceholder": "Saisissez le prénom",
+        "firstNamePlaceholder": "Saisissez le prénom du patient",
         "lastName": "Nom",
-        "lastNamePlaceholder": "Saisissez le nom",
+        "lastNamePlaceholder": "Saisissez le nom du patient",
         "age": "Âge",
-        "agePlaceholder": "Saisissez l’âge"
+        "agePlaceholder": "Saisissez l’âge du patient"
       },
       "validation": {
         "name": "Saisissez un nom de 1 à 100 caractères.",
@@ -111,6 +129,14 @@
       "cancel": "Annuler",
       "submit": "Ajouter le patient",
       "pending": "Ajout du patient…"
+    },
+    "edit": {
+      "action": "Modifier le patient",
+      "title": "Modifier le dossier patient",
+      "description": "Mettez à jour l’identité ou la photo de profil.",
+      "cancel": "Annuler",
+      "submit": "Enregistrer",
+      "pending": "Enregistrement…"
     },
     "workspace": {
       "back": "Retour aux patients",
@@ -337,6 +363,10 @@
       "AUTH_RATE_LIMITED": "Trop de tentatives. Patientez avant de réessayer.",
       "INTERNAL_ERROR": "Le service a rencontré un problème inattendu.",
       "PATIENT_NOT_FOUND": "Le dossier patient est introuvable.",
+      "PATIENT_PHOTO_INVALID_CONTENT": "La photo sélectionnée ne peut pas être ouverte en toute sécurité.",
+      "PATIENT_PHOTO_STORAGE_UNAVAILABLE": "Le stockage des photos patient est temporairement indisponible.",
+      "PATIENT_PHOTO_TOO_LARGE": "La photo sélectionnée dépasse la limite de 5 Mio.",
+      "PATIENT_PHOTO_UNSUPPORTED_TYPE": "Choisissez une photo JPEG, PNG ou WebP.",
       "PRINTING_CAPACITY_REACHED": "Le centre d'impression ne peut pas accepter de nouvelle demande pour le moment.",
       "PRINTING_UNAVAILABLE": "L'impression est temporairement indisponible. Réessayez plus tard.",
       "PRINT_REQUEST_CONFLICT": "Une demande d'impression est déjà en cours pour ce scan.",

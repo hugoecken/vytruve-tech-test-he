@@ -24,6 +24,9 @@ export class CreatePatientRequest {
     minimum: 0,
     type: 'integer',
   })
+  @Transform(({ value }) =>
+    typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : value,
+  )
   @IsInt()
   @Min(0)
   @Max(150)

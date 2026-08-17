@@ -9,6 +9,11 @@ import type { ApiEnvironment } from '@api/config/environment';
 import { ProblemCode } from '@api/http/problem-code';
 import { ProblemDetailsException } from '@api/http/problem-details.exception';
 import {
+  PRIVATE_OBJECT_STORAGE,
+  PrivateObjectStorageError,
+  type PrivateObjectStoragePort,
+} from '@api/storage/private-object-storage.port';
+import {
   createPage,
   createPageWindow,
   type PageParameters,
@@ -22,11 +27,6 @@ import type {
   ScanModel,
   ScanPageModel,
 } from '../models/scan.model';
-import {
-  SCAN_STORAGE,
-  ScanStorageError,
-  type ScanStoragePort,
-} from '../ports/scan-storage.port';
 import { PlyContentValidator } from '../validation/ply-content.validator';
 
 /** Coordinates scan ownership, PLY validation, metadata, and private storage. */
@@ -50,8 +50,8 @@ export class ScansService {
     private readonly scans: Repository<ScanEntity>,
     private readonly patients: PatientsService,
     private readonly validator: PlyContentValidator,
-    @Inject(SCAN_STORAGE)
-    private readonly storage: ScanStoragePort,
+    @Inject(PRIVATE_OBJECT_STORAGE)
+    private readonly storage: PrivateObjectStoragePort,
     private readonly mapper: ScanPersistenceMapper,
     config: ConfigService<ApiEnvironment, true>,
   ) {
@@ -71,7 +71,11 @@ export class ScansService {
     const storageKey = randomUUID();
 
     try {
-      await this.storage.write(storageKey, command.content);
+      await this.storage.write(
+        storageKey,
+        command.content,
+        'application/octet-stream',
+      );
     } catch (error) {
       this.rethrowStorageFailure(error, 'write');
     }
@@ -196,7 +200,7 @@ export class ScansService {
     try {
       const opened = await this.storage.open(scan.storageKey, scan.sizeBytes);
       if (opened.sizeBytes > this.maxScanSizeBytes) {
-        throw new ScanStorageError('unavailable');
+        throw new PrivateObjectStorageError('unavailable');
       }
       const content = await this.readBoundedStream(
         opened.stream,
@@ -244,7 +248,7 @@ export class ScansService {
    * @param stream Authorized object stream returned by the storage adapter.
    * @param expectedSize Exact byte length persisted with the scan metadata.
    * @returns Buffered content whose length matches the persisted metadata.
-   * @throws ScanStorageError when content exceeds a limit or has changed length.
+   * @throws PrivateObjectStorageError when content exceeds a limit or has changed length.
    */
   private async readBoundedStream(
     stream: Readable,
@@ -255,18 +259,18 @@ export class ScansService {
 
     for await (const value of stream) {
       if (!(value instanceof Uint8Array)) {
-        throw new ScanStorageError('unavailable');
+        throw new PrivateObjectStorageError('unavailable');
       }
       const chunk = Buffer.from(value);
       sizeBytes += chunk.length;
       if (sizeBytes > expectedSize || sizeBytes > this.maxScanSizeBytes) {
-        throw new ScanStorageError('unavailable');
+        throw new PrivateObjectStorageError('unavailable');
       }
       chunks.push(chunk);
     }
 
     if (sizeBytes !== expectedSize) {
-      throw new ScanStorageError('unavailable');
+      throw new PrivateObjectStorageError('unavailable');
     }
     return Buffer.concat(chunks, sizeBytes);
   }
@@ -282,7 +286,7 @@ export class ScansService {
     error: unknown,
     operation: 'open' | 'read' | 'write',
   ): never {
-    if (error instanceof ScanStorageError) {
+    if (error instanceof PrivateObjectStorageError) {
       this.logger.error({
         event: 'scan_storage_operation',
         operation,

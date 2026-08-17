@@ -17,6 +17,11 @@ export class PatientResponse {
 
   @ApiProperty({ format: 'date-time' })
   createdAt!: string;
+
+  @ApiProperty({
+    description: 'Whether the patient has a current private photo.',
+  })
+  hasPhoto!: boolean;
 }
 
 /** Public server-paginated patient collection page without a total. */

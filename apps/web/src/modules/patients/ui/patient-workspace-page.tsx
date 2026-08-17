@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { ArrowLeftIcon, CircleAlertIcon } from 'lucide-react';
+import { CircleAlertIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { clearAccountState } from '@/modules/auth/api/session-cache';
 import { CollectionLoadError } from '@/modules/collections/ui/collection-load-error';
@@ -9,12 +9,14 @@ import { CollectionRecoveryAlert } from '@/modules/collections/ui/collection-rec
 import { PrintRequestOverlay } from '@/modules/printing/ui/print-request-overlay';
 import { PrintRequestsPanel } from '@/modules/printing/ui/print-requests-panel';
 import { ScansPanel } from '@/modules/scans/ui/scans-panel';
+import { PatientEditOverlay } from '@/modules/patients/ui/patient-edit-overlay';
+import { PatientIdentity } from '@/modules/patients/ui/patient-identity';
 import { useGetPatient } from '@/shared/api/generated/client/patients/patients';
 import { getListPatientScansQueryKey } from '@/shared/api/generated/client/scans/scans';
 import type { PrintRequestResponse } from '@/shared/api/generated/models/printRequestResponse';
 import type { ScanResponse } from '@/shared/api/generated/models/scanResponse';
 import { ApiProblemError } from '@/shared/api/http/api-error';
-import { Button, buttonVariants } from '@/shared/ui/button';
+import { Button } from '@/shared/ui/button';
 import { Card, CardHeader } from '@/shared/ui/card';
 import {
   Empty,
@@ -49,6 +51,7 @@ export function PatientWorkspacePage({ patientId }: PatientWorkspacePageProps) {
     'conflict' | 'uncertain' | null
   >(null);
   const [resourceUnavailable, setResourceUnavailable] = useState(false);
+  const [photoRevision, setPhotoRevision] = useState(0);
   const query = useGetPatient(patientId, {
     query: { select: (response) => response.data },
   });
@@ -150,14 +153,11 @@ export function PatientWorkspacePage({ patientId }: PatientWorkspacePageProps) {
       className="flex flex-col"
     >
       <Link
-        className={buttonVariants({
-          className: 'h-11 w-fit',
-          variant: 'outline',
-        })}
+        aria-label={t('patients.workspace.back')}
+        className="w-fit text-2xl leading-8 font-semibold"
         to="/patients"
       >
-        <ArrowLeftIcon aria-hidden="true" data-icon="inline-start" />
-        {t('patients.workspace.back')}
+        {t('patients.title')}
       </Link>
 
       {query.isError && (
@@ -172,20 +172,29 @@ export function PatientWorkspacePage({ patientId }: PatientWorkspacePageProps) {
         </div>
       )}
 
-      <Card className="mt-5 h-30">
-        <CardHeader>
-          <h1
-            className="text-lg leading-6 font-semibold"
-            id="patient-workspace-title"
-          >
-            {patient.firstName} {patient.lastName}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {t('patients.workspace.identity', {
-              age: patient.age,
-              date: formatDate(patient.createdAt, i18n.language),
-            })}
-          </p>
+      <Card className="mt-5 h-30 [--card-spacing:--spacing(6)]">
+        <CardHeader className="flex h-full flex-row items-center gap-3">
+          <PatientIdentity
+            as="h1"
+            avatarClassName="size-12"
+            className="min-w-0 flex-1"
+            description={
+              <p className="truncate text-sm text-muted-foreground">
+                {t('patients.workspace.identity', {
+                  age: patient.age,
+                  date: formatDate(patient.createdAt, i18n.language),
+                })}
+              </p>
+            }
+            nameClassName="truncate text-base leading-6 font-medium"
+            nameId="patient-workspace-title"
+            patient={patient}
+            photoRevision={photoRevision}
+          />
+          <PatientEditOverlay
+            onPhotoChanged={() => setPhotoRevision((revision) => revision + 1)}
+            patient={patient}
+          />
         </CardHeader>
       </Card>
 
